@@ -50,7 +50,6 @@
         path: "{{ operator_work_dir }}"
         state: absent
 
-
     - name: "Clear the scorecard CR directory"
       file:
         path: "{{ scorecard_cr_dir }}"
@@ -217,7 +216,7 @@
               when:
                 - operator_container_result.stdout != ""
 
-#          when: not run_upstream|bool
+          when: not run_upstream|bool
 
         - name: "Test image sources of containers introduced with the testing operator"
           include_role:
