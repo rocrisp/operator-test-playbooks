@@ -1,2 +1,3 @@
 operator_work_dir: /tmp/cvp/operator-files
+operator_repo: /tmp/community-operators
 check_verify_result: true

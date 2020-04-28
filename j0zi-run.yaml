@@ -54,7 +54,7 @@
         name: install_operator_prereqs
       when: run_prereqs|bool
 
-    - name: "Build operator-registry catalog"
+    - name: "Build upstream catalog"
       include_role:
-        name: build_catalog
+        name: build_upstream_catalog
         #when distro_type == "upstream"

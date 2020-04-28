@@ -28,7 +28,9 @@
   template:
     src: "upstream.Dockerfile"
     dest: "/tmp/upstream.Dockerfile"
+
 - name: "Run catalog build"
-  shell: "docker build --build-arg PERMISSIVE_LOAD=false -f /tmp/upstream.Dockerfile -t operatorhub-catalog:dev {{ operator_work_dir }} > /tmp/build.log"
+  shell: "docker build --build-arg PERMISSIVE_LOAD=false -f /tmp/upstream.Dockerfile -t operatorhub-catalog:dev {{ operator_repo }} > /tmp/build.log"
   register: build_image_output
   ignore_errors: True
+  become: yes
