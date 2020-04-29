@@ -60,7 +60,6 @@
         name: build_upstream_catalog
       when: distro_type == "upstream"
 
-
     - name: "Openshift only"
       block:
         - name: "Run operator-courier nest to copy the operator metadata in nested format to the work dir"

@@ -24,13 +24,20 @@
   apt: update_cache=yes name=docker-ce state=latest
   become: yes
 
+- name: "Git clone community operators"
+  git:
+    repo: 'https://github.com/operator-framework/community-operators.git'
+    dest: "{{ catalog_repo_dir }}"
+    version: master
+    force: true
+
 - name: "Copy Dockerfile"
   template:
     src: "upstream.Dockerfile"
     dest: "/tmp/upstream.Dockerfile"
 
 - name: "Run catalog build"
-  shell: "docker build --build-arg PERMISSIVE_LOAD=false -f /tmp/upstream.Dockerfile -t operatorhub-catalog:dev {{ operator_repo }} > /tmp/build.log"
+  shell: "docker build --no-cache --build-arg PERMISSIVE_LOAD=false -f /tmp/upstream.Dockerfile -t operatorhub-catalog:dev {{ catalog_repo_dir }} > /tmp/build.log"
   register: build_image_output
-  ignore_errors: True
+  #ignore_errors: True
   become: yes
