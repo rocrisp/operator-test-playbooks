@@ -40,3 +40,5 @@
   shell: "docker build --no-cache --build-arg PERMISSIVE_LOAD=false -f /tmp/upstream.Dockerfile -t operatorhub-catalog:dev {{ catalog_repo_dir }} > /tmp/build.log"
   register: build_image_output
   become: yes
+
+- name: "Push the operator catalog to the quay.io repository"
