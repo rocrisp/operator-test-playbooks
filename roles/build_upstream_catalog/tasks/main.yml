@@ -24,6 +24,9 @@
   apt: update_cache=yes name=docker-ce state=latest
   become: yes
 
+- name: "Enable Docker without sudo"
+  shell: "sudo usermod -aG docker {{ docker_user_no_sudo }}"
+
 - name: "Git clone community operators"
   git:
     repo: 'https://github.com/operator-framework/community-operators.git'
@@ -36,9 +39,14 @@
     src: "upstream.Dockerfile"
     dest: "/tmp/upstream.Dockerfile"
 
+- name: "Clear old build log"
+  file:
+    path: "/tmp/build.log"
+    state: absent
+
 - name: "Run catalog build"
   shell: "docker build --no-cache --build-arg PERMISSIVE_LOAD=false -f /tmp/upstream.Dockerfile -t operatorhub-catalog:dev {{ catalog_repo_dir }} > /tmp/build.log"
   register: build_image_output
-  become: yes
 
-- name: "Push the operator catalog to the quay.io repository"
+- name: "Quay login"
+  shell: "docker login -u='op-test+test' -p={{ quay_robot_pw }} quay.io"
