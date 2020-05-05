@@ -35,6 +35,7 @@
         KIND_ver: "{{ KIND_VER | default('') }}"
         distro_type: "{{ DISTRO_TYPE | default('') }}"
         KIND_bin_path: "{{ testing_bin_path }}/kind"
+        KIND_kube_ver: "{{ KIND_KUBE_VER | default('') }}"
 
     - name: "Clear the operator working directory"
       file:
