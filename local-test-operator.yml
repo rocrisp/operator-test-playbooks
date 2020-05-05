@@ -17,7 +17,7 @@
     work_dir: "/tmp/operator-test"
     testing_bin_path: "{{ work_dir }}/bin"
     current_channel: '' # Added to avoid a potential bug with undefined variables
-    distro_type: "{{ DISTRO_TYPE }}"
+    distro_type: "{{ DISTRO_TYPE | default('') }}"
 
   tasks:
     - set_fact:
@@ -32,6 +32,9 @@
         go_bin_path: "{{ testing_bin_path }}/go/bin/go"
         operator_sdk_bin_path: "{{ testing_bin_path }}/operator-sdk"
         offline_cataloger_bin_path: "offline-cataloger"
+        KIND_ver: "{{ KIND_VER | default('') }}"
+        distro_type: "{{ DISTRO_TYPE | default('') }}"
+        KIND_bin_path: "{{ testing_bin_path }}/kind"
 
     - name: "Clear the operator working directory"
       file:
