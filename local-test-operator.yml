@@ -55,6 +55,11 @@
         name: install_operator_prereqs
       when: run_prereqs|bool
 
+    - name: "Install catalog prerequisites"
+      include_role:
+        name: install_docker
+      when: distro_type == "upstream"
+
     - name: "Build upstream catalog"
       include_role:
         name: build_upstream_catalog

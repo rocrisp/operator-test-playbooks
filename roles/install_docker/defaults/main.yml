@@ -2,5 +2,5 @@ operator_work_dir: /tmp/cvp/operator-files
 operator_repo: /tmp/community-operators
 check_verify_result: true
 catalog_repo_dir: /tmp/community-operators-for-catalog
-quay_user: op-test
-quay_robot_pw: '4SHTR96CE2SH1HJJXXEMA9W70PJTQIO8FN2BFQCUPO38AYPYX17LUYNHXT6PI627'
+docker_user_no_sudo: ubuntu
+
