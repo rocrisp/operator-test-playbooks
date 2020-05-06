@@ -25,4 +25,5 @@
   become: yes
 
 - name: "Enable Docker without sudo"
-  shell: "sudo usermod -aG docker {{ docker_user_no_sudo }}"
+  shell: "usermod -aG docker {{ docker_user_no_sudo }}"
+  become: yes
