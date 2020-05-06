@@ -32,7 +32,7 @@
       until: login_result.rc == 0
       environment:
         KUBECONFIG: "{{ kubeconfig_path }}"
-      when: openshift_url is defined
+      when: openshift_url is defined and ((distro_type is undefined) or (distro_type != "upstream"))
 
     - name: "Parse operator metadata needed to run the tests"
       include_role:

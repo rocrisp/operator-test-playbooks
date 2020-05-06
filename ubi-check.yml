@@ -25,6 +25,7 @@
     delay: 10
     until: login_result.rc == 0
     no_log: true
+    when: (distro_type is undefined) or (distro_type != "upstream")
 
   - name: "Create the spec file"
     template:

@@ -135,8 +135,5 @@
         classic: yes
       become: yes
 
-    - name: "*-*-*-*-*-*- test"
-      shell: "{{ oc_bin_path }} get pods --all-namespaces"
-
   when: (distro_type == "upstream")
 
