@@ -21,19 +21,19 @@
 
   tasks:
     - set_fact:
+        distro_type: "{{ DISTRO_TYPE | default('') }}"
         operator_work_dir: "{{ work_dir }}/operator-files"
         olm_operator_files_path: "{{ work_dir }}/olm-operator-files"
         scorecard_cr_dir: "{{ work_dir }}/scorecard-cr-files"
         kube_objects_dir: "{{ work_dir }}/kube_objects"
         testing_bin_path: "{{ work_dir }}/bin"
-        oc_bin_path: "{{ testing_bin_path }}/oc"
+        oc_bin_path: "{{ '/snap/bin/kubectl' if (distro_type == 'upstream') else \"{{ testing_bin_path }}/oc\" }}"
         jq_bin_path: "{{ testing_bin_path }}/jq"
         yq_bin_path: "{{ testing_bin_path }}/yq"
         go_bin_path: "{{ testing_bin_path }}/go/bin/go"
         operator_sdk_bin_path: "{{ testing_bin_path }}/operator-sdk"
         offline_cataloger_bin_path: "offline-cataloger"
         KIND_ver: "{{ KIND_VER | default('') }}"
-        distro_type: "{{ DISTRO_TYPE | default('') }}"
         KIND_bin_path: "{{ testing_bin_path }}/kind"
         KIND_kube_ver: "{{ KIND_KUBE_VER | default('') }}"
 

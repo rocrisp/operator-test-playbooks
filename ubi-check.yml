@@ -14,7 +14,7 @@
   vars:
     openshift_namespace: "default"
     work_dir: "{{ lookup('env', 'WORKSPACE') }}"
-    oc_bin_path: "oc"
+    oc_bin_path: "{{ '/snap/bin/kubectl' if (distro_type == 'upstream') else 'oc' }}"
     pod_name: "cvp-ubi-check"
 
   tasks:

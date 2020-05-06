@@ -15,7 +15,7 @@
     olm_operator_files_path: "{{ work_dir }}/olm-operator-files"
     quay_token: "{{ cvp_vault.quay_token }}"
     quay_namespace: "cvpops"
-    oc_bin_path: "oc"
+    oc_bin_path: "{{ '/snap/bin/kubectl' if (distro_type == 'upstream') else 'oc' }}"
     jq_bin_path : "/usr/bin/jq"
     yq_bin_path: "/usr/local/bin/yq"
     testing_bin_path: "/usr/local/bin"
