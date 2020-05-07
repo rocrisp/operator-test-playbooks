@@ -17,7 +17,7 @@
     state: absent
 
 - name: "Run catalog build"
-  shell: "docker build --no-cache --build-arg PERMISSIVE_LOAD=false -f /tmp/upstream.Dockerfile -t operatorhub-catalog:dev {{ catalog_repo_dir }} > /tmp/build.log"
+  shell: "docker build --build-arg PERMISSIVE_LOAD=false -f /tmp/upstream.Dockerfile -t operatorhub-catalog:dev {{ catalog_repo_dir }} > /tmp/build.log"
   register: build_image_output
 
 #temporary for testing
