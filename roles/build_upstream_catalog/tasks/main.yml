@@ -20,12 +20,15 @@
   shell: "docker build --no-cache --build-arg PERMISSIVE_LOAD=false -f /tmp/upstream.Dockerfile -t operatorhub-catalog:dev {{ catalog_repo_dir }} > /tmp/build.log"
   register: build_image_output
 
-#TODO: use Quay pw as an environment secret
+#temporary for testing
 - name: "Quay login"
-  shell: "docker login -u='op-test+test' -p={{ quay_robot_pw }} quay.io"
+  shell: "docker login -u=\"{{ quay_namespace }}+test\" -p={{ quay_token }} quay.io"
+  no_log: True
 
+#temporary for testing
 - name: "Quay tag"
-  shell: "docker tag operatorhub-catalog:dev quay.io/op-test/catalog"
+  shell: "docker tag operatorhub-catalog:dev quay.io/{{ quay_namespace }}/catalog"
 
+#temporary for testing
 - name: "Quay push"
-  shell: "docker push quay.io/op-test/catalog"
+  shell: "docker push quay.io/{{ quay_namespace }}/catalog"
