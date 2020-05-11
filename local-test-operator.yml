@@ -86,14 +86,14 @@
         - name: "Run catalog initialization test on operator metadata"
           include_role:
             name: operator_catalog_initialization_test
-          when: run_catalog_init|bool
+          when: run_catalog_init|bool and ((distro_type is undefined) or (distro_type != "upstream"))
 
         - name: "Operator deployment and scorecard/imagesource tests"
           block:
             - name: "Inject operator scorecard data into the operator metadata"
               include_role:
                 name: inject_scorecard_metadata
-              when: run_scorecard|bool
+              when: run_scorecard|bool and ((distro_type is undefined) or (distro_type != "upstream"))
 
             - name: "Get all registry images on the OpenShift cluster before deploying the operator"
               shell: "{{ oc_bin_path }} get is --all-namespaces -o json | jq '.items[].spec.tags[] | select(.from.kind == \"DockerImage\") | .from.name' --raw-output | sort -u"
@@ -167,6 +167,7 @@
                     dest: "{{ work_dir }}/scorecard-operator-container-debug.txt"
                   when:
                     - operator_container_result.stdout != ""
+              when: (distro_type is undefined) or (distro_type != "upstream")
 
             - name: "Test image sources of containers introduced with the testing operator"
               include_role:
