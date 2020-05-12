@@ -53,7 +53,7 @@
       - kube_objects != "N/A"
       - kube_objects != "null"
 
-when: (distro_type is undefined) or (distro_type != "upstream")
+  when: (distro_type is undefined) or (distro_type != "upstream")
 
 
 
