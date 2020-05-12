@@ -2,54 +2,60 @@
 - set_fact:
     quay_release: "0.0.1"
 
-- name: "Check for the existence of earlier releases of the operator on the quay.io app repository"
-  shell: "curl -s -H \"Authorization: basic {{ quay_token }}\" https://quay.io/cnr/api/v1/packages/{{ quay_namespace }}/{{ package_name }}-test | {{ jq_bin_path }} '.[].release' | sort --version-sort | tail -n 1"
-  register: quay_release_result
-  no_log: true
-
-- name: "Increment testing quay app release if exists"
-  shell: "echo {{ quay_release_result.stdout }} | awk -F. -v OFS=. 'NF==1{print ++$NF}; NF>1{if(length($NF+1)>length($NF))$(NF-1)++; $NF=sprintf(\"%0*d\", length($NF), ($NF+1)%(10^length($NF))); print}'"
-  register: quay_increment_release_result
-  when:
-    - quay_release_result is defined
-    - quay_release_result.stdout is defined
-    - quay_release_result.stdout != ""
-    - quay_release_result.stdout != "null"
-
-- name: "Set quay release to the incremented one if exists"
-  set_fact:
-    quay_release: "{{ quay_increment_release_result.stdout }}"
-  when:
-    - quay_increment_release_result is defined
-    - quay_increment_release_result.stdout is defined
-    - quay_increment_release_result.stdout != ""
-
-- name: "Append the -test suffix to the packageName"
-  shell: "{{ yq_bin_path }} w -i {{ package_path }} 'packageName' '{{ package_name }}-test'"
-
-- name: "Push the operator metadata to the private quay.io repository"
-  shell: "operator-courier push {{ operator_work_dir }} {{ quay_namespace }} {{ package_name }}-test {{ quay_release }} \"basic {{ quay_token }}\""
-  no_log: true
-
-- name: "Create {{ openshift_namespace }} project"
-  shell: "{{ oc_bin_path }} new-project {{ openshift_namespace }}"
-  register: openshift_namespace_result
-  environment:
-    KUBECONFIG: "{{ kubeconfig_path }}"
-
-- name: "Inject kube_objects on OpenShift cluster for Operator certification"
+- name: "Openshift only"
   block:
-    - name: "Inject openshift kube_objects"
-      include_role:
-        name: inject_openshift_kube_objects
-      vars:
-        rsa_private_key: "{{ lookup('env', 'HOME') }}/.ssh/private_key"
-  environment:
-    KUBECONFIG: "{{ kubeconfig_path }}"
-  when:
-    - kube_objects is defined
-    - kube_objects != "N/A"
-    - kube_objects != "null"  
+  - name: "Check for the existence of earlier releases of the operator on the quay.io app repository"
+    shell: "curl -s -H \"Authorization: basic {{ quay_token }}\" https://quay.io/cnr/api/v1/packages/{{ quay_namespace }}/{{ package_name }}-test | {{ jq_bin_path }} '.[].release' | sort --version-sort | tail -n 1"
+    register: quay_release_result
+    no_log: true
+
+  - name: "Increment testing quay app release if exists"
+    shell: "echo {{ quay_release_result.stdout }} | awk -F. -v OFS=. 'NF==1{print ++$NF}; NF>1{if(length($NF+1)>length($NF))$(NF-1)++; $NF=sprintf(\"%0*d\", length($NF), ($NF+1)%(10^length($NF))); print}'"
+    register: quay_increment_release_result
+    when:
+      - quay_release_result is defined
+      - quay_release_result.stdout is defined
+      - quay_release_result.stdout != ""
+      - quay_release_result.stdout != "null"
+
+  - name: "Set quay release to the incremented one if exists"
+    set_fact:
+      quay_release: "{{ quay_increment_release_result.stdout }}"
+    when:
+      - quay_increment_release_result is defined
+      - quay_increment_release_result.stdout is defined
+      - quay_increment_release_result.stdout != ""
+
+  - name: "Append the -test suffix to the packageName"
+    shell: "{{ yq_bin_path }} w -i {{ package_path }} 'packageName' '{{ package_name }}-test'"
+
+  - name: "Push the operator metadata to the private quay.io repository"
+    shell: "operator-courier push {{ operator_work_dir }} {{ quay_namespace }} {{ package_name }}-test {{ quay_release }} \"basic {{ quay_token }}\""
+    no_log: true
+
+  - name: "Create {{ openshift_namespace }} project"
+    shell: "{{ oc_bin_path }} new-project {{ openshift_namespace }}"
+    register: openshift_namespace_result
+    environment:
+      KUBECONFIG: "{{ kubeconfig_path }}"
+
+  - name: "Inject kube_objects on OpenShift cluster for Operator certification"
+    block:
+      - name: "Inject openshift kube_objects"
+        include_role:
+          name: inject_openshift_kube_objects
+        vars:
+          rsa_private_key: "{{ lookup('env', 'HOME') }}/.ssh/private_key"
+    environment:
+      KUBECONFIG: "{{ kubeconfig_path }}"
+    when:
+      - kube_objects is defined
+      - kube_objects != "N/A"
+      - kube_objects != "null"
+
+when: (distro_type is undefined) or (distro_type != "upstream")
+
+
 
 - name: "Create the olm operator files directory"
   shell: "mkdir -p {{ olm_operator_files_path }}"
@@ -63,6 +69,7 @@
   template:
     src: "marketplacesecret.yml.j2"
     dest: "{{ olm_operator_files_path }}/marketplacesecret.processed.yml"
+  when: (distro_type is undefined) or (distro_type != "upstream")
 
 - name: "Process the subscription template"
   template:
