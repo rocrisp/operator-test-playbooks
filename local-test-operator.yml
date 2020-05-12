@@ -69,129 +69,154 @@
         name: build_upstream_catalog
       when: distro_type == "upstream"
 
-    - name: "Openshift only"
-      block:
-        - name: "Run operator-courier nest to copy the operator metadata in nested format to the work dir"
-          shell: "operator-courier nest {{ operator_dir }} {{ operator_work_dir }}"
-
-        - name: "Parse operator metadata needed to run the tests"
-          include_role:
-            name: parse_operator_metadata
-
-        - name: "Run linting tests with operator-courier verify on the deployed operator"
-          include_role:
-            name: operator_courier_verify
-          when: run_lint|bool
-
-        - name: "Run catalog initialization test on operator metadata"
-          include_role:
-            name: operator_catalog_initialization_test
-          when: run_catalog_init|bool
-
-        - name: "Operator deployment and scorecard/imagesource tests"
-          block:
-            - name: "Inject operator scorecard data into the operator metadata"
-              include_role:
-                name: inject_scorecard_metadata
-              when: run_scorecard|bool
-
-            - name: "Get all registry images on the OpenShift cluster before deploying the operator"
-              shell: "{{ oc_bin_path }} get is --all-namespaces -o json | jq '.items[].spec.tags[] | select(.from.kind == \"DockerImage\") | .from.name' --raw-output | sort -u"
-              register: os_registry_is_result_before
-              environment:
-                KUBECONFIG: "{{ kubeconfig_path }}"
-              no_log: true
-
-            - name: "Get all pod images on the OpenShift cluster before deploying the operator"
-              shell: "{{ oc_bin_path }} get pods --all-namespaces -o json | jq '.items[].spec.containers[].image' --raw-output | sort -u"
-              register: os_pod_is_result_before
-              environment:
-                KUBECONFIG: "{{ kubeconfig_path }}"
-              no_log: true
-
-            - set_fact:
-                openshift_images_before: " {{ os_registry_is_result_before.stdout_lines }} + {{ os_pod_is_result_before.stdout_lines }}"
-
-            - name: "Deploy the operator on the OpenShift 4.0 cluster with OLM"
-              include_role:
-                name: deploy_olm_operator
-              when: run_deploy|bool
-
-            - name: "Get all openshift registry images"
-              shell: "{{ oc_bin_path }} get is --all-namespaces -o json | jq '.items[].spec.tags[] | select(.from.kind == \"DockerImage\") | .from.name' --raw-output | sort -u"
-              register: os_registry_is_result_after
-              environment:
-                KUBECONFIG: "{{ kubeconfig_path }}"
-              no_log: true
-
-            - name: "Get all OpenShift pod images"
-              shell: "{{ oc_bin_path }} get pods --all-namespaces -o json | jq '.items[].spec.containers[].image' --raw-output | sort -u"
-              register: os_pod_is_result_after
-              environment:
-                KUBECONFIG: "{{ kubeconfig_path }}"
-              no_log: true
-
-            - set_fact:
-                openshift_images_after: "{{ os_registry_is_result_after.stdout_lines }} + {{ os_pod_is_result_after.stdout_lines }}"
-
-            - name: "Scorecard test"
-              block:
-                - name: "Find all extracted CRs from alm-examples"
-                  shell: "find \"{{ scorecard_cr_dir }}\" -name \"*.cr.yaml\" -print"
-                  register: scorecard_cr_files_result
-                  when:
-                    - run_scorecard|bool
-                    - run_deploy|bool
-
-                - name: "Run scorecard tests on the deployed operator"
-                  include_role:
-                    name: operator_scorecard_tests
-                  with_items: "{{ scorecard_cr_files_result.stdout_lines }}"
-                  loop_control:
-                    loop_var: cr_path
-                  when:
-                    - run_scorecard|bool
-                    - run_deploy|bool
-              always:
-                - name: "Get the pod container logs of the operator after running scorecard tests"
-                  shell: "{{ oc_bin_path }} get --output=name pods | grep {{ operator_pod_name }} | xargs -I{} {{ oc_bin_path }} logs {} -c {{ operator_container_name }}"
-                  register: operator_container_result
-                  ignore_errors: true
-                  environment:
-                    KUBECONFIG: "{{ kubeconfig_path }}"
-                  no_log: true
-
-                - name: "Output the operator container log to a debug file"
-                  copy:
-                    content: "{{ operator_container_result.stdout }}"
-                    dest: "{{ work_dir }}/scorecard-operator-container-debug.txt"
-                  when:
-                    - operator_container_result.stdout != ""
-
-            - name: "Test image sources of containers introduced with the testing operator"
-              include_role:
-                name: operator_imagesource_test
-              vars:
-                operator_images: "{{ openshift_images_after | difference(openshift_images_before) | list }}"
-              when:
-                - run_imagesource|bool
-                - run_deploy|bool
-          when:
-            - run_deploy|bool
-          always:
-            - name: "Cleanup created resources on the OCP cluster"
-              include_role:
-                name: cleanup_operator_resources
-              when:
-                - run_cleanup|bool
-                - run_deploy|bool
-
-            - name: "Remove the quay release of the test operator in the testing namespace"
-              shell: "curl -s -H \"Authorization: basic {{ quay_token }}\" -X DELETE https://quay.io/cnr/api/v1/packages/{{ quay_namespace }}/{{ package_name }}-test/{{ quay_release }}/helm"
-              when:
-                - quay_release is defined
-                - package_name is defined
-                - run_cleanup|bool
-                - run_deploy|bool
-              no_log: true
+    - name: "Run operator-courier nest to copy the operator metadata in nested format to the work dir"
+      shell: "operator-courier nest {{ operator_dir }} {{ operator_work_dir }}"
       when: (distro_type is undefined) or (distro_type != "upstream")
+
+    - name: "Parse operator metadata needed to run the tests"
+      include_role:
+        name: parse_operator_metadata
+      when: (distro_type is undefined) or (distro_type != "upstream")
+
+
+    - name: "Run linting tests with operator-courier verify on the deployed operator"
+      include_role:
+        name: operator_courier_verify
+      when: run_lint|bool and ((distro_type is undefined) or (distro_type != "upstream"))
+
+    - name: "Run catalog initialization test on operator metadata"
+      include_role:
+        name: operator_catalog_initialization_test
+      when: run_catalog_init|bool and ((distro_type is undefined) or (distro_type != "upstream"))
+
+    - name: "Operator deployment and scorecard/imagesource tests"
+      block:
+        - name: "Inject operator scorecard data into the operator metadata"
+          include_role:
+            name: inject_scorecard_metadata
+          when: run_scorecard|bool and ((distro_type is undefined) or (distro_type != "upstream"))
+
+        - name: "Get all registry images on the OpenShift cluster before deploying the operator"
+          shell: "{{ oc_bin_path }} get is --all-namespaces -o json | jq '.items[].spec.tags[] | select(.from.kind == \"DockerImage\") | .from.name' --raw-output | sort -u"
+          register: os_registry_is_result_before
+          environment:
+            KUBECONFIG: "{{ kubeconfig_path }}"
+          no_log: true
+          when: (distro_type is undefined) or (distro_type != "upstream")
+
+
+        - name: "Get all pod images on the OpenShift cluster before deploying the operator"
+          shell: "{{ oc_bin_path }} get pods --all-namespaces -o json | jq '.items[].spec.containers[].image' --raw-output | sort -u"
+          register: os_pod_is_result_before
+          environment:
+            KUBECONFIG: "{{ kubeconfig_path }}"
+          no_log: true
+          when: (distro_type is undefined) or (distro_type != "upstream")
+
+
+        - set_fact:
+            openshift_images_before: " {{ os_registry_is_result_before.stdout_lines }} + {{ os_pod_is_result_before.stdout_lines }}"
+          when: (distro_type is undefined) or (distro_type != "upstream")
+
+
+
+
+        - name: "Deploy the operator on the OpenShift 4.0 cluster with OLM"
+          include_role:
+            name: deploy_olm_operator
+          when: run_deploy|bool
+
+
+
+
+
+        - name: "Get all openshift registry images"
+          shell: "{{ oc_bin_path }} get is --all-namespaces -o json | jq '.items[].spec.tags[] | select(.from.kind == \"DockerImage\") | .from.name' --raw-output | sort -u"
+          register: os_registry_is_result_after
+          environment:
+            KUBECONFIG: "{{ kubeconfig_path }}"
+          no_log: true
+          when: (distro_type is undefined) or (distro_type != "upstream")
+
+
+        - name: "Get all OpenShift pod images"
+          shell: "{{ oc_bin_path }} get pods --all-namespaces -o json | jq '.items[].spec.containers[].image' --raw-output | sort -u"
+          register: os_pod_is_result_after
+          environment:
+            KUBECONFIG: "{{ kubeconfig_path }}"
+          no_log: true
+          when: (distro_type is undefined) or (distro_type != "upstream")
+
+
+        - set_fact:
+            openshift_images_after: "{{ os_registry_is_result_after.stdout_lines }} + {{ os_pod_is_result_after.stdout_lines }}"
+          when: (distro_type is undefined) or (distro_type != "upstream")
+
+
+        - name: "Scorecard test"
+          block:
+            - name: "Find all extracted CRs from alm-examples"
+              shell: "find \"{{ scorecard_cr_dir }}\" -name \"*.cr.yaml\" -print"
+              register: scorecard_cr_files_result
+              when:
+                - run_scorecard|bool
+                - run_deploy|bool
+
+            - name: "Run scorecard tests on the deployed operator"
+              include_role:
+                name: operator_scorecard_tests
+              with_items: "{{ scorecard_cr_files_result.stdout_lines }}"
+              loop_control:
+                loop_var: cr_path
+              when:
+                - run_scorecard|bool
+                - run_deploy|bool
+          always:
+            - name: "Get the pod container logs of the operator after running scorecard tests"
+              shell: "{{ oc_bin_path }} get --output=name pods | grep {{ operator_pod_name }} | xargs -I{} {{ oc_bin_path }} logs {} -c {{ operator_container_name }}"
+              register: operator_container_result
+              ignore_errors: true
+              environment:
+                KUBECONFIG: "{{ kubeconfig_path }}"
+              no_log: true
+
+            - name: "Output the operator container log to a debug file"
+              copy:
+                content: "{{ operator_container_result.stdout }}"
+                dest: "{{ work_dir }}/scorecard-operator-container-debug.txt"
+              when:
+                - operator_container_result.stdout != ""
+
+          when: (distro_type is undefined) or (distro_type != "upstream")
+
+
+        - name: "Test image sources of containers introduced with the testing operator"
+          include_role:
+            name: operator_imagesource_test
+          vars:
+            operator_images: "{{ openshift_images_after | difference(openshift_images_before) | list }}"
+          when:
+            - run_imagesource|bool
+            - run_deploy|bool
+            - (distro_type is undefined) or (distro_type != "upstream")
+
+      when:
+        - run_deploy|bool
+      always:
+        - name: "Cleanup created resources on the OCP cluster"
+          include_role:
+            name: cleanup_operator_resources
+          when:
+            - run_cleanup|bool
+            - run_deploy|bool
+
+        - name: "Remove the quay release of the test operator in the testing namespace"
+          shell: "curl -s -H \"Authorization: basic {{ quay_token }}\" -X DELETE https://quay.io/cnr/api/v1/packages/{{ quay_namespace }}/{{ package_name }}-test/{{ quay_release }}/helm"
+          when:
+            - quay_release is defined
+            - package_name is defined
+            - run_cleanup|bool
+            - run_deploy|bool
+            - (distro_type is undefined) or (distro_type != "upstream")
+          no_log: true
+
