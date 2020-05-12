@@ -73,7 +73,6 @@
       shell: "operator-courier nest {{ operator_dir }} {{ operator_work_dir }}"
       when: (distro_type is undefined) or (distro_type != "upstream")
 
-#TODO:inpg
     - name: "Parse operator metadata needed to run the tests"
       include_role:
         name: parse_operator_metadata
@@ -117,7 +116,6 @@
             openshift_images_before: " {{ os_registry_is_result_before.stdout_lines }} + {{ os_pod_is_result_before.stdout_lines }}"
           when: (distro_type is undefined) or (distro_type != "upstream")
 
-#TODO: inpg
         - name: "Deploy the operator on the OpenShift 4.0 cluster with OLM"
           include_role:
             name: deploy_olm_operator
