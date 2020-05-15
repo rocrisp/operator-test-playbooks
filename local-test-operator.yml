@@ -36,6 +36,7 @@
         KIND_ver: "{{ KIND_VER | default('') }}"
         KIND_bin_path: "{{ testing_bin_path }}/kind"
         KIND_kube_ver: "{{ KIND_KUBE_VER | default('') }}"
+        olm_ver: "{{ OLM_VER | default('') }}"
 
     - name: "Clear the operator working directory"
       file:
@@ -76,7 +77,6 @@
     - name: "Parse operator metadata needed to run the tests"
       include_role:
         name: parse_operator_metadata
-      when: (distro_type is undefined) or (distro_type != "upstream")
 
     - name: "Run linting tests with operator-courier verify on the deployed operator"
       include_role:
@@ -119,7 +119,7 @@
         - name: "Deploy the operator on the OpenShift 4.0 cluster with OLM"
           include_role:
             name: deploy_olm_operator
-          when: run_deploy|bool and ((distro_type is undefined) or (distro_type != "upstream"))
+          when: run_deploy|bool
 
         - name: "Get all openshift registry images"
           shell: "{{ oc_bin_path }} get is --all-namespaces -o json | jq '.items[].spec.tags[] | select(.from.kind == \"DockerImage\") | .from.name' --raw-output | sort -u"
