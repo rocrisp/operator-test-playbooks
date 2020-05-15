@@ -137,3 +137,20 @@
 
   when: (distro_type == "upstream")
 
+- name: "Check if OLM is needed"
+  shell: "{{ oc_bin_path }} api-resources | grep -o operatorgroup"
+  register: olm_needed
+  ignore_errors: true
+  when: (distro_type == "upstream")
+
+- name: "Install OLM"
+  block:
+  - name: "Installing OLM"
+    shell: "{{ operator_sdk_bin_path }} olm install --version {{ olm_ver }}"
+
+  - name: "Delete catalogsource"
+    shell: "{{ oc_bin_path }} delete catalogsource operatorhubio-catalog -n olm"
+    ignore_errors: true
+
+
+  when: (distro_type == "upstream") and (olm_needed.stdout != "operatorgroup")

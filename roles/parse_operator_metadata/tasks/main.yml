@@ -1,4 +1,8 @@
 ---
+- set_fact:
+    operator_work_dir: "{{ operator_dir }}"
+    when: distro_type == "upstream"
+
 - name: "Determine the package path in the operator metadata directory"
   shell: "egrep -l \"packageName\" {{ operator_work_dir }}/* | head -n 1"
   register: package_path_result
