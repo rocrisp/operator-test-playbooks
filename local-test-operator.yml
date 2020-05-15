@@ -18,7 +18,13 @@
     testing_bin_path: "{{ work_dir }}/bin"
     current_channel: '' # Added to avoid a potential bug with undefined variables
     distro_type: "{{ DISTRO_TYPE | default('') }}"
-
+  
+  environment:
+    PATH: "{{ ansible_env.PATH }}:{{ ansible_env.HOME }}/.local/bin"
+      
+  pre_tasks:
+    - setup:
+  
   tasks:
     - set_fact:
         distro_type: "{{ DISTRO_TYPE | default('') }}"
@@ -55,15 +61,15 @@
         state: directory
       when: run_scorecard|bool
 
-    - name: "Install operator testing prerequisites"
-      include_role:
-        name: install_operator_prereqs
-      when: run_prereqs|bool
-
     - name: "Install catalog prerequisites"
       include_role:
         name: install_docker
       when: distro_type == "upstream"
+
+    - name: "Install operator testing prerequisites"
+      include_role:
+        name: install_operator_prereqs
+      when: run_prereqs|bool
 
     - name: "Build upstream catalog"
       include_role:
@@ -74,6 +80,13 @@
       shell: "operator-courier nest {{ operator_dir }} {{ operator_work_dir }}"
       when: (distro_type is undefined) or (distro_type != "upstream")
 
+    - name: Copy the operator metadata in nested format to the work dir
+      copy:
+        src: "{{ operator_dir }}/"
+        dest: "{{ operator_work_dir }}"
+        remote_src: yes
+      when: distro_type == "upstream"
+
     - name: "Parse operator metadata needed to run the tests"
       include_role:
         name: parse_operator_metadata
@@ -81,7 +94,7 @@
     - name: "Run linting tests with operator-courier verify on the deployed operator"
       include_role:
         name: operator_courier_verify
-      when: run_lint|bool and ((distro_type is undefined) or (distro_type != "upstream"))
+      when: run_lint|bool
 
     - name: "Run catalog initialization test on operator metadata"
       include_role:
