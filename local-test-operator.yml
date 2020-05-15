@@ -42,6 +42,8 @@
       file:
         path: "{{ operator_work_dir }}"
         state: absent
+      tags:
+        - pure_test
 
     - name: "Clear the scorecard CR directory"
       file:
@@ -69,6 +71,8 @@
       include_role:
         name: build_upstream_catalog
       when: distro_type == "upstream"
+      tags:
+        - pure_test
 
     - name: "Run operator-courier nest to copy the operator metadata in nested format to the work dir"
       shell: "operator-courier nest {{ operator_dir }} {{ operator_work_dir }}"
@@ -77,6 +81,8 @@
     - name: "Parse operator metadata needed to run the tests"
       include_role:
         name: parse_operator_metadata
+      tags:
+        - pure_test
 
     - name: "Run linting tests with operator-courier verify on the deployed operator"
       include_role:
@@ -120,6 +126,8 @@
           include_role:
             name: deploy_olm_operator
           when: run_deploy|bool
+          tags:
+            - pure_test
 
         - name: "Get all openshift registry images"
           shell: "{{ oc_bin_path }} get is --all-namespaces -o json | jq '.items[].spec.tags[] | select(.from.kind == \"DockerImage\") | .from.name' --raw-output | sort -u"
@@ -200,6 +208,8 @@
           when:
             - run_cleanup|bool
             - run_deploy|bool
+          tags:
+            - pure_test
 
         - name: "Remove the quay release of the test operator in the testing namespace"
           shell: "curl -s -H \"Authorization: basic {{ quay_token }}\" -X DELETE https://quay.io/cnr/api/v1/packages/{{ quay_namespace }}/{{ package_name }}-test/{{ quay_release }}/helm"
