@@ -127,7 +127,7 @@
 
     - name: "Start KIND"
       shell: "{{ KIND_bin_path }} create cluster --name operator-test --wait 1m --image kindest/node:{{ KIND_kube_ver }} --verbosity 1"
-      when: (distro_type == "upstream")
+      when: cluster_found.stdout != "operator-test"
 
     - name: "Install kubectl"
       snap:
@@ -143,14 +143,14 @@
   ignore_errors: true
   when: (distro_type == "upstream")
 
-#- name: "Install OLM"
-#  block:
-#  - name: "Installing OLM"
-#    shell: "{{ operator_sdk_bin_path }} olm install --version {{ olm_ver }}"
-#
-#  - name: "Delete catalogsource"
-#    shell: "{{ oc_bin_path }} delete catalogsource operatorhubio-catalog -n olm"
-#    ignore_errors: true
-#
-#
-#  when: (distro_type == "upstream") and (olm_needed.stdout != "operatorgroup")
+- name: "Install OLM"
+  block:
+  - name: "Installing OLM"
+    shell: "{{ operator_sdk_bin_path }} olm install --version {{ olm_ver }}"
+
+  - name: "Delete catalogsource"
+    shell: "{{ oc_bin_path }} delete catalogsource operatorhubio-catalog -n olm"
+    ignore_errors: true
+
+
+  when: (distro_type == "upstream") and (olm_needed.stdout != "operatorgroup")

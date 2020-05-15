@@ -90,6 +90,7 @@
   shell: "{{ oc_bin_path }} apply -f {{ olm_operator_files_path }}/operatorsource.yml"
   environment:
     KUBECONFIG: "{{ kubeconfig_path }}"
+  when: (distro_type is undefined) or (distro_type != "upstream")
 
 - name: "Wait for the operatorsource pod to start up"
   shell: "{{ oc_bin_path }} get pods -n openshift-marketplace | grep test-operators- | grep Running"
@@ -100,17 +101,19 @@
   ignore_errors: true
   environment:
     KUBECONFIG: "{{ kubeconfig_path }}"
+  when: (distro_type is undefined) or (distro_type != "upstream")
 
 - name: "Check if scorecard secret exists"
   stat:
     path: "{{ operator_work_dir }}/../scorecard.secret.yaml"
   register: scorecard_secret_result
+  when: (distro_type is undefined) or (distro_type != "upstream")
 
 - name: "Create the scorecard secret if it exists"
   shell: "{{ oc_bin_path }} create -f {{ operator_work_dir }}/../scorecard.secret.yaml"
   environment:
     KUBECONFIG: "{{ kubeconfig_path }}"
-  when: scorecard_secret_result.stat.exists == True
+  when: ((distro_type is undefined) or (distro_type != "upstream")) and (scorecard_secret_result.stat.exists == True)
 
 - name: "Create the subscription"
   shell: "{{ oc_bin_path }} create -f {{ olm_operator_files_path }}/subscription.yml"
@@ -177,6 +180,7 @@
   register: catalog_source_result
   environment:
     KUBECONFIG: "{{ kubeconfig_path }}"
+  when: (distro_type is undefined) or (distro_type != "upstream")
 
 - name: "Output the catalogsource log to a debug file"
   copy:
