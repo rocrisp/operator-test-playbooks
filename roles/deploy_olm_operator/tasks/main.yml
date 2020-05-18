@@ -73,12 +73,12 @@
 
 - name: "Process the subscription template"
   template:
-    src: "subscription.yml.j2"
+    src: "{{ 'subscription_upstream.yml.j2' if (distro_type == 'upstream') else \"subscription.yml.j2\" }}"
     dest: "{{ olm_operator_files_path }}/subscription.yml"
 
 - name: "Process the operatorsource template"
   template:
-    src: "operatorsource.yml.j2"
+    src: "{{ 'operatorsource_upstream.yml.j2' if (distro_type == 'upstream') else \"operatorsource.yml.j2\" }}"
     dest: "{{ olm_operator_files_path }}/operatorsource.yml"
 
 - name: "Create all processed resources in the deploy directory"
@@ -117,7 +117,7 @@
 
 - name: "Copy namespace file"
   template:
-    src: "namespace.yml"
+    src: "namespace.yml.js2"
     dest: "{{ olm_operator_files_path }}/namespace.yml"
 
 - name: "Create the namespace"

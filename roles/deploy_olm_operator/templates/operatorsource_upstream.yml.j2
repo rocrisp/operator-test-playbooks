@@ -1,0 +1,10 @@
+apiVersion: "operators.coreos.com/v1"
+kind: "OperatorSource"
+metadata:
+  name: "test-operators-ocs"
+  namespace: "test-operators"
+spec:
+  displayName: Community Operators incl. $op_name
+  image: localhost:5000/operatorhub/operatorhub-catalog:dev
+  publisher: community-operators
+  sourceType: grpc
