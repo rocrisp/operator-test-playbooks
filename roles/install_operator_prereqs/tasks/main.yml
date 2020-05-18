@@ -3,10 +3,13 @@
   file:
     path: "{{ testing_bin_path }}"
     state: directory
+  tags:
+    - install
+    - image_build
 
 - set_fact:
     operator_sdk_bin_path: "{{ testing_bin_path}}/operator-sdk"
-    oc_bin_path: "{{ '/snap/bin/kubectl' if (distro_type == 'upstream') else \"{{ testing_bin_path }}/oc\" }}"
+    oc_bin_path: "{{ 'kubectl' if (distro_type == 'upstream') else \"{{ testing_bin_path }}/oc\" }}"
     jq_bin_path: "{{ testing_bin_path }}/jq"
     yq_bin_path: "{{ testing_bin_path }}/yq"
     go_bin_path: "{{ testing_bin_path }}/go/bin/go"
@@ -20,21 +23,37 @@
     dest: "{{ testing_bin_path }}"
     remote_src: yes
   when: (distro_type is undefined) or (distro_type != "upstream")
+  tags:
+    - install
+    - image_build
 
 - name: "Download and extract go binary to {{ testing_bin_path }}"
   unarchive:
     src: "https://storage.googleapis.com/golang/go{{ go_version }}.linux-amd64.tar.gz"
     dest: "{{ testing_bin_path }}"
     remote_src: yes
+  tags:
+    - install
+    - image_build
+
 
 - name: "Download operator-sdk for running operator scorecard tests"
   shell: "curl -o {{ operator_sdk_bin_path }} -L https://github.com/operator-framework/operator-sdk/releases/download/{{ operator_sdk_version }}/operator-sdk-{{ operator_sdk_version }}-x86_64-linux-gnu && chmod +x {{ operator_sdk_bin_path }}"
+  tags:
+    - install
+    - image_build
 
 - name: "Download jq 1.6"
   shell: "curl -Lo {{ jq_bin_path }} https://github.com/stedolan/jq/releases/download/jq-1.6/jq-linux64 && chmod +x {{ jq_bin_path }}"
+  tags:
+    - install
+    - image_build
 
 - name: "Download yq 2.2.1"
   shell: "curl -Lo {{ yq_bin_path }} https://github.com/mikefarah/yq/releases/download/2.2.1/yq_linux_amd64 && chmod +x {{ yq_bin_path }}"
+  tags:
+    - install
+    - image_build
 
 - name: "Install prerequisites specific to legacy operator manifest testing"
   block:
@@ -72,6 +91,9 @@
   when:
     - operator_dir is defined
     - operator_dir != ""
+  tags:
+    - install
+    - image_build
 
 - name: "Install prerequisites specific to operator bundle image testing"
   block:
@@ -99,49 +121,54 @@
     when:
       - umoci_help_result.rc is defined
       - umoci_help_result.rc != 0
-
   when:
     - bundle_image is defined
     - bundle_image != ""
+  tags:
+    - install
+    - image_build
 
-- fail: msg="Please define something like -e 'KIND_VER=v0.7.0'"
-  when: (distro_type == "upstream") and (KIND_ver == '')
 
-- fail: msg="Please define something like -e 'KIND_KUBE_VER=v1.17.0'"
-  when: (distro_type == "upstream") and (KIND_kube_ver == '')
+# - fail: msg="Please define something like -e 'KIND_VER=v0.7.0'"
+#   when: (distro_type == "upstream") and (KIND_ver == '')
 
-- name: "Install KIND {{ KIND_ver }}"
-  block:
-    - name: "Download KIND"
-      shell: "curl -Lo {{ KIND_bin_path }} https://github.com/kubernetes-sigs/kind/releases/download/{{ KIND_ver }}/kind-linux-amd64"
+# - fail: msg="Please define something like -e 'KIND_KUBE_VER=v1.17.0'"
+#   when: (distro_type == "upstream") and (KIND_kube_ver == '')
 
-    - name: "chmod"
-      file:
-        path: "{{ KIND_bin_path }}"
-        mode: +x
+# - name: "Install KIND {{ KIND_ver }}"
+#   block:
+#     - name: "Download KIND"
+#       shell: "curl -Lo {{ KIND_bin_path }} https://github.com/kubernetes-sigs/kind/releases/download/{{ KIND_ver }}/kind-linux-amd64"
 
-    - name: "Check KIND cluster"
-      shell: "{{ KIND_bin_path }} get clusters"
-      register: cluster_found
-      ignore_errors: yes
+#     - name: "chmod"
+#       file:
+#         path: "{{ KIND_bin_path }}"
+#         mode: +x
 
-    - name: "Start KIND"
-      shell: "{{ KIND_bin_path }} create cluster --name operator-test --wait 1m --image kindest/node:{{ KIND_kube_ver }} --verbosity 1"
-      when: cluster_found.stdout != "operator-test"
+#     - name: "Check KIND cluster"
+#       shell: "{{ KIND_bin_path }} get clusters"
+#       register: cluster_found
+#       ignore_errors: yes
 
-    - name: "Install kubectl"
-      snap:
-        name: kubectl
-        classic: yes
-      become: yes
+#     - name: "Start KIND"
+#       shell: "{{ KIND_bin_path }} create cluster --name operator-test --wait 1m --image kindest/node:{{ KIND_kube_ver }} --verbosity 1"
+#       when: cluster_found.stdout != "operator-test"
 
-  when: (distro_type == "upstream")
+#     - name: "Install kubectl"
+#       snap:
+#         name: kubectl
+#         classic: yes
+#       become: yes
+
+#   when: (distro_type == "upstream")
 
 - name: "Check if OLM is needed"
   shell: "{{ oc_bin_path }} api-resources | grep -o operatorgroup"
   register: olm_needed
   ignore_errors: true
   when: (distro_type == "upstream")
+  tags:
+    - pure_test
 
 - name: "Install OLM"
   block:
@@ -152,5 +179,6 @@
     shell: "{{ oc_bin_path }} delete catalogsource operatorhubio-catalog -n olm"
     ignore_errors: true
 
-
   when: (distro_type == "upstream") and (olm_needed.stdout != "operatorgroup")
+  tags:
+    - pure_test
