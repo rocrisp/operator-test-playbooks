@@ -2,3 +2,12 @@ operator_work_dir: /tmp/cvp/operator-files
 operator_repo: /tmp/community-operators
 check_verify_result: true
 catalog_repo_dir: /tmp/community-operators-for-catalog
+catalogue_dockerfile: upstream.Dockerfile
+catalogue_image_name: operatorhub-catalog
+catalogue_image_namespace: operatorhub
+catalogue_image_registry: localhost:5000
+catalogue_image_tag: dev
+catalogue_source_namespace: test-operators
+catalogue_source_name: test-operators
+
+

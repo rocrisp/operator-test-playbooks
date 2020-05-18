@@ -1,34 +1,76 @@
 ---
-- name: "Git clone community operators"
-  git:
-    repo: 'https://github.com/operator-framework/community-operators.git'
-    dest: "{{ catalog_repo_dir }}"
-    version: master
-    force: true
+- name: Prepare comunity operator directory
+  block:
+  - name: "Check if community operators directory exists"
+    stat:
+      path: "{{ catalog_repo_dir }}"
+    register: operator_dir
 
-- name: "Copy Dockerfile"
-  template:
-    src: "upstream.Dockerfile"
-    dest: "/tmp/upstream.Dockerfile"
+  - name: "Git clone community operators"
+    git:
+      repo: 'https://github.com/operator-framework/community-operators.git'
+      dest: "{{ catalog_repo_dir }}"
+      version: master
+      force: true
+    when: not (operator_dir.stat.isdir is defined and operator_dir.stat.isdir)
+  tags: 
+    - catalogue_build
 
-- name: "Clear old build log"
-  file:
-    path: "/tmp/build.log"
-    state: absent
+- name: Build image and with build args
+  docker_image:
+    name: "{{ catalogue_image_registry }}/{{ catalogue_image_namespace }}/{{ catalogue_image_name }}"
+    build:
+      pull: yes
+      path: "{{ catalog_repo_dir }}"
+      dockerfile: "{{ catalog_repo_dir }}/{{ catalogue_dockerfile }}"
+      args:
+        PERMISSIVE_LOAD: false
+    tag: "{{ catalogue_image_tag }}"
+    push: yes
+    source: build
+  tags: 
+    - catalogue_build
 
-- name: "Run catalog build"
-  shell: "docker build --build-arg PERMISSIVE_LOAD=false -f /tmp/upstream.Dockerfile -t operatorhub-catalog:dev {{ catalog_repo_dir }} > /tmp/build.log"
-  register: build_image_output
+- name: Deploy catalogue image
+  shell: "{{ oc_bin_path }} delete deployment {{ catalogue_image_name }} -n {{ catalogue_source_namespace }}"
+  ignore_errors: yes
+  tags: 
+    - catalogue_build
 
-#temporary for testing
-- name: "Quay login"
-  shell: "docker login -u=\"{{ quay_namespace }}+test\" -p={{ quay_token }} quay.io"
-  no_log: True
+- name: Create {{ catalogue_source_namespace }} namespace
+  shell: "{{ oc_bin_path }} create namespace {{ catalogue_source_namespace }}"
+  ignore_errors: yes
+  tags: 
+    - catalogue_build
 
-#temporary for testing
-- name: "Quay tag"
-  shell: "docker tag operatorhub-catalog:dev quay.io/{{ quay_namespace }}/catalog"
+- name: Deploy catalogue image
+  shell: "{{ oc_bin_path }} create deployment {{ catalogue_source_name }} --image={{ catalogue_image_registry }}/{{ catalogue_image_namespace }}/{{ catalogue_image_name }}:{{ catalogue_image_tag }} -n={{ catalogue_source_namespace }}"
+  tags: 
+    - catalogue_build
 
-#temporary for testing
-- name: "Quay push"
-  shell: "docker push quay.io/{{ quay_namespace }}/catalog"
+# - name: "Copy Dockerfile"
+#   template:
+#     src: "upstream.Dockerfile"
+#     dest: "/tmp/upstream.Dockerfile"
+
+# - name: "Clear old build log"
+#   file:
+#     path: "/tmp/build.log"
+#     state: absent
+
+# - name: "Run catalog build"
+#   shell: "docker build --build-arg PERMISSIVE_LOAD=false -f /tmp/upstream.Dockerfile -t operatorhub-catalog:dev {{ catalog_repo_dir }} > /tmp/build.log"
+#   register: build_image_output
+
+# #temporary for testing
+# - name: "Quay login"
+#   shell: "docker login -u=\"{{ quay_namespace }}+test\" -p={{ quay_token }} quay.io"
+#   no_log: True
+
+# #temporary for testing
+# - name: "Quay tag"
+#   shell: "docker tag operatorhub-catalog:dev quay.io/{{ quay_namespace }}/catalog"
+
+# #temporary for testing
+# - name: "Quay push"
+#   shell: "docker push quay.io/{{ quay_namespace }}/catalog"

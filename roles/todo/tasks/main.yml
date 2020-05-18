@@ -1,0 +1,68 @@
+---
+# - name: Create a directory if it does not exist
+#   file:
+#     path: "{{ work_dir }}"
+#     state: directory
+#     mode: "0755"
+#   tags:
+#     - always
+- name: "Clear the operator working directory"
+  file:
+    path: "{{ operator_work_dir }}"
+    state: absent
+  tags:
+    - pure_test
+
+# - name: "Clear the scorecard CR directory"
+#   file:
+#     path: "{{ scorecard_cr_dir }}"
+#     state: absent
+#   when: run_scorecard|bool
+# - name: "Create the scorecard CR directory"
+#   file:
+#     path: "{{ scorecard_cr_dir }}"
+#     state: directory
+#   when: run_scorecard|bool
+
+# - name: "Install catalog prerequisites"
+#     include_role:
+#       name: install_docker
+#     when: distro_type == "upstream"
+
+# - name: "Install operator testing prerequisites"
+#     include_role:
+#       name: install_operator_prereqs
+#     when: run_prereqs|bool
+
+# - name: "Build upstream catalog"
+#   include_role:
+#     name: build_upstream_catalog
+#   when: distro_type == "upstream"
+#   tags:
+#     - pure_test
+
+- name: "Run operator-courier nest to copy the operator metadata in nested format to the work dir"
+  shell: "operator-courier nest {{ operator_dir }} {{ operator_work_dir }}"
+  when: (distro_type is undefined) or (distro_type != "upstream")
+
+- name: Copy the operator metadata in nested format to the work dir
+  copy:
+    src: "{{ operator_dir }}/"
+    dest: "{{ operator_work_dir }}"
+    remote_src: yes
+  when: distro_type == "upstream"
+  tags:
+    - pure_test
+
+- name: "Parse operator metadata needed to run the tests"
+  include_role:
+    name: parse_operator_metadata
+  tags:
+    - pure_test
+
+- name: "Run linting tests with operator-courier verify on the deployed operator"
+  include_role:
+    name: operator_courier_verify
+  when: run_lint|bool
+  tags:
+    - pure_test

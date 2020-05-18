@@ -19,12 +19,6 @@
     current_channel: '' # Added to avoid a potential bug with undefined variables
     distro_type: "{{ DISTRO_TYPE | default('') }}"
   
-  environment:
-    PATH: "{{ ansible_env.PATH }}:{{ ansible_env.HOME }}/.local/bin"
-      
-  pre_tasks:
-    - setup:
-  
   tasks:
     - set_fact:
         distro_type: "{{ DISTRO_TYPE | default('') }}"
