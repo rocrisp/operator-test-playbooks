@@ -32,7 +32,7 @@
     - catalogue_build
 
 - name: Deploy catalogue image
-  shell: "{{ oc_bin_path }} delete deployment {{ catalogue_image_name }} -n {{ catalogue_source_namespace }}"
+  shell: "{{ oc_bin_path }} delete deployment {{ catalogue_source_name }} -n {{ catalogue_source_namespace }}"
   ignore_errors: yes
   tags: 
     - catalogue_build
