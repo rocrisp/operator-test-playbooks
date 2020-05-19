@@ -6,7 +6,7 @@
       path: "{{ catalog_repo_dir }}"
     register: operator_dir
 
-  - name: "Git clone community operators"
+  - name: "Git clone community operators, since it doesn't exists"
     git:
       repo: 'https://github.com/operator-framework/community-operators.git'
       dest: "{{ catalog_repo_dir }}"
@@ -16,7 +16,7 @@
   tags: 
     - catalogue_build
 
-- name: Build image and with build args
+- name: "Build catalgue image from '{{ catalog_repo_dir }}/{{ catalogue_dockerfile }}'"
   docker_image:
     name: "{{ catalogue_image_registry }}/{{ catalogue_image_namespace }}/{{ catalogue_image_name }}"
     build:
@@ -31,19 +31,19 @@
   tags: 
     - catalogue_build
 
-- name: Deploy catalogue image
+- name: "Delete previous catallogue deployment (it may fail if not exists)"
   shell: "{{ oc_bin_path }} delete deployment {{ catalogue_source_name }} -n {{ catalogue_source_namespace }}"
   ignore_errors: yes
   tags: 
     - catalogue_build
 
-- name: Create {{ catalogue_source_namespace }} namespace
+- name: "Create '{{ catalogue_source_namespace }}' namespace (it may fail, if already exists)"
   shell: "{{ oc_bin_path }} create namespace {{ catalogue_source_namespace }}"
   ignore_errors: yes
   tags: 
     - catalogue_build
 
-- name: Deploy catalogue image
+- name: Deploy catalogue image as deployment '{{ catalogue_source_name }}' in '{{ catalogue_source_namespace }}' namespace
   shell: "{{ oc_bin_path }} create deployment {{ catalogue_source_name }} --image={{ catalogue_image_registry }}/{{ catalogue_image_namespace }}/{{ catalogue_image_name }}:{{ catalogue_image_tag }} -n={{ catalogue_source_namespace }}"
   tags: 
     - catalogue_build
