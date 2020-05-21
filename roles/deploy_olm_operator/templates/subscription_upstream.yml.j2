@@ -7,5 +7,5 @@ spec:
   name: {{ package_name }}-test
   source: test-operators-ocs
   sourceNamespace: test-operators
-#  startingCSV: $csv_name
+  startingCSV: "{{ csv_name.stdout }}"
   channel: "{{ current_channel }}"

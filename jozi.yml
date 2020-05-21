@@ -38,9 +38,22 @@
         KIND_kube_ver: "{{ KIND_KUBE_VER | default('') }}"
         olm_ver: "{{ OLM_VER | default('') }}"
 
+        package_name: aqua
 
 
-    - name: "catalog"
-      include_role:
-        name: upstream_registry
+
+
+    - name: "Check operator version"
+      shell: "cd {{ operator_dir }}; ls -d */| sort --version-sort | tail -n 1|sed s/.$//"
+      register: op_ver
       when: distro_type == "upstream"
+
+    - name: "Find CSV for upstream Subscription"
+      shell: "ls {{ operator_dir }}/{{ op_ver.stdout }}/*clusterser*|awk -F'/' '{print $NF}'|awk -F'.clusterserviceversion.yaml' '{print $1}'"
+      register: csv_name
+      when: distro_type == "upstream"
+
+    - name: "Process the subscription template"
+      template:
+        src: "{{ 'roles/deploy_olm_operator/templates/subscription_upstream.yml.j2' if (distro_type == 'upstream') else \"subscription.yml.j2\" }}"
+        dest: "{{ olm_operator_files_path }}/subscription.yml"
