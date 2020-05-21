@@ -1,13 +1,14 @@
 ---
 - set_fact:
     quay_release: "0.0.1"
+    upstream_namespace_param: "{{ '-n test-operators' if (distro_type == 'upstream') else '' }}"
 
-- name: "Check operator version"
+- name: "Check operator version (upstream only)"
   shell: "cd {{ operator_dir }}; ls -d */| sort --version-sort | tail -n 1|sed s/.$//"
   register: op_ver
   when: distro_type == "upstream"
 
-- name: "Find CSV for upstream Subscription"
+- name: "Find CSV for upstream Subscription (upstream only)"
   shell: "ls {{ operator_dir }}/{{ op_ver.stdout }}/*clusterser*|awk -F'/' '{print $NF}'|awk -F'.clusterserviceversion.yaml' '{print $1}'"
   register: csv_name
   when: distro_type == "upstream"
@@ -103,7 +104,7 @@
   environment:
     KUBECONFIG: "{{ kubeconfig_path }}"
 
-- name: "Create the catalogsource"
+- name: "Create the catalogsource (upstream only)"
   shell: "{{ oc_bin_path }} apply -f {{ olm_operator_files_path }}/catalogsource.yml"
   when: distro_type == "upstream"
 
@@ -150,7 +151,7 @@
     KUBECONFIG: "{{ kubeconfig_path }}"
 
 - name: "Wait for the operator {{ operator_pod_name }} pod to start up"
-  shell: "{{ oc_bin_path }} get pods | grep {{ operator_pod_name }} | grep Running"
+  shell: "{{ oc_bin_path }} get pods {{ upstream_namespace_param }}| grep {{ operator_pod_name }} | grep Running"
   register: operator_result
   retries: 90
   delay: 10
@@ -159,8 +160,19 @@
   environment:
     KUBECONFIG: "{{ kubeconfig_path }}"
 
+- name: "Wait for the operator {{ operator_pod_name }} pod to stay healthy for specific time (upstream only)"
+  shell: "[ $(echo `{{ oc_bin_path }} get pods {{ upstream_namespace_param }}| grep {{ operator_pod_name }} | grep Running| rev | cut -d' ' -f 1 | rev|sed 's/.$//'`) -ge 60 ]"
+  register: operator_uptime
+  retries: 15
+  delay: 5
+  until: operator_uptime.rc == 0
+  ignore_errors: true
+  environment:
+    KUBECONFIG: "{{ kubeconfig_path }}"
+  when: distro_type == "upstream"
+
 - name: "Get the details of the deployed CSVs"
-  shell: "{{ oc_bin_path }} describe csvs"
+  shell: "{{ oc_bin_path }} describe csvs {{ upstream_namespace_param }}"
   register: csv_describe_result
   ignore_errors: true
   environment:
@@ -173,7 +185,7 @@
   when: csv_describe_result.stdout != ""
 
 - name: "Get the pod status of the deployed operator"
-  shell: "{{ oc_bin_path }} get --output=name pods | grep {{ operator_pod_name }} | cut -f1 | xargs -I{} {{ oc_bin_path }} get {} -o yaml | {{ yq_bin_path }} r - \"status\""
+  shell: "{{ oc_bin_path }} get --output=name pods {{ upstream_namespace_param }}| grep {{ operator_pod_name }} | cut -f1 | xargs -I{} {{ oc_bin_path }} get {} {{ upstream_namespace_param }} -o yaml | {{ yq_bin_path }} r - \"status\""
   register: operator_pod_result
   ignore_errors: true
   environment:
@@ -189,7 +201,7 @@
     - operator_pod_result.stdout != ""
 
 - name: "Get the pod container logs of the deployed operator"
-  shell: "{{ oc_bin_path }} get --output=name pods | grep {{ operator_pod_name }} | cut -d' ' -f1 | xargs -I{} {{ oc_bin_path }} logs {} -c {{ operator_container_name }}"
+  shell: "{{ oc_bin_path }} get --output=name pods {{ upstream_namespace_param }}| grep {{ operator_pod_name }} | cut -d' ' -f1 | xargs -I{} {{ oc_bin_path }} logs {} -c {{ operator_container_name }} {{ upstream_namespace_param }}"
   register: operator_container_result
   ignore_errors: true
   environment:
@@ -211,6 +223,13 @@
     KUBECONFIG: "{{ kubeconfig_path }}"
   when: (distro_type is undefined) or (distro_type != "upstream")
 
+- name: "Get the catalogsource pod log (upstream)"
+  shell: "{{ oc_bin_path }} get --output=name pods {{ upstream_namespace_param }} | grep test-operators-ocs | cut -d' ' -f1 | xargs -I{} {{ oc_bin_path }} logs {} {{ upstream_namespace_param }}"
+  register: catalog_source_result
+  environment:
+    KUBECONFIG: "{{ kubeconfig_path }}"
+  when: distro_type == "upstream"
+
 - name: "Output the catalogsource log to a debug file"
   copy:
     content: "{{ catalog_source_result.stdout }}"
@@ -222,6 +241,14 @@
   register: catalog_operator_result
   environment:
     KUBECONFIG: "{{ kubeconfig_path }}"
+  when: (distro_type is undefined) or (distro_type != "upstream")
+
+- name: "Get the catalog-operator pod log (upstream)"
+  shell: "{{ oc_bin_path }} get --output=name pods -n olm | grep catalog-operator | cut -d' ' -f1 | xargs -I{} {{ oc_bin_path }} logs {} -n olm | tail -n 100"
+  register: catalog_operator_result
+  environment:
+    KUBECONFIG: "{{ kubeconfig_path }}"
+  when: distro_type == "upstream"
 
 - name: "Output the catalog-operator log to a debug file"
   copy:
@@ -231,6 +258,12 @@
 
 - name: "Get the InstallPlan debug output"
   shell: "{{ oc_bin_path }} describe installplan -n {{ openshift_namespace }}"
+  register: installplan_result
+  environment:
+    KUBECONFIG: "{{ kubeconfig_path }}"
+
+- name: "Get the InstallPlan debug output"
+  shell: "{{ oc_bin_path }} describe installplan {{ upstream_namespace_param }}"
   register: installplan_result
   environment:
     KUBECONFIG: "{{ kubeconfig_path }}"
