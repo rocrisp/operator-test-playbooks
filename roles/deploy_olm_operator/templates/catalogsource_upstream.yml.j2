@@ -1,10 +1,10 @@
-apiVersion: "operators.coreos.com/v1"
-kind: "OperatorSource"
+apiVersion: "operators.coreos.com/v1alpha1"
+kind: "CatalogSource"
 metadata:
   name: "test-operators-ocs"
   namespace: "test-operators"
 spec:
-  displayName: Community Operators incl. $op_name
+  displayName: Community Operators
   image: localhost:5000/operatorhub/operatorhub-catalog:dev
-  publisher: community-operators
+  publisher: upstream-community-operators
   sourceType: grpc
