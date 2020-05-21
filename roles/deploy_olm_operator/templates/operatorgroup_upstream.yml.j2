@@ -7,11 +7,11 @@ metadata:
 spec:
   targetNamespaces:
   {% if operator_ownnamespace_support == true %}
-    - {{ openshift_namespace }}
+    - test-operators
   {% elif operator_singlenamespace_support == true %}
     - default
   {% elif operator_multinamespace_support == true %}
-    - {{ openshift_namespace }}
+    - test-operators
     - default
   {% endif %}
 {% endif %}
