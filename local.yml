@@ -5,19 +5,7 @@
   gather_facts: false
 
   vars:
-    run_prereqs: true
-    run_upstream: false
-    run_lint: true
-    run_catalog_init: true
-    run_deploy: true
-    run_scorecard: true
-    run_imagesource: true
-    run_cleanup: true
-    scorecard_first_cr: true
-    openshift_namespace: "test-operator"
-    work_dir: "/tmp/operator-test"
-    testing_bin_path: "{{ work_dir }}/bin"
-    current_channel: '' # Added to avoid a potential bug with undefined variables
+    run_upstream: true
     distro_type: "{{ 'upstream' if run_upstream else '' }}"
 
   environment:
@@ -29,53 +17,12 @@
       tags:
         - always
       when: run_upstream|bool
-    - set_fact:
-        operator_work_dir: "{{ work_dir }}/operator-files"
-        olm_operator_files_path: "{{ work_dir }}/olm-operator-files"
-        scorecard_cr_dir: "{{ work_dir }}/scorecard-cr-files"
-        kube_objects_dir: "{{ work_dir }}/kube_objects"
-        testing_bin_path: "{{ work_dir }}/bin"
-        oc_bin_path: "{{ 'kubectl' if run_upstream else \"{{ testing_bin_path }}/oc\" }}"
-        jq_bin_path: "{{ testing_bin_path }}/jq"
-        yq_bin_path: "{{ testing_bin_path }}/yq"
-        go_bin_path: "{{ testing_bin_path }}/go/bin/go"
-        operator_sdk_bin_path: "{{ testing_bin_path }}/operator-sdk"
-        offline_cataloger_bin_path: "offline-cataloger"
-      tags: always
 
   roles:
     - { role: install_base_packages, tags: ["base"] }
-    - { role: docker, tags: ["docker"] }
-    - { role: kubectl, tags: ["kubectl"] }
-    - { role: kind, tags: ["kind"] }
+    - { role: install_docker, tags: ["docker"] }
+    - { role: install_kubectl, tags: ["kubectl"] }
+    - { role: install_kind, tags: ["kind"] }
     - { role: install_operator_prereqs, tags: ["operator_prereqs"] }
-    - { role: build_upstream_catalog, tags: ["operator_catalogue"] }
-    # - { role: todo, tags: ["pure_test"]}
+    - { role: build_upstream_catalog, tags: ["operator_catalog"] }
     # - { role: operator_courier_verify, tags: ["pure_test", "operator_courier_verify"] }
-
-  tasks:
-
-    # - name: Running as user
-    #   debug:
-    #     msg: "user : {{ ansible_user_id }}"
-    #     verbosity: 2
-    #   tags:
-    #     always
-    - name: Run distro_type
-      debug:
-        msg: "distro_type : {{  distro_type }}"
-        verbosity: 2
-      tags:
-        always
-
-    - name: Run kubernetes
-      debug:
-        msg: "run_upstream : {{  run_upstream|bool }}"
-        verbosity: 2
-      tags:
-        always
-
-    # - name: Include locat-test-operator task
-    #   include_tasks: local-test-operator.yml
-    #   tags:
-    #     always
