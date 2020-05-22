@@ -19,6 +19,7 @@
     testing_bin_path: "{{ work_dir }}/bin"
     current_channel: "" # Added to avoid a potential bug with undefined variables
     distro_type: "{{ 'upstream' if run_upstream else '' }}"
+    olm_ver: 0.14.1
 
   environment:
     PATH: "{{ ansible_env.PATH }}:{{ ansible_env.HOME }}/.local/bin"
@@ -47,8 +48,7 @@
       file:
         path: "{{ operator_work_dir }}"
         state: absent
-      tags:
-        - pure_test
+
 
     - name: "Clear the scorecard CR directory"
       file:
@@ -66,24 +66,34 @@
         - run_scorecard|bool
         - not run_upstream|bool
 
-    - name: "Install catalog prerequisites"
-      include_role:
-        name: install_docker
-      when:
-        - run_prereqs|bool
-        - run_upstream|bool
-
     - name: "Install operator testing prerequisites"
       include_role:
         name: install_operator_prereqs
       when: run_prereqs|bool
 
+    - name: "OLM"
+      block:
+        - name: "Check if OLM is needed"
+          shell: "{{ oc_bin_path }} api-resources | grep -o operatorgroup"
+          register: olm_needed
+          ignore_errors: true
+
+        - name: "Install OLM"
+          block:
+            - name: "Installing OLM"
+              shell: "{{ operator_sdk_bin_path }} olm install --version {{ olm_ver }}"
+
+            - name: "Delete catalogsource"
+              shell: "{{ oc_bin_path }} delete catalogsource operatorhubio-catalog -n olm"
+              ignore_errors: true
+          when:
+            - olm_needed.stdout != "operatorgroup"
+      when: run_upstream|bool
+
     - name: "Build upstream catalog"
       include_role:
         name: build_upstream_catalog
       when: run_upstream|bool
-      tags:
-        - pure_test
 
     - name: "Run operator-courier nest to copy the operator metadata in nested format to the work dir"
       shell: "operator-courier nest {{ operator_dir }} {{ operator_work_dir }}"
@@ -99,8 +109,7 @@
     - name: "Parse operator metadata needed to run the tests"
       include_role:
         name: parse_operator_metadata
-      tags:
-        - pure_test
+
 
     - name: "Run linting tests with operator-courier verify on the deployed operator"
       include_role:
@@ -147,8 +156,6 @@
           include_role:
             name: deploy_olm_operator
           when: run_deploy|bool
-          tags:
-            - pure_test
 
         - name: "Get all openshift registry images"
           shell: '{{ oc_bin_path }} get is --all-namespaces -o json | jq ''.items[].spec.tags[] | select(.from.kind == "DockerImage") | .from.name'' --raw-output | sort -u'
@@ -225,8 +232,6 @@
           when:
             - run_cleanup|bool
             - run_deploy|bool
-          tags:
-            - pure_test
 
         - name: "Remove the quay release of the test operator in the testing namespace"
           shell: 'curl -s -H "Authorization: basic {{ quay_token }}" -X DELETE https://quay.io/cnr/api/v1/packages/{{ quay_namespace }}/{{ package_name }}-test/{{ quay_release }}/helm'
