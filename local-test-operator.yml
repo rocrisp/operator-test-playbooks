@@ -6,6 +6,7 @@
 
   vars:
     run_prereqs: true
+    run_upstream: false
     run_lint: true
     run_catalog_init: true
     run_deploy: true
@@ -17,26 +18,31 @@
     work_dir: "/tmp/operator-test"
     testing_bin_path: "{{ work_dir }}/bin"
     current_channel: '' # Added to avoid a potential bug with undefined variables
-    distro_type: "{{ DISTRO_TYPE | default('') }}"
-  
+    distro_type: "{{ 'upstream' if run_upstream else '' }}"
+
+  environment:
+    PATH: "{{ ansible_env.PATH }}:{{ ansible_env.HOME }}/.local/bin"
+    when: run_upstream|bool
+
+  pre_tasks:
+    - setup:
+      tags:
+        - always
+      when: run_upstream|bool
+
   tasks:
     - set_fact:
-        distro_type: "{{ DISTRO_TYPE | default('') }}"
         operator_work_dir: "{{ work_dir }}/operator-files"
         olm_operator_files_path: "{{ work_dir }}/olm-operator-files"
         scorecard_cr_dir: "{{ work_dir }}/scorecard-cr-files"
         kube_objects_dir: "{{ work_dir }}/kube_objects"
         testing_bin_path: "{{ work_dir }}/bin"
-        oc_bin_path: "{{ '/snap/bin/kubectl' if (distro_type == 'upstream') else \"{{ testing_bin_path }}/oc\" }}"
+        oc_bin_path: "{{ 'kubectl' if run_upstream else \"{{ testing_bin_path }}/oc\" }}"
         jq_bin_path: "{{ testing_bin_path }}/jq"
         yq_bin_path: "{{ testing_bin_path }}/yq"
         go_bin_path: "{{ testing_bin_path }}/go/bin/go"
         operator_sdk_bin_path: "{{ testing_bin_path }}/operator-sdk"
         offline_cataloger_bin_path: "offline-cataloger"
-        KIND_ver: "{{ KIND_VER | default('') }}"
-        KIND_bin_path: "{{ testing_bin_path }}/kind"
-        KIND_kube_ver: "{{ KIND_KUBE_VER | default('') }}"
-        olm_ver: "{{ OLM_VER | default('') }}"
 
     - name: "Clear the operator working directory"
       file:
@@ -49,18 +55,24 @@
       file:
         path: "{{ scorecard_cr_dir }}"
         state: absent
-      when: run_scorecard|bool
+      when:
+        - run_scorecard|bool
+        - not run_upstream|bool
 
     - name: "Create the scorecard CR directory"
       file:
         path: "{{ scorecard_cr_dir }}"
         state: directory
-      when: run_scorecard|bool
+      when:
+        - run_scorecard|bool
+        - not run_upstream|bool
 
     - name: "Install catalog prerequisites"
       include_role:
         name: install_docker
-      when: distro_type == "upstream"
+      when:
+        - run_prereqs|bool
+        - run_upstream|bool
 
     - name: "Install operator testing prerequisites"
       include_role:
@@ -70,27 +82,26 @@
     - name: "Build upstream catalog"
       include_role:
         name: build_upstream_catalog
-      when: distro_type == "upstream"
+      when: run_upstream|bool
       tags:
         - pure_test
 
     - name: "Run operator-courier nest to copy the operator metadata in nested format to the work dir"
       shell: "operator-courier nest {{ operator_dir }} {{ operator_work_dir }}"
-      when: (distro_type is undefined) or (distro_type != "upstream")
+      when: not run_upstream|bool
 
     - name: Copy the operator metadata in nested format to the work dir
       copy:
         src: "{{ operator_dir }}/"
         dest: "{{ operator_work_dir }}"
         remote_src: yes
-      when: distro_type == "upstream"
+      when: run_upstream|bool
 
     - name: "Parse operator metadata needed to run the tests"
       include_role:
         name: parse_operator_metadata
       tags:
         - pure_test
-
 
     - name: "Run linting tests with operator-courier verify on the deployed operator"
       include_role:
@@ -100,14 +111,18 @@
     - name: "Run catalog initialization test on operator metadata"
       include_role:
         name: operator_catalog_initialization_test
-      when: run_catalog_init|bool and ((distro_type is undefined) or (distro_type != "upstream"))
+      when:
+        - run_catalog_init|bool
+        - not run_upstream|bool
 
     - name: "Operator deployment and scorecard/imagesource tests"
       block:
         - name: "Inject operator scorecard data into the operator metadata"
           include_role:
             name: inject_scorecard_metadata
-          when: run_scorecard|bool and ((distro_type is undefined) or (distro_type != "upstream"))
+          when:
+            - run_scorecard|bool
+            - not run_upstream|bool
 
         - name: "Get all registry images on the OpenShift cluster before deploying the operator"
           shell: "{{ oc_bin_path }} get is --all-namespaces -o json | jq '.items[].spec.tags[] | select(.from.kind == \"DockerImage\") | .from.name' --raw-output | sort -u"
@@ -115,8 +130,7 @@
           environment:
             KUBECONFIG: "{{ kubeconfig_path }}"
           no_log: true
-          when: (distro_type is undefined) or (distro_type != "upstream")
-
+          when: not run_upstream|bool
 
         - name: "Get all pod images on the OpenShift cluster before deploying the operator"
           shell: "{{ oc_bin_path }} get pods --all-namespaces -o json | jq '.items[].spec.containers[].image' --raw-output | sort -u"
@@ -124,11 +138,11 @@
           environment:
             KUBECONFIG: "{{ kubeconfig_path }}"
           no_log: true
-          when: (distro_type is undefined) or (distro_type != "upstream")
+          when: not run_upstream|bool
 
         - set_fact:
             openshift_images_before: " {{ os_registry_is_result_before.stdout_lines }} + {{ os_pod_is_result_before.stdout_lines }}"
-          when: (distro_type is undefined) or (distro_type != "upstream")
+          when: not run_upstream|bool
 
         - name: "Deploy the operator on the OpenShift 4.0 cluster with OLM"
           include_role:
@@ -137,15 +151,13 @@
           tags:
             - pure_test
 
-
         - name: "Get all openshift registry images"
           shell: "{{ oc_bin_path }} get is --all-namespaces -o json | jq '.items[].spec.tags[] | select(.from.kind == \"DockerImage\") | .from.name' --raw-output | sort -u"
           register: os_registry_is_result_after
           environment:
             KUBECONFIG: "{{ kubeconfig_path }}"
           no_log: true
-          when: (distro_type is undefined) or (distro_type != "upstream")
-
+          when: not run_upstream|bool
 
         - name: "Get all OpenShift pod images"
           shell: "{{ oc_bin_path }} get pods --all-namespaces -o json | jq '.items[].spec.containers[].image' --raw-output | sort -u"
@@ -153,13 +165,11 @@
           environment:
             KUBECONFIG: "{{ kubeconfig_path }}"
           no_log: true
-          when: (distro_type is undefined) or (distro_type != "upstream")
-
+          when: not run_upstream|bool
 
         - set_fact:
             openshift_images_after: "{{ os_registry_is_result_after.stdout_lines }} + {{ os_pod_is_result_after.stdout_lines }}"
-          when: (distro_type is undefined) or (distro_type != "upstream")
-
+          when: not run_upstream|bool
 
         - name: "Scorecard test"
           block:
@@ -195,7 +205,7 @@
               when:
                 - operator_container_result.stdout != ""
 
-          when: (distro_type is undefined) or (distro_type != "upstream")
+          when: not run_upstream|bool
 
 
         - name: "Test image sources of containers introduced with the testing operator"
@@ -206,7 +216,7 @@
           when:
             - run_imagesource|bool
             - run_deploy|bool
-            - (distro_type is undefined) or (distro_type != "upstream")
+            - not run_upstream|bool
 
       when:
         - run_deploy|bool
@@ -228,6 +238,5 @@
             - package_name is defined
             - run_cleanup|bool
             - run_deploy|bool
-            - (distro_type is undefined) or (distro_type != "upstream")
+            - not run_upstream|bool
           no_log: true
-

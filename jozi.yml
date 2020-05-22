@@ -27,7 +27,7 @@
         scorecard_cr_dir: "{{ work_dir }}/scorecard-cr-files"
         kube_objects_dir: "{{ work_dir }}/kube_objects"
         testing_bin_path: "{{ work_dir }}/bin"
-        oc_bin_path: "{{ '/snap/bin/kubectl' if (distro_type == 'upstream') else \"{{ testing_bin_path }}/oc\" }}"
+        oc_bin_path: "{{ 'kubectl' if run_upstream else \"{{ testing_bin_path }}/oc\" }}"
         jq_bin_path: "{{ testing_bin_path }}/jq"
         yq_bin_path: "{{ testing_bin_path }}/yq"
         go_bin_path: "{{ testing_bin_path }}/go/bin/go"
@@ -46,14 +46,14 @@
     - name: "Check operator version"
       shell: "cd {{ operator_dir }}; ls -d */| sort --version-sort | tail -n 1|sed s/.$//"
       register: op_ver
-      when: distro_type == "upstream"
+      when: run_upstream|bool
 
     - name: "Find CSV for upstream Subscription"
       shell: "ls {{ operator_dir }}/{{ op_ver.stdout }}/*clusterser*|awk -F'/' '{print $NF}'|awk -F'.clusterserviceversion.yaml' '{print $1}'"
       register: csv_name
-      when: distro_type == "upstream"
+      when: run_upstream|bool
 
     - name: "Process the subscription template"
       template:
-        src: "{{ 'roles/deploy_olm_operator/templates/subscription_upstream.yml.j2' if (distro_type == 'upstream') else \"subscription.yml.j2\" }}"
+        src: "{{ 'roles/deploy_olm_operator/templates/subscription_upstream.yml.j2' if run_upstream else \"subscription.yml.j2\" }}"
         dest: "{{ olm_operator_files_path }}/subscription.yml"
