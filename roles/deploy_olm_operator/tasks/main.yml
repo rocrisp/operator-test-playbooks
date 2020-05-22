@@ -1,17 +1,17 @@
 ---
 - set_fact:
     quay_release: "0.0.1"
-    upstream_namespace_param: "{{ '-n test-operators' if (distro_type == 'upstream') else '' }}"
+    upstream_namespace_param: "{{ '-n test-operators' if run_upstream else '' }}"
 
 - name: "Check operator version (upstream only)"
   shell: "cd {{ operator_dir }}; ls -d */| sort --version-sort | tail -n 1|sed s/.$//"
   register: op_ver
-  when: distro_type == "upstream"
+  when: run_upstream|bool
 
 - name: "Find CSV for upstream Subscription (upstream only)"
   shell: "ls {{ operator_dir }}/{{ op_ver.stdout }}/*clusterser*|awk -F'/' '{print $NF}'|awk -F'.clusterserviceversion.yaml' '{print $1}'"
   register: csv_name
-  when: distro_type == "upstream"
+  when: run_upstream|bool
 
 - name: "Check operator version"
   shell: "cd {{ operator_dir }}; ls -d */| sort --version-sort | tail -n 1|sed s/.$//"
@@ -181,7 +181,7 @@
   ignore_errors: true
   environment:
     KUBECONFIG: "{{ kubeconfig_path }}"
-  when: distro_type == "upstream"
+  when: run_upstream|bool
 
 - name: "Get the details of the deployed CSVs"
   shell: "{{ oc_bin_path }} describe csvs {{ upstream_namespace_param }}"
@@ -240,7 +240,7 @@
   register: catalog_source_result
   environment:
     KUBECONFIG: "{{ kubeconfig_path }}"
-  when: distro_type == "upstream"
+  when: run_upstream|bool
 
 - name: "Output the catalogsource log to a debug file"
   copy:
@@ -253,14 +253,14 @@
   register: catalog_operator_result
   environment:
     KUBECONFIG: "{{ kubeconfig_path }}"
-  when: (distro_type is undefined) or (distro_type != "upstream")
+  when: not run_upstream|bool
 
 - name: "Get the catalog-operator pod log (upstream)"
   shell: "{{ oc_bin_path }} get --output=name pods -n olm | grep catalog-operator | cut -d' ' -f1 | xargs -I{} {{ oc_bin_path }} logs {} -n olm | tail -n 100"
   register: catalog_operator_result
   environment:
     KUBECONFIG: "{{ kubeconfig_path }}"
-  when: distro_type == "upstream"
+  when: run_upstream|bool
 
 - name: "Output the catalog-operator log to a debug file"
   copy:

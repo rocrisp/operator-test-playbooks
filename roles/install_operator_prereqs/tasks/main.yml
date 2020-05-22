@@ -72,7 +72,7 @@
     shell: "offline-cataloger -h"
     register: offline_cataloger_help_result
     ignore_errors: true
-    when: (distro_type is undefined) or (distro_type != "upstream")
+    when: not run_upstream|bool
 
   - name: "Git clone offline-cataloger repo with the offline-cataloger command"
     git:

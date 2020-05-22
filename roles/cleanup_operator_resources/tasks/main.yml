@@ -28,4 +28,4 @@
     when:
         - openshift_namespace_check_result is defined
         - openshift_namespace_check_result.rc == 0
-  when: (distro_type is undefined) or (distro_type != "upstream")
+  when: not run_upstream|bool
