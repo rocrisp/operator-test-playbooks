@@ -13,6 +13,16 @@
   register: csv_name
   when: distro_type == "upstream"
 
+- name: "Check operator version"
+  shell: "cd {{ operator_dir }}; ls -d */| sort --version-sort | tail -n 1|sed s/.$//"
+  register: op_ver
+  when: run_upstream|bool
+
+- name: "Find CSV for upstream Subscription"
+  shell: "ls {{ operator_dir }}/{{ op_ver.stdout }}/*clusterser*|awk -F'/' '{print $NF}'|awk -F'.clusterserviceversion.yaml' '{print $1}'"
+  register: csv_name
+  when: run_upstream|bool
+
 - name: "Openshift only"
   block:
   - name: "Check for the existence of earlier releases of the operator on the quay.io app repository"
@@ -64,7 +74,7 @@
       - kube_objects != "N/A"
       - kube_objects != "null"
 
-  when: (distro_type is undefined) or (distro_type != "upstream")
+  when: not run_upstream|bool
 
 
 
@@ -73,25 +83,25 @@
 
 - name: "Process the operatorgroup template"
   template:
-    src: "{{ 'operatorgroup_upstream.yml.j2' if (distro_type == 'upstream') else \"operatorgroup.yml.j2\" }}"
+    src: "{{ 'operatorgroup_upstream.yml.j2' if run_upstream else \"operatorgroup.yml.j2\" }}"
     dest: "{{ olm_operator_files_path }}/operatorgroup.processed.yml"
 
 - name: "Process the marketplacesecret template"
   template:
     src: "marketplacesecret.yml.j2"
     dest: "{{ olm_operator_files_path }}/marketplacesecret.processed.yml"
-  when: (distro_type is undefined) or (distro_type != "upstream")
+  when: not run_upstream|bool
 
 - name: "Process the subscription template"
   template:
-    src: "{{ 'subscription_upstream.yml.j2' if (distro_type == 'upstream') else \"subscription.yml.j2\" }}"
+    src: "{{ 'subscription_upstream.yml.j2' if run_upstream else \"subscription.yml.j2\" }}"
     dest: "{{ olm_operator_files_path }}/subscription.yml"
 
 - name: "Process the operatorsource template"
   template:
     src: operatorsource.yml.j2
     dest: "{{ olm_operator_files_path }}/operatorsource.yml"
-  when: (distro_type is undefined) or (distro_type != "upstream")
+  when: not run_upstream|bool
 
 - name: "Process the catalogsource template"
   template:
@@ -104,15 +114,15 @@
   environment:
     KUBECONFIG: "{{ kubeconfig_path }}"
 
-- name: "Create the catalogsource (upstream only)"
+- name: "Create the catalogsource"
   shell: "{{ oc_bin_path }} apply -f {{ olm_operator_files_path }}/catalogsource.yml"
-  when: distro_type == "upstream"
+  when: run_upstream|bool
 
 - name: "Create the operatorsource"
   shell: "{{ oc_bin_path }} apply -f {{ olm_operator_files_path }}/operatorsource.yml"
   environment:
     KUBECONFIG: "{{ kubeconfig_path }}"
-  when: (distro_type is undefined) or (distro_type != "upstream")
+  when: not run_upstream|bool
 
 - name: "Wait for the operatorsource pod to start up"
   shell: "{{ oc_bin_path }} get pods -n openshift-marketplace | grep test-operators- | grep Running"
@@ -123,19 +133,21 @@
   ignore_errors: true
   environment:
     KUBECONFIG: "{{ kubeconfig_path }}"
-  when: (distro_type is undefined) or (distro_type != "upstream")
+  when: not run_upstream|bool
 
 - name: "Check if scorecard secret exists"
   stat:
     path: "{{ operator_work_dir }}/../scorecard.secret.yaml"
   register: scorecard_secret_result
-  when: (distro_type is undefined) or (distro_type != "upstream")
+  when: not run_upstream|bool
 
 - name: "Create the scorecard secret if it exists"
   shell: "{{ oc_bin_path }} create -f {{ operator_work_dir }}/../scorecard.secret.yaml"
   environment:
     KUBECONFIG: "{{ kubeconfig_path }}"
-  when: ((distro_type is undefined) or (distro_type != "upstream")) and (scorecard_secret_result.stat.exists == True)
+  when:
+    - scorecard_secret_result.stat.exists == True
+    - not run_upstream|bool
 
 - name: "Copy namespace file"
   template:
@@ -221,7 +233,7 @@
   register: catalog_source_result
   environment:
     KUBECONFIG: "{{ kubeconfig_path }}"
-  when: (distro_type is undefined) or (distro_type != "upstream")
+  when: not run_upstream|bool
 
 - name: "Get the catalogsource pod log (upstream)"
   shell: "{{ oc_bin_path }} get --output=name pods {{ upstream_namespace_param }} | grep test-operators-ocs | cut -d' ' -f1 | xargs -I{} {{ oc_bin_path }} logs {} {{ upstream_namespace_param }}"
