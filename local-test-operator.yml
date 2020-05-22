@@ -17,7 +17,7 @@
     openshift_namespace: "test-operator"
     work_dir: "/tmp/operator-test"
     testing_bin_path: "{{ work_dir }}/bin"
-    current_channel: '' # Added to avoid a potential bug with undefined variables
+    current_channel: "" # Added to avoid a potential bug with undefined variables
     distro_type: "{{ 'upstream' if run_upstream else '' }}"
 
   environment:
@@ -29,7 +29,6 @@
       tags:
         - always
       when: run_upstream|bool
-
   tasks:
     - set_fact:
         operator_work_dir: "{{ work_dir }}/operator-files"
@@ -37,7 +36,7 @@
         scorecard_cr_dir: "{{ work_dir }}/scorecard-cr-files"
         kube_objects_dir: "{{ work_dir }}/kube_objects"
         testing_bin_path: "{{ work_dir }}/bin"
-        oc_bin_path: "{{ 'kubectl' if run_upstream else \"{{ testing_bin_path }}/oc\" }}"
+        oc_bin_path: '{{ ''kubectl'' if run_upstream else "{{ testing_bin_path }}/oc" }}'
         jq_bin_path: "{{ testing_bin_path }}/jq"
         yq_bin_path: "{{ testing_bin_path }}/yq"
         go_bin_path: "{{ testing_bin_path }}/go/bin/go"
@@ -125,7 +124,7 @@
             - not run_upstream|bool
 
         - name: "Get all registry images on the OpenShift cluster before deploying the operator"
-          shell: "{{ oc_bin_path }} get is --all-namespaces -o json | jq '.items[].spec.tags[] | select(.from.kind == \"DockerImage\") | .from.name' --raw-output | sort -u"
+          shell: '{{ oc_bin_path }} get is --all-namespaces -o json | jq ''.items[].spec.tags[] | select(.from.kind == "DockerImage") | .from.name'' --raw-output | sort -u'
           register: os_registry_is_result_before
           environment:
             KUBECONFIG: "{{ kubeconfig_path }}"
@@ -152,7 +151,7 @@
             - pure_test
 
         - name: "Get all openshift registry images"
-          shell: "{{ oc_bin_path }} get is --all-namespaces -o json | jq '.items[].spec.tags[] | select(.from.kind == \"DockerImage\") | .from.name' --raw-output | sort -u"
+          shell: '{{ oc_bin_path }} get is --all-namespaces -o json | jq ''.items[].spec.tags[] | select(.from.kind == "DockerImage") | .from.name'' --raw-output | sort -u'
           register: os_registry_is_result_after
           environment:
             KUBECONFIG: "{{ kubeconfig_path }}"
@@ -174,7 +173,7 @@
         - name: "Scorecard test"
           block:
             - name: "Find all extracted CRs from alm-examples"
-              shell: "find \"{{ scorecard_cr_dir }}\" -name \"*.cr.yaml\" -print"
+              shell: 'find "{{ scorecard_cr_dir }}" -name "*.cr.yaml" -print'
               register: scorecard_cr_files_result
               when:
                 - run_scorecard|bool
@@ -207,7 +206,6 @@
 
           when: not run_upstream|bool
 
-
         - name: "Test image sources of containers introduced with the testing operator"
           include_role:
             name: operator_imagesource_test
@@ -230,9 +228,8 @@
           tags:
             - pure_test
 
-
         - name: "Remove the quay release of the test operator in the testing namespace"
-          shell: "curl -s -H \"Authorization: basic {{ quay_token }}\" -X DELETE https://quay.io/cnr/api/v1/packages/{{ quay_namespace }}/{{ package_name }}-test/{{ quay_release }}/helm"
+          shell: 'curl -s -H "Authorization: basic {{ quay_token }}" -X DELETE https://quay.io/cnr/api/v1/packages/{{ quay_namespace }}/{{ package_name }}-test/{{ quay_release }}/helm'
           when:
             - quay_release is defined
             - package_name is defined
