@@ -6,6 +6,7 @@
 
   vars:
     run_prereqs: true
+    run_upstream: false
     run_lint: true
     run_catalog_init: true
     run_deploy: true
@@ -17,34 +18,29 @@
     work_dir: "/tmp/operator-test"
     testing_bin_path: "{{ work_dir }}/bin"
     current_channel: '' # Added to avoid a potential bug with undefined variables
-    distro_type: "{{ DISTRO_TYPE | default('') }}"
+    distro_type: "{{ 'upstream' if run_upstream else '' }}"
 
   environment:
     PATH: "{{ ansible_env.PATH }}:{{ ansible_env.HOME }}/.local/bin"
+    when: run_upstream|bool
 
   pre_tasks:
     - setup:
-      tags: 
-      - always
+      tags:
+        - always
+      when: run_upstream|bool
     - set_fact:
-        distro_type: "{{ DISTRO_TYPE | default('') }}"
         operator_work_dir: "{{ work_dir }}/operator-files"
         olm_operator_files_path: "{{ work_dir }}/olm-operator-files"
         scorecard_cr_dir: "{{ work_dir }}/scorecard-cr-files"
         kube_objects_dir: "{{ work_dir }}/kube_objects"
         testing_bin_path: "{{ work_dir }}/bin"
-        oc_bin_path: "{{ 'kubectl' if (distro_type == 'upstream') else \"{{ testing_bin_path }}/oc\" }}"
+        oc_bin_path: "{{ 'kubectl' if run_upstream else \"{{ testing_bin_path }}/oc\" }}"
         jq_bin_path: "{{ testing_bin_path }}/jq"
         yq_bin_path: "{{ testing_bin_path }}/yq"
         go_bin_path: "{{ testing_bin_path }}/go/bin/go"
         operator_sdk_bin_path: "{{ testing_bin_path }}/operator-sdk"
         offline_cataloger_bin_path: "offline-cataloger"
-        kind_ver: "{{ KIND_VER | default('') }}"
-        # KIND_bin_path: "{{ testing_bin_path }}/kind"
-        # KIND_kube_ver: "{{ KIND_KUBE_VER | default('') }}"
-        # kind_bin_path: "{{ testing_bin_path }}/kind"
-        kind_kube_ver: "{{ KIND_KUBE_VER | default('') }}" # mvala
-        olm_ver: "{{ OLM_VER | default('') }}"
       tags: always
 
   roles:
@@ -54,14 +50,32 @@
     - { role: kind, tags: ["kind"] }
     - { role: install_operator_prereqs, tags: ["operator_prereqs"] }
     - { role: build_upstream_catalog, tags: ["operator_catalogue"] }
-    - { role: todo, tags: ["pure_test"]}
+    # - { role: todo, tags: ["pure_test"]}
     # - { role: operator_courier_verify, tags: ["pure_test", "operator_courier_verify"] }
-    
+
   tasks:
-  
-    - name: debug
+
+    # - name: Running as user
+    #   debug:
+    #     msg: "user : {{ ansible_user_id }}"
+    #     verbosity: 2
+    #   tags:
+    #     always
+    - name: Run distro_type
       debug:
-        msg: "user : {{ ansible_user_id }}"
+        msg: "distro_type : {{  distro_type }}"
         verbosity: 2
       tags:
         always
+
+    - name: Run kubernetes
+      debug:
+        msg: "run_upstream : {{  run_upstream|bool }}"
+        verbosity: 2
+      tags:
+        always
+
+    # - name: Include locat-test-operator task
+    #   include_tasks: local-test-operator.yml
+    #   tags:
+    #     always

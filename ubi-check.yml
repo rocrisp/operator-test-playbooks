@@ -14,7 +14,7 @@
   vars:
     openshift_namespace: "test-operator"
     work_dir: "{{ lookup('env', 'WORKSPACE') }}"
-    oc_bin_path: "{{ '/snap/bin/kubectl' if (distro_type == 'upstream') else 'oc' }}"
+    oc_bin_path: "{{ 'kubectl' if run_upstream else 'oc' }}"
     pod_name: "cvp-ubi-check"
 
   tasks:
@@ -25,7 +25,7 @@
     delay: 10
     until: login_result.rc == 0
     no_log: true
-    when: (distro_type is undefined) or (distro_type != "upstream")
+    when: not run_upstream|bool
 
   - name: "Create the spec file"
     template:
@@ -71,7 +71,7 @@
       - kube_objects is defined
       - kube_objects != "N/A"
       - kube_objects != "null"
-      
+
   - name: "Get debug"
     shell: "{{ oc_bin_path }} get pod {{ pod_name }} -o=json -n {{ openshift_namespace }}"
     register: get_debug

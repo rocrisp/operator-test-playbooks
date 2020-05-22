@@ -30,4 +30,4 @@
   when:
     - check_verify_result|bool
     - courier_verify_result.rc != 0
-    - (distro_type is undefined) or (distro_type != "upstream")
+    - not run_upstream|bool
