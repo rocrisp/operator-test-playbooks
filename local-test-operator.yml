@@ -152,7 +152,7 @@
             openshift_images_before: " {{ os_registry_is_result_before.stdout_lines }} + {{ os_pod_is_result_before.stdout_lines }}"
           when: not run_upstream|bool
 
-        - name: "Deploy the operator on the OpenShift 4.0 cluster with OLM"
+        - name: "Deploy the operator on the OpenShift 4.0/Kind cluster with OLM"
           include_role:
             name: deploy_olm_operator
           when: run_deploy|bool

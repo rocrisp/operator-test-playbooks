@@ -84,6 +84,16 @@
     state: directory
     mode: '0755'
 
+- name: "Copy namespace file"
+  template:
+    src: "namespace.yml.js2"
+    dest: "{{ olm_operator_files_path }}/namespace.yml"
+
+- name: "Create the namespace"
+  shell: "{{ oc_bin_path }} apply -f {{ olm_operator_files_path }}/namespace.yml"
+  environment:
+    KUBECONFIG: "{{ kubeconfig_path }}"
+
 - name: "Process the operatorgroup template"
   template:
     src: "{{ 'operatorgroup_upstream.yml.j2' if run_upstream else \"operatorgroup.yml.j2\" }}"
@@ -152,15 +162,16 @@
       when: scorecard_secret_result.stat.exists == True
   when: not run_upstream|bool
 
-- name: "Copy namespace file"
-  template:
-    src: "namespace.yml.js2"
-    dest: "{{ olm_operator_files_path }}/namespace.yml"
-
-- name: "Create the namespace"
-  shell: "{{ oc_bin_path }} apply -f {{ olm_operator_files_path }}/namespace.yml"
+- name: "Wait for the operator {{ package_name }} to be in packagemanifests"
+  shell: "{{ oc_bin_path }} get packagemanifests {{ package_name }} -n test-operators"
+  register: packagemanifest_presence
+  retries: 15
+  delay: 5
+  until: packagemanifest_presence.rc == 0
+  ignore_errors: true
   environment:
     KUBECONFIG: "{{ kubeconfig_path }}"
+  when: run_upstream|bool
 
 - name: "Create the subscription"
   shell: "{{ oc_bin_path }} apply -f {{ olm_operator_files_path }}/subscription.yml"
