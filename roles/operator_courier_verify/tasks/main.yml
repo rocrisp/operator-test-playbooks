@@ -23,7 +23,6 @@
     dest: "{{ work_dir }}/linting-rc.txt"
   when: courier_verify_result.rc is defined
 
-#TODO: activate for upstream
 - name: "Fail if the operator didn't satisfy the operator courier verification test"
   fail:
     msg: 'Operator courier verification test failed, check linting-errors.txt for more details'
