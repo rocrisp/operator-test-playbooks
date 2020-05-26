@@ -92,7 +92,7 @@
 
     - name: "Build upstream catalog"
       include_role:
-        name: build_upstream_catalog
+        name: build_catalog_upstream
       when: run_upstream|bool
 
     - name: "Run operator-courier nest to copy the operator metadata in nested format to the work dir"
