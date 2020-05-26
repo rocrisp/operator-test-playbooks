@@ -32,5 +32,5 @@
     - { role: install_kubectl, tags: ["kubectl"] }
     - { role: install_kind, tags: ["kind"] }
     - { role: install_operator_prereqs, tags: ["operator_prereqs"] }
-    - { role: build_upstream_catalog, tags: ["operator_catalog"] }
+    - { role: build_catalog_upstream, tags: ["operator_catalog"] }
     # - { role: operator_courier_verify, tags: ["pure_test", "operator_courier_verify"] }
