@@ -31,7 +31,7 @@
   tags:
     - catalog_build
 
-- name: "Delete previous catallogue deployment (it may fail if not exists)"
+- name: "Delete previous catalog deployment (it may fail if not exists)"
   shell: "{{ oc_bin_path }} delete deployment {{ catalog_source_name }} -n {{ catalog_source_namespace }}"
   ignore_errors: yes
   tags:
