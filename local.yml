@@ -6,8 +6,10 @@
 
   vars:
     run_upstream: false
+    run_remove_catalog_repo: true
     distro_type: "{{ 'upstream' if run_upstream else '' }}"
     work_dir: "/tmp/operator-test"
+    operator_dir: "dummy" # so operator-courier will be installed
     operator_work_dir: "{{ work_dir }}/operator-files"
     testing_bin_path: "{{ work_dir }}/bin"
     oc_bin_path: '{{ ''kubectl'' if run_upstream else "{{ testing_bin_path }}/oc" }}'
