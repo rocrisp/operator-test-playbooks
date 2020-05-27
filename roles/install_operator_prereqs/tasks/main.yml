@@ -36,20 +36,38 @@
     - install
     - image_build
 
-- name: "Download operator-sdk for running operator scorecard tests"
-  shell: "curl -o {{ operator_sdk_bin_path }} -L https://github.com/operator-framework/operator-sdk/releases/download/{{ operator_sdk_version }}/operator-sdk-{{ operator_sdk_version }}-x86_64-linux-gnu && chmod +x {{ operator_sdk_bin_path }}"
+- name: Install operator-sdk
+  get_url:
+    url: https://github.com/operator-framework/operator-sdk/releases/download/{{ operator_sdk_version }}/operator-sdk-{{ operator_sdk_version }}-x86_64-linux-gnu
+    dest: "{{ operator_sdk_bin_path }}"
+    mode: '0755'
+  tags:
+    - install
+    - host_build
+
+- name: Install opm
+  get_url:
+    url: https://github.com/operator-framework/operator-registry/releases/download/{{ opm_version }}/linux-amd64-opm
+    dest: "{{ opm_bin_path }}"
+    mode: '0755'
+  tags:
+    - install
+    - host_build
+
+- name: "Download jq {{ jq_version }}"
+  get_url:
+    url: "https://github.com/stedolan/jq/releases/download/jq-{{ jq_version }}/jq-linux64"
+    dest: "{{ jq_bin_path }}"
+    mode: '0755'
   tags:
     - install
     - image_build
 
-- name: "Download jq 1.6"
-  shell: "curl -Lo {{ jq_bin_path }} https://github.com/stedolan/jq/releases/download/jq-1.6/jq-linux64 && chmod +x {{ jq_bin_path }}"
-  tags:
-    - install
-    - image_build
-
-- name: "Download yq 2.2.1"
-  shell: "curl -Lo {{ yq_bin_path }} https://github.com/mikefarah/yq/releases/download/2.2.1/yq_linux_amd64 && chmod +x {{ yq_bin_path }}"
+- name: "Download yq {{ yq_version }}"
+  get_url:
+    url: "https://github.com/mikefarah/yq/releases/download/{{ yq_version }}/yq_linux_amd64"
+    dest: "{{ yq_bin_path }}"
+    mode: '0755'
   tags:
     - install
     - image_build
@@ -127,23 +145,3 @@
   tags:
     - install
     - image_build
-
-# - name: "Check if OLM is needed"
-#   shell: "{{ oc_bin_path }} api-resources | grep -o operatorgroup"
-#   register: olm_needed
-#   ignore_errors: true
-#   when:
-#     - run_upstream|bool
-
-# - name: "Install OLM"
-#   block:
-#     - name: "Installing OLM"
-#       shell: "{{ operator_sdk_bin_path }} olm install --version {{ olm_ver }}"
-
-#     - name: "Delete catalogsource"
-#       shell: "{{ oc_bin_path }} delete catalogsource operatorhubio-catalog -n olm"
-#       ignore_errors: true
-
-#   when:
-#     - olm_needed.stdout != "operatorgroup"
-#     - run_upstream|bool

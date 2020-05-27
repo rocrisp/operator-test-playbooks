@@ -19,6 +19,7 @@
         jq_bin_path: "{{ testing_bin_path }}/jq"
         yq_bin_path: "{{ testing_bin_path }}/yq"
         umoci_bin_path: "{{ testing_bin_path }}/umoci"
+        opm_bin_path: "{{ testing_bin_path }}/opm"
 
     - name: "Install operator testing prerequisites"
       include_role:
