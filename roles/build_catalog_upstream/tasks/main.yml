@@ -59,9 +59,13 @@
   template:
     src: "namespace.yml.js2"
     dest: "/tmp/namespace.yml"
+  tags:
+    - catalog_build
 
 - name: "Create the namespace"
   shell: "{{ oc_bin_path }} apply -f /tmp/namespace.yml"
+  tags:
+    - catalog_build
 
 - name: "Deploy catalog image as deployment '{{ catalog_source_name }}' in '{{ catalog_source_namespace }}' namespace"
   shell: "{{ oc_bin_path }} create deployment {{ catalog_source_name }} --image={{ catalog_image_registry }}/{{ catalog_image_namespace }}/{{ catalog_image_name }}:{{ catalog_image_tag }} -n={{ catalog_source_namespace }}"
