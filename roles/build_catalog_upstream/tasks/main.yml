@@ -1,18 +1,25 @@
 ---
 - name: Prepare comunity operator directory
   block:
+
+    - name: Remove catalog directory
+      file:
+        path: "{{ catalog_repo_dir }}"
+        state: absent
+      when: run_remove_catalog_repo|bool
+
     - name: "Check if community operators directory exists"
       stat:
         path: "{{ catalog_repo_dir }}"
-      register: operator_dir
+      register: operator_dir_st
 
-    - name: "Git clone community operators, since it doesn't exists"
+    - name: "Git clone community operators : {{ catalog_repo }} branch: {{ catalog_repo_branch }}"
       git:
-        repo: "https://github.com/operator-framework/community-operators.git"
+        repo: "{{ catalog_repo }}"
         dest: "{{ catalog_repo_dir }}"
-        version: master
+        version: "{{ catalog_repo_branch }}"
         force: true
-      when: not (operator_dir.stat.isdir is defined and operator_dir.stat.isdir)
+      when: not operator_dir_st.stat.exists
   tags:
     - catalog_build
 

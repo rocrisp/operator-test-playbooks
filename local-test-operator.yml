@@ -13,6 +13,7 @@
     run_scorecard: true
     run_imagesource: true
     run_cleanup: true
+    run_remove_catalog_repo: true
     scorecard_first_cr: true
     openshift_namespace: "test-operator"
     work_dir: "/tmp/operator-test"
