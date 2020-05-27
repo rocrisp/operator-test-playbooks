@@ -165,7 +165,7 @@
 - name: "Wait for the operator {{ package_name }} to be in packagemanifests"
   shell: "{{ oc_bin_path }} get packagemanifests {{ package_name }} -n test-operators"
   register: packagemanifest_presence
-  retries: 15
+  retries: 25
   delay: 5
   until: packagemanifest_presence.rc == 0
   ignore_errors: true
