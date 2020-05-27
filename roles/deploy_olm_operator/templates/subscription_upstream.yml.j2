@@ -3,6 +3,8 @@ kind: Subscription
 metadata:
   name: {{ package_name }}-test
   namespace: test-operators
+  labels:
+    operator: test
 spec:
   name: {{ package_name }}
   source: test-operators-ocs

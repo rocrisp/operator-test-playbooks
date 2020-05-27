@@ -3,6 +3,8 @@ kind: "CatalogSource"
 metadata:
   name: "test-operators-ocs"
   namespace: "test-operators"
+  labels:
+    operator: test
 spec:
   displayName: Community Operators
   image: localhost:5000/operatorhub/operatorhub-catalog:dev

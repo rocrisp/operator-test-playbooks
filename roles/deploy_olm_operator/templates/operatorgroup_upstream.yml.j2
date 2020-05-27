@@ -3,6 +3,8 @@ kind: OperatorGroup
 metadata:
   name: test-operators
   namespace: test-operators
+  labels:
+    operator: test
 {% if operator_allnamespaces_support != true %}
 spec:
   targetNamespaces:
