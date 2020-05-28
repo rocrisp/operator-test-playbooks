@@ -10,6 +10,7 @@
     distro_type: "{{ 'upstream' if run_upstream else '' }}"
     work_dir: "/tmp/operator-test"
     operator_dir: "dummy" # so operator-courier will be installed
+    bundle_image: "dummy" # so skopeo and umoci will be installed
     operator_work_dir: "{{ work_dir }}/operator-files"
     testing_bin_path: "{{ work_dir }}/bin"
     oc_bin_path: '{{ ''kubectl'' if run_upstream else "{{ testing_bin_path }}/oc" }}'
@@ -36,4 +37,5 @@
     - { role: install_kind, tags: ["kind"] }
     - { role: install_operator_prereqs, tags: ["operator_prereqs"] }
     - { role: build_catalog_upstream, tags: ["operator_catalog"] }
+    - { role: convert_manifest_to_bundle, tags: ["m2b"] }
     # - { role: operator_courier_verify, tags: ["pure_test", "operator_courier_verify"] }

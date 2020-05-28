@@ -121,9 +121,20 @@
       ignore_errors: true
 
     - name: "Install skopeo"
-      package:
-        name: skopeo
-        state: present
+      block:
+        - name: Generating file for install_skopeo.sh
+          template:
+            src: install_skopeo.sh.j2
+            dest: "/tmp/install_skopeo.sh"
+            mode: '0755'
+          when: ansible_distribution == 'Debian' or ansible_distribution == 'Ubuntu'
+
+        - name: "Configuring Kind with registry"
+          shell: "/tmp/install_skopeo.sh"
+          when: ansible_distribution == 'Debian' or ansible_distribution == 'Ubuntu'
+        - package:
+            name: skopeo
+            state: present
       become: true
       when:
         - skopeo_help_result.rc is defined
