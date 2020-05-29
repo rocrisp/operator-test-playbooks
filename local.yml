@@ -58,6 +58,7 @@
         # run_bundle_test: "{{ run_bundle_test | default(true) }}"
 
   roles:
+    - { role: check-type, tags: ["check_type"] }
     - { role: install_base_packages, tags: ["base"], when: run_host_init|bool }
     - { role: install_docker, tags: ["docker"], when: run_host_init|bool }
     - { role: install_kubectl, tags: ["kubectl"], when: run_host_init|bool }
