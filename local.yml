@@ -3,12 +3,22 @@
   hosts: all
   become: false
   gather_facts: false
-
   vars:
+    run_host_init: true
+    run_prereqs: true
     run_upstream: false
+    run_lint: true
+    run_catalog_init: true
+    run_deploy: true
+    run_scorecard: true
+    run_imagesource: true
+    run_cleanup: true
     run_remove_catalog_repo: true
+    # run_manifest_test: false
+    # run_bundle_test: true
     distro_type: "{{ 'upstream' if run_upstream else '' }}"
     work_dir: "/tmp/operator-test"
+    # operator_dir: "/tmp/community-operators-for-catalog/upstream-community-operators/aqua" # so operator-courier will be installed
     operator_dir: "dummy" # so operator-courier will be installed
     bundle_image: "dummy" # so skopeo and umoci will be installed
     operator_work_dir: "{{ work_dir }}/operator-files"
@@ -29,13 +39,39 @@
     - setup:
       tags:
         - always
+      when: run_upstream|bool
+
+    - set_fact:
+        operator_dir: "{{ operator_dir | default('') }}"
+        run_scorecard: "{{ run_scorecard | default(true) }}"
+        run_host_init: "{{ run_host_init | default(true) }}"
+        run_prereqs: "{{ run_prereqs | default(true) }}"
+        run_upstream: "{{ run_upstream | default(false) }}"
+        run_lint: "{{ run_lint | default(true) }}"
+        run_catalog_init: "{{ run_catalog_init | default(true) }}"
+        run_deploy: "{{ run_deploy | default(true) }}"
+        run_scorecard: "{{ run_scorecard | default(true) }}"
+        run_imagesource: "{{ run_imagesource | default(true) }}"
+        run_cleanup: "{{ run_cleanup | default(true) }}"
+        run_remove_catalog_repo: "{{ run_remove_catalog_repo | default(true) }}"
+        # run_manifest_test: "{{ run_manifest_test | default(false) }}"
+        # run_bundle_test: "{{ run_bundle_test | default(true) }}"
 
   roles:
-    - { role: install_base_packages, tags: ["base"] }
-    - { role: install_docker, tags: ["docker"] }
-    - { role: install_kubectl, tags: ["kubectl"] }
-    - { role: install_kind, tags: ["kind"] }
-    - { role: install_operator_prereqs, tags: ["operator_prereqs"] }
-    - { role: build_catalog_upstream, tags: ["operator_catalog"] }
-    - { role: convert_manifest_to_bundle, tags: ["m2b"] }
-    # - { role: operator_courier_verify, tags: ["pure_test", "operator_courier_verify"] }
+    - { role: install_base_packages, tags: ["base"], when: run_host_init|bool }
+    - { role: install_docker, tags: ["docker"], when: run_host_init|bool }
+    - { role: install_kubectl, tags: ["kubectl"], when: run_host_init|bool }
+    - { role: install_kind, tags: ["kind"], when: run_host_init|bool }
+    - { role: install_operator_prereqs, tags: ["operator_prereqs"], when: run_prereqs|bool }
+    - { role: build_catalog_upstream, tags: ["operator_catalog"], when: run_catalog_init|bool }
+    - { role: convert_manifest_to_bundle, tags: [never, "operator_manifest_to_bundle"] }
+
+- name: Running operator manifest test
+  import_playbook: local-test-operator.yml
+  tags:
+    - manifest_test
+
+- name: Running operatot bundle test
+  import_playbook: local-test-operator-bundle.yml
+  tags:
+    - bundle_test
