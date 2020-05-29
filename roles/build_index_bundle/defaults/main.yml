@@ -1,0 +1,8 @@
+opm_bin_path: "{{ testing_bin_path }}/opm"
+opm_container_tool: "docker"
+bundle_db: "{{ operator_bundle_dir }}/test-registry.db"
+bundle_index_image_namespace: operatorhub
+bundle_index_registry: localhost:5000
+bundle_image_suffix: "index"
+
+

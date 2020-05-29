@@ -43,3 +43,8 @@
     - name: "Validate the operator manifest and metadata using operator-sdk"
       include_role:
         name: validate_operator_bundle
+
+    - name: "Build the operator bundle index"
+      include_role:
+        name: build_index_bundle
+      when: run_upstream|bool

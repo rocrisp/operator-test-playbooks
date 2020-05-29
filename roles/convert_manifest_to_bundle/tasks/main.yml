@@ -35,8 +35,7 @@
     bundle_image: "localhost:5000/operators-test/{{ operator_name }}:v{{ operator_version }}"
 
 - name: Remove bundle image {{ bundle_image }}
-  shell:
-    cmd: "docker rmi -f {{ bundle_image }}"
+  shell: "docker rmi -f {{ bundle_image }}"
 
 - name: Generate bundle image {{ bundle_image }}
   shell:
@@ -44,8 +43,7 @@
     chdir: "{{ operator_manifest_to_bundle_dir }}/{{ operator_name }}"
 
 - name: Push bundle image {{ bundle_image }}
-  shell:
-    cmd: "docker push {{ bundle_image }}"
+  shell: "docker push {{ bundle_image }}"
 
 # - name: Push image {{ bundle_image }}
 #   docker_image:
