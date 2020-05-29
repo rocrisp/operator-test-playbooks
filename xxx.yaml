@@ -1,0 +1,10 @@
+run_prereqs: true
+run_upstream: false
+run_lint: true
+run_catalog_init: true
+run_deploy: true
+run_scorecard: true
+run_imagesource: true
+run_cleanup: true
+run_remove_catalog_repo: true
+run_manifest_test: false
