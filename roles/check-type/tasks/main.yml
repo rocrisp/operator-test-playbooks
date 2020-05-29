@@ -1,0 +1,10 @@
+---
+- name: Search for package.yml
+  find:
+    paths: "{{ operator_dir }}"
+    patterns: "*.package.yaml"
+  register: package_presence
+
+- name: Set operator_format to package manifest or bundle
+  set_fact:
+    operator_format: '{{ ''manifest'' if package_presence.files else ''bundle'' }}'
