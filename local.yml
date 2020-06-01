@@ -55,22 +55,26 @@
         run_imagesource: "{{ run_imagesource | default(true) }}"
         run_cleanup: "{{ run_cleanup | default(true) }}"
         run_remove_catalog_repo: "{{ run_remove_catalog_repo | default(true) }}"
+        operator_format: "bundle"
         # run_manifest_test: "{{ run_manifest_test | default(false) }}"
         # run_bundle_test: "{{ run_bundle_test | default(true) }}"
 
   roles:
+    - { role: detect_format, tags: ["always"], when: run_upstream|bool }
     - { role: install_base_packages, tags: ["base"], when: run_host_init|bool }
     - { role: install_docker, tags: ["docker"], when: run_host_init|bool }
     - { role: install_kubectl, tags: ["kubectl"], when: run_host_init|bool }
     - { role: install_kind, tags: ["kind"], when: run_host_init|bool }
     - { role: install_operator_prereqs, tags: ["operator_prereqs"], when: run_prereqs|bool }
     - { role: build_catalog_upstream, tags: ["operator_catalog"], when: run_catalog_init|bool }
-    - { role: convert_manifest_to_bundle, tags: [never, "operator_manifest_to_bundle"] }
+    - { role: build_image_bundle, tags: [never, "operator_manifest_to_bundle"] }
+
 
 - name: Running operator manifest test
   import_playbook: local-test-operator.yml
   tags:
     - manifest_test
+  # when: operator_format == "manifest"
 
 - name: Running operatot bundle test
   import_playbook: local-test-operator-bundle.yml
