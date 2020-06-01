@@ -28,6 +28,7 @@
     yq_bin_path: "{{ testing_bin_path }}/yq"
     go_bin_path: "{{ testing_bin_path }}/go/bin/go"
     operator_sdk_bin_path: "{{ testing_bin_path }}/operator-sdk"
+    umoci_bin_path: "{{ testing_bin_path }}/umoci"
     opm_bin_path: "{{ testing_bin_path }}/opm"
     offline_cataloger_bin_path: "offline-cataloger"
 
@@ -66,8 +67,10 @@
     - { role: install_kubectl, tags: ["kubectl"], when: run_host_init|bool }
     - { role: install_kind, tags: ["kind"], when: run_host_init|bool }
     - { role: install_operator_prereqs, tags: ["operator_prereqs"], when: run_prereqs|bool }
+    - { role: prepare_catalog_repo_upstream, tags: ["always"] }
     - { role: build_catalog_upstream, tags: ["operator_catalog"], when: run_catalog_init|bool }
     - { role: build_image_bundle, tags: [never, "operator_manifest_to_bundle"] }
+
 
 
 - name: Running operator manifest test
