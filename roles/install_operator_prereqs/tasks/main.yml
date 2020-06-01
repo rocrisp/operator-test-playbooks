@@ -14,6 +14,7 @@
     yq_bin_path: "{{ testing_bin_path }}/yq"
     go_bin_path: "{{ testing_bin_path }}/go/bin/go"
     umoci_bin_path: "{{ testing_bin_path }}/umoci"
+    # bundle_image: "{{ 'dummy' if run_upstream else '' }}"
     offline_cataloger_bin_path: "offline-cataloger"
 
 # Install the oc client to talk to any Openshift cluster
@@ -40,7 +41,7 @@
   get_url:
     url: https://github.com/operator-framework/operator-sdk/releases/download/{{ operator_sdk_version }}/operator-sdk-{{ operator_sdk_version }}-x86_64-linux-gnu
     dest: "{{ operator_sdk_bin_path }}"
-    mode: '0755'
+    mode: "0755"
   tags:
     - install
     - host_build
@@ -49,7 +50,7 @@
   get_url:
     url: https://github.com/operator-framework/operator-registry/releases/download/{{ opm_version }}/linux-amd64-opm
     dest: "{{ opm_bin_path }}"
-    mode: '0755'
+    mode: "0755"
   tags:
     - install
     - host_build
@@ -58,7 +59,7 @@
   get_url:
     url: "https://github.com/stedolan/jq/releases/download/jq-{{ jq_version }}/jq-linux64"
     dest: "{{ jq_bin_path }}"
-    mode: '0755'
+    mode: "0755"
   tags:
     - install
     - image_build
@@ -67,7 +68,7 @@
   get_url:
     url: "https://github.com/mikefarah/yq/releases/download/{{ yq_version }}/yq_linux_amd64"
     dest: "{{ yq_bin_path }}"
-    mode: '0755'
+    mode: "0755"
   tags:
     - install
     - image_build
@@ -126,7 +127,7 @@
           template:
             src: install_skopeo.sh.j2
             dest: "/tmp/install_skopeo.sh"
-            mode: '0755'
+            mode: "0755"
           when: ansible_distribution == 'Debian' or ansible_distribution == 'Ubuntu'
 
         - name: "Configuring Kind with registry"
@@ -146,7 +147,10 @@
       ignore_errors: true
 
     - name: "Install umoci if not installed"
-      shell: "curl -o {{ umoci_bin_path }} -L https://github.com/openSUSE/umoci/releases/download/{{ umoci_version }}/umoci.amd64 && chmod +x {{ umoci_bin_path }}"
+      get_url:
+        url: "https://github.com/openSUSE/umoci/releases/download/{{ umoci_version }}/umoci.amd64"
+        dest: "{{ umoci_bin_path }}"
+        mode: "0755"
       when:
         - umoci_help_result.rc is defined
         - umoci_help_result.rc != 0
