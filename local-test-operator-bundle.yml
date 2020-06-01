@@ -29,7 +29,7 @@
 
     - name: "Convert manifest format to bundle when needed"
       include_role:
-        name: convert_manifest_to_bundle
+        name: build_image_bundle
 
     - name: "Extract the operator bundle image into files needed to run the tests"
       include_role:

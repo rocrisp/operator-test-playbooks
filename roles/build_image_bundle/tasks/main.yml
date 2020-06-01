@@ -1,0 +1,64 @@
+# - name: Build bundle image from bundle format
+#   block:
+#     - fail:
+#         msg: "{{ operator_format }}"
+#     - name: Building image
+#     shell: "/tmp/operator-test/bin/opm alpha bundle build -b docker -d /tmp/community-operators-for-catalog/scripts/bundle-examples/prometheusoperator/0.32.0 --tag localhost:5000/example/operator:v0.1.0 -o -p prometheusoperator -c stable -e stable"
+#   when: operator_format == "bundle"
+
+#  name: Build bundle image from manifest format
+- name: "Ensure that the operator manifest to bundle directory is empty"
+  file:
+    state: "absent"
+    path: "{{ operator_manifest_to_bundle_dir }}"
+- name: "Ensure that the operator manifest to bundle directory is created"
+  file:
+    state: "directory"
+    path: "{{ operator_manifest_to_bundle_dir }}"
+- name: "Copy manifest format files to {{ operator_manifest_to_bundle_dir }}"
+  copy:
+    src: "{{ operator_dir }}"
+    dest: "{{ operator_manifest_to_bundle_dir }}"
+    remote_src: yes
+# - name: "Checking for operator latest version"
+#   block:
+#     - name: "Find all versions"
+#       find:
+#         paths: "{{ operator_manifest_to_bundle_dir }}/{{ operator_dir | basename }}"
+#         recurse: no
+#         file_type: directory
+#       register: vd
+
+#     - set_fact:
+#       operator_versions: "{{ vd.files | sort(attribute='path', reverse=True) | map(attribute='path') | list }}"
+
+#     - set_fact:
+#       operator_version: "{{ operator_versions[0] | basename }}"
+
+#   when:
+#     - operator_version == "latest"
+#     - operator_format == "manifest"
+
+- set_fact:
+    operator_name: "{{ operator_dir | basename }}"
+
+- set_fact:
+    bundle_image: "{{ bundle_registry }}/{{ bundle_image_namespace }}/{{ operator_name }}:v{{ operator_version }}"
+
+- name: Remove bundle image {{ bundle_image }}
+  shell: "{{ opm_container_tool }} rmi -f {{ bundle_image }}"
+
+- name: "Generate bundle image {{ bundle_image }} from bundle format"
+  shell:
+    cmd: "{{ opm_bin_path }} alpha bundle build --directory {{ operator_version }} --package {{ operator_name }} -t {{ bundle_image }} -c stable -e stable -b {{ opm_container_tool }}"
+    chdir: "{{ operator_manifest_to_bundle_dir }}/{{ operator_name }}"
+  when: operator_format == "bundle"
+
+- name: "Generate bundle image {{ bundle_image }} from manifest format"
+  shell:
+    cmd: "{{ opm_bin_path }} alpha bundle build --directory {{ operator_version }} --package {{ operator_name }} -t {{ bundle_image }} -b {{ opm_container_tool }}"
+    chdir: "{{ operator_manifest_to_bundle_dir }}/{{ operator_name }}"
+  when: operator_format == "manifest"
+
+- name: Push bundle image {{ bundle_image }}
+  shell: "{{ opm_container_tool }} push {{ bundle_image }}"
