@@ -30,7 +30,6 @@
     dest: "{{ work_dir }}/validation-rc.txt"
   when: sdk_validation_result.rc is defined
 
-#TODO: uncomment
 - name: "Fail if the operator didn't satisfy the operator-sdk validation test"
   fail:
     msg: 'Operator sdk validation test failed, check validation-output.txt for more details'
