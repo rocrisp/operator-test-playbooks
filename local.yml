@@ -78,7 +78,7 @@
     - run_upstream|bool
     - operator_format == "manifest"
 
-- name: Running operatot bundle test
+- name: Running operator bundle test
   import_playbook: local-test-operator-bundle.yml
   tags:
     - bundle_test
