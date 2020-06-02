@@ -73,3 +73,8 @@
       include_role:
         name: deploy_olm_operator_upstream_bundle
       when: run_upstream|bool
+
+    - name: "Cleanup"
+      include_role:
+        name: final_cleanup_upstream
+      when: run_upstream|bool
