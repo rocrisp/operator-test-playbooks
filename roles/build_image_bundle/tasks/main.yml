@@ -45,6 +45,14 @@
 - set_fact:
     bundle_image: "{{ bundle_registry }}/{{ bundle_image_namespace }}/{{ operator_name }}:v{{ operator_version }}"
     annotation_file_path: "{{ operator_manifest_to_bundle_dir }}/{{ operator_name }}/{{ operator_version }}/metadata/annotations.yaml"
+    clusterserviceversion_file_path: "{{ operator_manifest_to_bundle_dir }}/{{ operator_name }}/{{ operator_version }}/manifests/{{ operator_name }}.{{ operator_version }}.clusterserviceversion.yaml"
+
+- name: Ensure replaces is removed (bundle format only)
+  lineinfile:
+    path: '{{ clusterserviceversion_file_path }}'
+    regexp: '^\s*replaces:'
+    state: absent
+  when: operator_format == "bundle"
 
 - name: Remove bundle image {{ bundle_image }}
   shell: "{{ opm_container_tool }} rmi -f {{ bundle_image }}"
