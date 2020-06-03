@@ -37,20 +37,35 @@
       fail:
       when: not csv_file_st.stat.exists
 
-    - name: "Getting content of CSV file without createdAt to avoid from_yaml issue"
-      shell: "cat {{ csv_file_path }}|grep -v 'createdAt:'"
-      register: csv_data
 
-    - name: Set facts
+    - name: "Getting content of CSV file"
+      shell: "{{ yq_bin_path }} read {{ csv_file_path }} 'metadata.name'"
+      register: csv_metadata_name
+
+    - name: Parse version out
+      shell: "echo {{ csv_metadata_name.stdout }}|cut -d '.' -f1"
+      register: operator_name_raw
+
+    - name: Set operator_name
       set_fact:
-        csv_vars: "{{ csv_data.stdout | from_yaml }}"
+        operator_name: "{{ operator_name_raw.stdout }}"
 
-    - debug:
-        var: csv_vars
+#    - name: "Getting content of CSV file without createdAt to avoid from_yaml issue"
+#      shell: "cat {{ csv_file_path }}|grep -v 'createdAt:'"
+#      register: csv_data
 
-    - name: Set variables
-      set_fact:
-        operator_name: "{{ csv_vars.metadata.name.split('.')[0] }}"
+#    - name: Set facts
+#      set_fact:
+#        csv_vars: "{{ csv_data.stdout | from_yaml }}"
+#
+#    - debug:
+#        var: csv_vars
+#
+#    - name: Set variables
+#      set_fact:
+#        operator_name: "{{ csv_vars.metadata.name.split('.')[0] }}"
+
+
 
 - name: Set operator_format to package manifest or bundle
   set_fact:
