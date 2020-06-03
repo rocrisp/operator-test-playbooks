@@ -5,6 +5,53 @@
     patterns: "*.package.yaml"
   register: package_presence
 
+- name: Operator version
+  block:
+  - name: "Check operator version"
+    shell: "cd {{ operator_dir }}; ls -d */| sort --version-sort | tail -n 1|sed s/.$//"
+    register: operator_version
+
+  - name: Set operator_version
+    set_fact:
+      operator_version: "{{ operator_version.stdout }}"
+  when: operator_version is undefined
+
+- name: "Find CSV"
+  shell: "ls {{ operator_manifest_to_bundle_dir }}/{{ operator_dir | basename }}/{{ operator_version }}/manifests/*clusterserviceversion.yaml"
+  register: csv_file_path_raw
+
+- set_fact:
+    csv_file_path: "{{ csv_file_path_raw.stdout }}"
+
+- debug:
+    var: csv_file_path
+
+- name: "Read the variables from CSV"
+  block:
+    - name: Check if CSV file exists
+      stat:
+        path: "{{ csv_file_path }}"
+      register: csv_file_st
+
+    - name: Fail if CSV file doesn't exists
+      fail:
+      when: not csv_file_st.stat.exists
+
+    - name: "Getting content of CSV file without createdAt to avoid from_yaml issue"
+      shell: "cat {{ csv_file_path }}|grep -v 'createdAt:'"
+      register: csv_data
+
+    - name: Set facts
+      set_fact:
+        csv_vars: "{{ csv_data.stdout | from_yaml }}"
+
+    - debug:
+        var: csv_vars
+
+    - name: Set variables
+      set_fact:
+        operator_name: "{{ csv_vars.metadata.name.split('.')[0] }}"
+
 - name: Set operator_format to package manifest or bundle
   set_fact:
     operator_format: '{{ ''manifest'' if package_presence.files else ''bundle'' }}'
