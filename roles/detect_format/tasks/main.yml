@@ -8,3 +8,5 @@
 - name: Set operator_format to package manifest or bundle
   set_fact:
     operator_format: '{{ ''manifest'' if package_presence.files else ''bundle'' }}'
+    run_manifest_test: "{{ run_manifest_test | default(false) }}"
+    run_bundle_test: "{{ run_bundle_test | default(true) }}"

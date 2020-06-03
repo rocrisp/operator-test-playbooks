@@ -16,13 +16,11 @@
     run_remove_catalog_repo: true
     run_manifest_test: false
     run_bundle_test: true
-    distro_type: "{{ 'upstream' if run_upstream else '' }}"
     work_dir: "/tmp/operator-test"
     operator_dir: "dummy" # so operator-courier will be installed
     bundle_image: "dummy" # so skopeo and umoci will be installed
     operator_work_dir: "{{ work_dir }}/operator-files"
     testing_bin_path: "{{ work_dir }}/bin"
-    oc_bin_path: '{{ ''kubectl'' if run_upstream else "{{ testing_bin_path }}/oc" }}'
     jq_bin_path: "{{ testing_bin_path }}/jq"
     yq_bin_path: "{{ testing_bin_path }}/yq"
     go_bin_path: "{{ testing_bin_path }}/go/bin/go"
@@ -43,7 +41,8 @@
 
     - set_fact:
         work_dir: "{{ work_dir | default('/tmp/operator-test') }}"
-        operator_dir: "{{ operator_dir | default('') }}"
+        operator_dir: "{{ operator_dir | default('dummy') }}"
+        bundle_image: "{{ bundle_image | default('dummy') }}"
         run_scorecard: "{{ run_scorecard | default(true) }}"
         run_host_init: "{{ run_host_init | default(true) }}"
         run_prereqs: "{{ run_prereqs | default(true) }}"
@@ -56,32 +55,46 @@
         run_cleanup: "{{ run_cleanup | default(true) }}"
         run_remove_catalog_repo: "{{ run_remove_catalog_repo | default(true) }}"
         operator_format: "bundle"
-        run_manifest_test: "{{ run_manifest_test | default(false) }}"
-        run_bundle_test: "{{ run_bundle_test | default(true) }}"
+
 
   roles:
     - { role: install_base_packages, tags: ["base"], when: run_host_init|bool }
     - { role: install_docker, tags: ["docker"], when: run_host_init|bool }
     - { role: install_kubectl, tags: ["kubectl"], when: run_host_init|bool }
     - { role: install_kind, tags: ["kind"], when: run_host_init|bool }
-    - { role: install_operator_prereqs, when: run_prereqs|bool }
     - { role: prepare_catalog_repo_upstream, tags: ["always"], when: run_upstream|bool }
     - { role: detect_format, tags: ["always"], when: run_upstream|bool }
-    - { role: build_catalog_upstream, tags: ["operator_catalog"], when: run_catalog_init|bool }
-    - { role: build_image_bundle, tags: [never, "operator_manifest_to_bundle"] }
+
+  tasks:
+    - set_fact:
+        run_manifest_test: "{{ run_manifest_test | default(false) }}"
+        run_bundle_test: "{{ run_bundle_test | default(true) }}"
+        oc_bin_path: '{{ ''kubectl'' if run_upstream else "{{ testing_bin_path }}/oc" }}'
+      tags:
+        - always
+        - test
+        - pure_test
+
+    - set_fact:
+        run_prereqs: false
+      tags:
+        - never
+        - pure_test
 
 - name: Running operator manifest test
   import_playbook: local-test-operator.yml
-  tags:
-    - manifest_test
   when:
     - run_upstream|bool
-    - operator_format == "manifest"
+    - run_manifest_test|bool
+  tags:
+    - test
+    - pure_test
 
 - name: Running operator bundle test
   import_playbook: local-test-operator-bundle.yml
-  tags:
-    - bundle_test
   when:
     - run_upstream|bool
-    - operator_format == "bundle"
+    - run_bundle_test|bool
+  tags:
+    - test
+    - pure_test
