@@ -1,4 +1,9 @@
 ---
+
+- fail:
+    msg: "Bundle format is not supported in manifest test yet !!!"
+  when: operator_format == "bundle"
+
 # #future feature
 # - name: "Quay login"
 #   shell: "docker login -u=\"{{ quay_namespace }}+test\" -p={{ quay_token }} quay.io"
