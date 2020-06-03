@@ -40,9 +40,6 @@
 #     - operator_format == "manifest"
 
 - set_fact:
-    operator_name: "{{ operator_dir | basename }}"
-
-- set_fact:
     bundle_image: "{{ bundle_registry }}/{{ bundle_image_namespace }}/{{ operator_name }}:v{{ operator_version }}"
     annotation_file_path: "{{ operator_manifest_to_bundle_dir }}/{{ operator_name }}/{{ operator_version }}/metadata/annotations.yaml"
     clusterserviceversion_file_path: "{{ operator_manifest_to_bundle_dir }}/{{ operator_name }}/{{ operator_version }}/manifests/{{ operator_name }}.{{ operator_version }}.clusterserviceversion.yaml"
