@@ -17,6 +17,27 @@
     include_vars:
       file: "{{ package_path }}"
       name: package_vars
+    when: not run_upstream|bool
+
+  - name: "Load variables from package path into variable package_vars (upstream only)"
+    block:
+    - name: Check if package file exists
+      stat:
+        path: "{{ package_path }}"
+      register: package_file_st
+
+    - name: Fail if package file doesn't exists
+      fail:
+      when: not package_file_st.stat.exists
+
+    - name: "Getting content of package file"
+      shell: "cat {{ package_path }}"
+      register: package_data
+
+    - name: Set facts
+      set_fact:
+        package_vars: "{{ package_data.stdout | from_yaml }}"
+    when: run_upstream|bool
 
   - name: "GET package_name variable from loaded package_vars"
     set_fact:
@@ -101,6 +122,7 @@
     include_vars:
       file: "{{ csv_path }}"
       name: operator_vars
+    when: not run_upstream|bool
 
   - name: "Determine and setfact for podname"
     set_fact:
@@ -108,29 +130,60 @@
       operator_container_name: "{{ operator_vars.spec.install.spec.deployments[0].spec.template.spec.containers[0].name }}"
       operator_capabilities: "{{ operator_vars.metadata.annotations.capabilities }}"
 
-  - name: "Determine operator_allnamespaces_support"
-    set_fact:
-      operator_allnamespaces_support: "{{ operator_vars.spec.installModes | json_query(query) }}"
-    vars:
-      query: "[?type=='AllNamespaces'].supported"
 
-  - name: "Determine operator_ownnamespaces_support"
-    set_fact:
-      operator_ownnamespace_support: "{{ operator_vars.spec.installModes | json_query(query) }}"
-    vars:
-      query: "[?type=='OwnNamespaces'].supported"
+  - name: Parse operator namespace support
+    block:
+      - name: "Determine operator_allnamespaces_support"
+        set_fact:
+          operator_allnamespaces_support: "{{ operator_vars.spec.installModes | json_query(query) }}"
+        vars:
+          query: "[?type=='AllNamespaces'].supported"
 
-  - name: "Determine operator_ownnamespaces_support"
-    set_fact:
-      operator_singlenamespace_support: "{{ operator_vars.spec.installModes | json_query(query) }}"
-    vars:
-      query: "[?type=='SingleNamespaces'].supported"
+      - name: "Determine operator_ownnamespaces_support"
+        set_fact:
+          operator_ownnamespace_support: "{{ operator_vars.spec.installModes | json_query(query) }}"
+        vars:
+          query: "[?type=='OwnNamespaces'].supported"
 
-  - name: "Determine operator_ownnamespaces_support"
-    set_fact:
-      operator_multinamespace_support: "{{ operator_vars.spec.installModes | json_query(query) }}"
-    vars:
-      query: "[?type=='MultiNamespaces'].supported"
+      - name: "Determine operator_ownnamespaces_support"
+        set_fact:
+          operator_singlenamespace_support: "{{ operator_vars.spec.installModes | json_query(query) }}"
+        vars:
+          query: "[?type=='SingleNamespaces'].supported"
+
+      - name: "Determine operator_ownnamespaces_support"
+        set_fact:
+          operator_multinamespace_support: "{{ operator_vars.spec.installModes | json_query(query) }}"
+        vars:
+          query: "[?type=='MultiNamespaces'].supported"
+    when: not run_upstream|bool
+
+  - name: Parse operator namespace support (upstream)
+    block:
+      - name: "Determine operator_allnamespaces_support"
+        set_fact:
+          operator_allnamespaces_support: "{{ operator_vars.spec.installModes | json_query(query) }}"
+        vars:
+          query: "[?type=='AllNamespaces'].supported"
+
+      - name: "Determine operator_ownnamespaces_support"
+        set_fact:
+          operator_ownnamespace_support: "{{ operator_vars.spec.installModes | json_query(query) }}"
+        vars:
+          query: "[?type=='OwnNamespace'].supported"
+
+      - name: "Determine operator_ownnamespaces_support"
+        set_fact:
+          operator_singlenamespace_support: "{{ operator_vars.spec.installModes | json_query(query) }}"
+        vars:
+          query: "[?type=='SingleNamespace'].supported"
+
+      - name: "Determine operator_ownnamespaces_support"
+        set_fact:
+          operator_multinamespace_support: "{{ operator_vars.spec.installModes | json_query(query) }}"
+        vars:
+          query: "[?type=='MultiNamespace'].supported"
+    when: run_upstream|bool
 
   - name: "Set boolean value for different types of namespaces"
     set_fact:

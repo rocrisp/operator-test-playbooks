@@ -1,12 +1,3 @@
-# - name: Build bundle image from bundle format
-#   block:
-#     - fail:
-#         msg: "{{ operator_format }}"
-#     - name: Building image
-#     shell: "/tmp/operator-test/bin/opm alpha bundle build -b docker -d /tmp/community-operators-for-catalog/scripts/bundle-examples/prometheusoperator/0.32.0 --tag localhost:5000/example/operator:v0.1.0 -o -p prometheusoperator -c stable -e stable"
-#   when: operator_format == "bundle"
-
-#  name: Build bundle image from manifest format
 - name: "Ensure that the operator manifest to bundle directory is empty"
   file:
     state: "absent"
@@ -20,24 +11,9 @@
     src: "{{ operator_dir }}"
     dest: "{{ operator_manifest_to_bundle_dir }}"
     remote_src: yes
-# - name: "Checking for operator latest version"
-#   block:
-#     - name: "Find all versions"
-#       find:
-#         paths: "{{ operator_manifest_to_bundle_dir }}/{{ operator_dir | basename }}"
-#         recurse: no
-#         file_type: directory
-#       register: vd
 
-#     - set_fact:
-#       operator_versions: "{{ vd.files | sort(attribute='path', reverse=True) | map(attribute='path') | list }}"
-
-#     - set_fact:
-#       operator_version: "{{ operator_versions[0] | basename }}"
-
-#   when:
-#     - operator_version == "latest"
-#     - operator_format == "manifest"
+- set_fact:
+    operator_name: "{{ operator_dir | basename }}"
 
 - set_fact:
     bundle_image: "{{ bundle_registry }}/{{ bundle_image_namespace }}/{{ operator_name }}:v{{ operator_version }}"
@@ -61,7 +37,7 @@
         path: "{{ annotation_file_path }}"
       register: annotation_file_st
 
-    - name: Fail if anotation file doesn't exists
+    - name: Fail if annotation file doesn't exists
       fail:
       when: not annotation_file_st.stat.exists
 
@@ -72,9 +48,6 @@
     - name: Set facts
       set_fact:
         annotations_vars: "{{ annotation_data.stdout | from_yaml }}"
-
-    - debug:
-        var: annotations_vars.annotations
 
     - name: Set annotation variables
       set_fact:

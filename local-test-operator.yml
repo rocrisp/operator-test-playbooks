@@ -110,12 +110,6 @@
     - name: "Parse operator metadata needed to run the tests (Openshift)"
       include_role:
         name: parse_operator_metadata
-      when: not run_upstream|bool
-
-    - name: "Parse operator metadata needed to run the tests (Upstream)"
-      include_role:
-        name: parse_operator_metadata_upstream
-      when: run_upstream|bool
 
     - name: "Run linting tests with operator-courier verify on the deployed operator"
       include_role:

@@ -5,53 +5,82 @@
     patterns: "*.package.yaml"
   register: package_presence
 
+- name: Set operator_format to package manifest or bundle
+  set_fact:
+    operator_format: '{{ ''manifest'' if package_presence.files else ''bundle'' }}'
+    operator_name: "{{ operator_dir | basename }}"
+
 - name: Operator version
   block:
   - name: "Check operator version"
     shell: "cd {{ operator_dir }}; ls -d */| sort --version-sort | tail -n 1|sed s/.$//"
     register: operator_version_raw
-
-  - name: Set operator_version
-    set_fact:
+  - set_fact:
       operator_version: "{{ operator_version_raw.stdout }}"
   when: operator_version is undefined
 
-- name: "Find CSV"
-  shell: "ls {{ operator_manifest_to_bundle_dir }}/{{ operator_dir | basename }}/{{ operator_version }}/manifests/*clusterserviceversion.yaml"
-  register: csv_file_path_raw
+- name: Find csv file (bundle)
+  block:
+    - name: Searching for file cvs file (bundle)
+      find:
+        paths: "{{ operator_dir }}/{{ operator_version }}/manifests/"
+        recurse: no
+        file_type: file
+        patterns: '*.clusterserviceversion.yaml'
+      register: csv_find_bundle
+    - fail:
+        msg: "Could not find csv file in '{{ operator_dir }}/{{ operator_version }}'"
+      when: csv_find_bundle.files|length == 0
+    - set_fact:
+        csv_file_path: "{{ csv_find_bundle.files[0].path }}"
+  when: operator_format == "bundle"
 
-- set_fact:
-    csv_file_path: "{{ csv_file_path_raw.stdout }}"
+- name: Find csv file (manifest)
+  block:
+    - name: Searching for file cvs file (manifest)
+      find:
+        paths: "{{ operator_dir }}/{{ operator_version }}"
+        recurse: no
+        file_type: file
+        patterns: '*.clusterserviceversion.yaml'
+      register: csv_find_manifest
+    - fail:
+        msg: "Could not find csv file in '{{ operator_dir }}/{{ operator_version }}'"
+      when: csv_find_manifest.files|length == 0
+    - set_fact:
+        csv_file_path: "{{ csv_find_manifest.files[0].path }}"
+  when: operator_format == "manifest"
 
 - debug:
     var: csv_file_path
+    verbosity: 2
 
-- name: "Read the variables from CSV"
+- name: "Include the package path into the operator_vars (upstream only)"
   block:
-    - name: Check if CSV file exists
-      stat:
-        path: "{{ csv_file_path }}"
-      register: csv_file_st
+  - name: Check if package file exists
+    stat:
+      path: "{{ csv_file_path }}"
+    register: csv_file_st
+  - name: Fail if package file doesn't exists
+    fail:
+    when: not csv_file_st.stat.exists
+  - name: "Getting content of package file"
+    shell: "cat {{ csv_file_path }}"
+    register: csv_data
+  - name: Set facts
+    set_fact:
+      operator_vars_tmp: "{{ csv_data.stdout | from_yaml }}"
+  - name: Set facts
+    set_fact:
+      operator_vars: "{{ operator_vars_tmp | from_yaml }}"
 
-    - name: Fail if CSV file doesn't exists
-      fail:
-      when: not csv_file_st.stat.exists
-
-
-    - name: "Getting content of CSV file"
-      shell: "{{ yq_bin_path }} read {{ csv_file_path }} 'metadata.name'"
-      register: csv_metadata_name
-
-    - name: Parse version out
-      shell: "echo {{ csv_metadata_name.stdout }}|cut -d '.' -f1"
-      register: operator_name_raw
-
-    - name: Set operator_name
-      set_fact:
-        operator_name: "{{ operator_name_raw.stdout }}"
-
-- name: Set operator_format to package manifest or bundle
+- name: Set operator name variable from csv
   set_fact:
-    operator_format: '{{ ''manifest'' if package_presence.files else ''bundle'' }}'
+    operator_name: "{{ operator_vars.metadata.name.split('.')[0] }}"
     run_manifest_test: "{{ run_manifest_test | default(false) }}"
     run_bundle_test: "{{ run_bundle_test | default(true) }}"
+
+- debug:
+    var: operator_vars
+    verbosity: 3
+
