@@ -9,11 +9,11 @@
   block:
   - name: "Check operator version"
     shell: "cd {{ operator_dir }}; ls -d */| sort --version-sort | tail -n 1|sed s/.$//"
-    register: operator_version
+    register: operator_version_raw
 
   - name: Set operator_version
     set_fact:
-      operator_version: "{{ operator_version.stdout }}"
+      operator_version: "{{ operator_version_raw.stdout }}"
   when: operator_version is undefined
 
 - name: "Find CSV"
@@ -49,23 +49,6 @@
     - name: Set operator_name
       set_fact:
         operator_name: "{{ operator_name_raw.stdout }}"
-
-#    - name: "Getting content of CSV file without createdAt to avoid from_yaml issue"
-#      shell: "cat {{ csv_file_path }}|grep -v 'createdAt:'"
-#      register: csv_data
-
-#    - name: Set facts
-#      set_fact:
-#        csv_vars: "{{ csv_data.stdout | from_yaml }}"
-#
-#    - debug:
-#        var: csv_vars
-#
-#    - name: Set variables
-#      set_fact:
-#        operator_name: "{{ csv_vars.metadata.name.split('.')[0] }}"
-
-
 
 - name: Set operator_format to package manifest or bundle
   set_fact:
