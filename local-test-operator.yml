@@ -225,6 +225,7 @@
 
       when:
         - run_deploy|bool
+
       always:
         - name: "Cleanup created resources on the OCP cluster"
           include_role:
