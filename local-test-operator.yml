@@ -1,5 +1,5 @@
 ---
-- name: Test the operator on a OCP 4.0 cluster with OLM
+- name: Test the operator on a kind/OCP 4.0 cluster with OLM
   hosts: all
   become: false
   gather_facts: false
@@ -224,8 +224,9 @@
 
       when:
         - run_deploy|bool
+
       always:
-        - name: "Cleanup created resources on the OCP cluster"
+        - name: "Cleanup created resources on the OCP/kind cluster"
           include_role:
             name: cleanup_operator_resources
           when:

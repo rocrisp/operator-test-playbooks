@@ -7,6 +7,7 @@
   vars:
     run_upstream: false
     run_prereqs: true
+    run_cleanup: true
     run_lint: true
     run_catalog_init: true
     work_dir: "/tmp/operator-test"
@@ -77,7 +78,8 @@
         name: deploy_olm_operator_upstream_bundle
       when: run_upstream|bool
 
-    - name: "Cleanup"
+    - name: "Cleanup created resources on the KIND cluster"
       include_role:
-        name: final_cleanup_upstream
-      when: run_upstream|bool
+        name: cleanup_operator_resources
+      when:
+        - run_cleanup|bool
