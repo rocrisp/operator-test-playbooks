@@ -130,7 +130,6 @@
       operator_container_name: "{{ operator_vars.spec.install.spec.deployments[0].spec.template.spec.containers[0].name }}"
       operator_capabilities: "{{ operator_vars.metadata.annotations.capabilities }}"
 
-
   - name: Parse operator namespace support
     block:
       - name: "Determine operator_allnamespaces_support"
