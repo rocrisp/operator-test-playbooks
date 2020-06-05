@@ -1,15 +1,7 @@
 ---
 - name: "Inspect the bundle image with skopeo"
-  # shell: "skopeo inspect docker://{{ bundle_image }}"
-  shell: "skopeo inspect docker-daemon:{{ bundle_image }}"
+  shell: "skopeo inspect {{ image_protocol }}{{ bundle_image }}"
   register: skopeo_inspect_result
-  when: not run_upstream|bool
-
-- name: "Inspect the bundle image with skopeo"
-  # shell: "skopeo inspect docker://{{ bundle_image }}"
-  shell: "skopeo inspect docker-daemon:{{ bundle_image }}"
-  register: skopeo_inspect_result
-  when: run_upstream|bool
 
 - name: "Save the skopeo inspect output to a log file"
   copy:
