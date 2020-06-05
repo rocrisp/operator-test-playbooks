@@ -165,7 +165,7 @@
 - name: "Wait for the operator {{ package_name }} to be in packagemanifests"
   shell: "{{ oc_bin_path }} get packagemanifests {{ package_name }} -n test-operators"
   register: packagemanifest_presence
-  retries: 25
+  retries: 60
   delay: 5
   until: packagemanifest_presence.rc == 0
   ignore_errors: true
@@ -305,3 +305,15 @@
 - fail:
     msg: 'Operator deployment with OLM failed, check the olm-*.txt files for more details'
   when: operator_result.rc != 0
+
+- name: "Upstream failures"
+  block:
+  - fail:
+      msg: 'Operator was not capable to stay healthy for a specific time'
+    when: operator_uptime.rc != 0
+
+  - fail:
+      msg: 'Operator was not found among packagemanifests'
+    when: packagemanifest_presence.rc != 0
+  when: run_upstream|bool
+

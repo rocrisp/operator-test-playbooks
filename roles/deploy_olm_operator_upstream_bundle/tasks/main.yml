@@ -186,3 +186,14 @@
 - fail:
     msg: 'Operator deployment with OLM failed, check the olm-*.txt files for more details'
   when: operator_result.rc != 0
+
+- name: "Upstream failures"
+  block:
+  - fail:
+      msg: 'Operator was not capable to stay healthy for a specific time'
+    when: operator_uptime.rc != 0
+
+  - fail:
+      msg: 'Operator was not found among packagemanifests'
+    when: packagemanifest_presence.rc != 0
+  when: run_upstream|bool
