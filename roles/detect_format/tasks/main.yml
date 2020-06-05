@@ -1,180 +1,48 @@
 ---
-
-- name: Handle operator image input
+- name: Handle operator input image conversion
   block:
-    - name: Set input image
-      set_fact:
-        operator_input_image: "{{ operator_input_image | regex_replace('[A-z]*://', '') }}"
-        operator_input_local_image: "{{ operator_local_registry }}/{{ operator_input_image | regex_replace('[A-z]*://', '') | basename}}"
-
-    - name: Remove previous input image from local registry
-      shell: "docker rmi -f {{ operator_input_local_image }}"
-
-    - name: Pull input image
-      shell: "docker pull {{ operator_input_image }}"
-
-    - name: Tag input image
-      shell: "docker tag {{ operator_input_image }} {{ operator_input_local_image }}"
-
-    - name: Push input image to local registry
-      shell: "docker push {{ operator_input_local_image }}"
-
-    - name: "Ensure that the operator tmp bundle input directory exists and is empty"
-      file:
-        state: "{{ item }}"
-        path: "{{ bundle_input_tmp_dir }}"
-      with_items:
-        - absent
-        - directory
-      when: bundle_input_tmp_dir is defined
-
-    - name: "Ensure that the operator bundle input directory exists and is empty"
-      file:
-        state: "{{ item }}"
-        path: "{{ bundle_input_src_dir }}"
-      with_items:
-        - absent
-        - directory
-      when: bundle_input_src_dir is defined
-
-    - name: "Extract the operator bundle image into opearator dir"
+    - set_fact:
+        image_protocol: "docker-daemon:"
+    - name: Handle operator image input
       include_role:
-        name: extract_operator_bundle
-      vars:
-        bundle_image: "{{ operator_input_local_image }}"
-        operator_bundle_dir: "{{ bundle_input_tmp_dir }}"
-        operator_work_dir: "{{ bundle_input_src_dir }}"
+        name: convert_bundle_image_to_dir
+  when:
+    - operator_input_image != ""
+    - operator_input_image_convert|bool
 
-    - name: Find csv file (bundle input)
+- name: Detect operator format
+  block:
+    - name: Search for package.yml
+      find:
+        paths: "{{ operator_dir }}"
+        patterns: "*.package.yaml"
+      register: package_presence
+
+    - name: Set operator_format to package manifest or bundle
+      set_fact:
+        operator_format: '{{ ''manifest'' if package_presence.files else ''bundle'' }}'
+        operator_name: "{{ operator_dir | basename }}"
+
+    - name: Operator version
       block:
-        - name: Searching for file cvs file (bundle input)
-          find:
-            paths: "{{ bundle_input_src_dir }}/manifests/"
-            recurse: no
-            file_type: file
-            patterns: '*.clusterserviceversion.yaml'
-          register: csv_find_bundle_input
-        - fail:
-            msg: "Could not find csv file in '{{ bundle_input_src_dir }}/manifests/'"
-          when: csv_find_bundle_input.files|length == 0
-        - set_fact:
-            csv_file_path: "{{ csv_find_bundle_input.files[0].path }}"
-        - name: "Getting content of package file"
-          shell: "cat {{ csv_file_path }}"
-          register: csv_data_input
-        - name: Set facts
-          set_fact:
-            operator_vars_tmp: "{{ csv_data_input.stdout | from_yaml }}"
-        - name: Set facts
-          set_fact:
-            operator_vars: "{{ operator_vars_tmp | from_yaml }}"
-        - name: Set facts
-          set_fact:
-            operator_dir: "{{ bundle_input_src_dir }}/{{ operator_vars.metadata.name | replace('.v','/') }}"
-        # - fail:
-        #     msg: " {{ operator_dir }}"
-        - name: "Ensure that the operator bundle input directory exists and is empty"
-          file:
-            state: "{{ item }}"
-            path: "{{ operator_dir }}"
-          with_items:
-            - absent
-            - directory
-        - name : Move bundle dir to {{ operator_dir }}
-          copy:
-            src: "{{ bundle_input_src_dir }}/{{ item }}"
-            dest: "{{ operator_dir }}/"
-            remote_src: yes
-            directory_mode: yes
-          with_items:
-            - manifests
-            - metadata
-        - name: Set facts
-          set_fact:
-            operator_dir: "{{ operator_dir | dirname }}"
-  when: operator_input_image != ""
+      - name: "Check operator version"
+        shell: "cd {{ operator_dir }}; ls -d */| sort --version-sort | tail -n 1|sed s/.$//"
+        register: operator_version_raw
+      - set_fact:
+          operator_version: "{{ operator_version_raw.stdout }}"
+      when: operator_version is undefined
 
-- name: Search for package.yml
-  find:
-    paths: "{{ operator_dir }}"
-    patterns: "*.package.yaml"
-  register: package_presence
+    - name: "Export CSV variables"
+      include_role:
+        name: export_csv
+      vars:
+        op_csv_dir: "{{ operator_dir }}/{{ operator_version }}"
 
-- name: Set operator_format to package manifest or bundle
-  set_fact:
-    operator_format: '{{ ''manifest'' if package_presence.files else ''bundle'' }}'
-    operator_name: "{{ operator_dir | basename }}"
-
-- name: Operator version
-  block:
-  - name: "Check operator version"
-    shell: "cd {{ operator_dir }}; ls -d */| sort --version-sort | tail -n 1|sed s/.$//"
-    register: operator_version_raw
-  - set_fact:
-      operator_version: "{{ operator_version_raw.stdout }}"
-  when: operator_version is undefined
-
-- name: Find csv file (bundle)
-  block:
-    - name: Searching for file cvs file (bundle)
-      find:
-        paths: "{{ operator_dir }}/{{ operator_version }}/manifests/"
-        recurse: no
-        file_type: file
-        patterns: '*.clusterserviceversion.yaml'
-      register: csv_find_bundle
-    - fail:
-        msg: "Could not find csv file in '{{ operator_dir }}/{{ operator_version }}'"
-      when: csv_find_bundle.files|length == 0
-    - set_fact:
-        csv_file_path: "{{ csv_find_bundle.files[0].path }}"
-  when: operator_format == "bundle"
-
-- name: Find csv file (manifest)
-  block:
-    - name: Searching for file cvs file (manifest)
-      find:
-        paths: "{{ operator_dir }}/{{ operator_version }}"
-        recurse: no
-        file_type: file
-        patterns: '*.clusterserviceversion.yaml'
-      register: csv_find_manifest
-    - fail:
-        msg: "Could not find csv file in '{{ operator_dir }}/{{ operator_version }}'"
-      when: csv_find_manifest.files|length == 0
-    - set_fact:
-        csv_file_path: "{{ csv_find_manifest.files[0].path }}"
-  when: operator_format == "manifest"
-
-- debug:
-    var: csv_file_path
-    verbosity: 2
-
-- name: "Include the package path into the operator_vars (upstream only)"
-  block:
-  - name: Check if package file exists
-    stat:
-      path: "{{ csv_file_path }}"
-    register: csv_file_st
-  - name: Fail if package file doesn't exists
-    fail:
-    when: not csv_file_st.stat.exists
-  - name: "Getting content of package file"
-    shell: "cat {{ csv_file_path }}"
-    register: csv_data
-  - name: Set facts
-    set_fact:
-      operator_vars_tmp: "{{ csv_data.stdout | from_yaml }}"
-  - name: Set facts
-    set_fact:
-      operator_vars: "{{ operator_vars_tmp | from_yaml }}"
-
-- name: Set operator name variable from csv
-  set_fact:
-    operator_name: "{{ operator_vars.metadata.name.split('.')[0] }}"
-    run_manifest_test: "{{ run_manifest_test | default(false) }}"
-    run_bundle_test: "{{ run_bundle_test | default(true) }}"
-
-- debug:
-    var: operator_vars
-    verbosity: 3
+    - name: Set operator name variable from csv
+      set_fact:
+        operator_name: "{{ operator_vars.metadata.name.split('.')[0] }}"
+        image_protocol: "docker-daemon:"
+        run_manifest_test: "{{ run_manifest_test | default(false) }}"
+        run_bundle_test: "{{ run_bundle_test | default(true) }}"
+  when:
+    - operator_input_image_convert|bool
