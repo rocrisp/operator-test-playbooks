@@ -83,4 +83,3 @@
 - debug:
     var: operator_vars
     verbosity: 3
-
