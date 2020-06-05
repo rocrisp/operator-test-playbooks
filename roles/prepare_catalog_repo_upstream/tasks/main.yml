@@ -20,5 +20,6 @@
         version: "{{ catalog_repo_branch }}"
         force: true
       when: not operator_dir_st.stat.exists
+  when: operator_input_image == ""
   tags:
     - catalog_build

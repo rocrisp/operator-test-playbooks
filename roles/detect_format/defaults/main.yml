@@ -1,9 +1,5 @@
-operator_bundle_src_dir: /tmp/operator-test/operator-bundle-src
-operator_work_dir: /tmp/cvp/operator-files
-operator_repo: /tmp/community-operators
-check_verify_result: true
-catalog_repo: https://github.com/operator-framework/community-operators.git
-catalog_repo_branch: master
-catalog_repo_dir: /tmp/community-operators-for-catalog
+operator_local_registry: "localhost:5000"
+bundle_input_tmp_dir:  "{{ work_dir }}/operator-bundle-input/tmp"
+bundle_input_src_dir:  "{{ work_dir }}/operator-bundle-input/src"
 
 

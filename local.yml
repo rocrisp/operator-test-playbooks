@@ -18,6 +18,7 @@
     run_bundle_test: true
     work_dir: "/tmp/operator-test"
     operator_dir: "dummy" # so operator-courier will be installed
+    operator_input_image: ""
     bundle_image: "dummy" # so skopeo and umoci will be installed
     operator_work_dir: "{{ work_dir }}/operator-files"
     testing_bin_path: "{{ work_dir }}/bin"
@@ -42,6 +43,7 @@
     - set_fact:
         work_dir: "{{ work_dir | default('/tmp/operator-test') }}"
         operator_dir: "{{ operator_dir | default('dummy') }}"
+        operator_input_image: "{{ operator_input_image | default('') }}"
         bundle_image: "{{ bundle_image | default('dummy') }}"
         run_host_init: "{{ run_host_init | default(true) }}"
         run_prereqs: "{{ run_prereqs | default(true) }}"
