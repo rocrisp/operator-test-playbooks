@@ -21,11 +21,16 @@
         yq_bin_path: "{{ testing_bin_path }}/yq"
         umoci_bin_path: "{{ testing_bin_path }}/umoci"
         opm_bin_path: "{{ testing_bin_path }}/opm"
+        operator_sdk_bin_path: "{{ testing_bin_path }}/operator-sdk"
 
     - name: "Install operator testing prerequisites"
       include_role:
         name: install_operator_prereqs
       when: run_prereqs|bool
+
+    - name: "Convert manifest format to bundle when needed"
+      include_role:
+        name: convert_manifest_to_bundle
 
     - name: "Extract the operator bundle image into files needed to run the tests"
       include_role:
