@@ -16,7 +16,6 @@
     olm_operator_files_path: "{{ work_dir }}/olm-operator-files"
     quay_token: "{{ cvp_vault.quay_token }}"
     quay_namespace: "cvpops"
-    run_upstream: false
     oc_bin_path: "{{ 'kubectl' if run_upstream else 'oc' }}"
     jq_bin_path : "/usr/bin/jq"
     yq_bin_path: "/usr/local/bin/yq"
