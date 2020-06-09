@@ -1,4 +1,4 @@
-FROM centos:8
+FROM centos:7
 RUN yum install epel-release -y
 RUN yum update -y
 RUN yum install -y ansible git
@@ -8,5 +8,5 @@ COPY *.yml /playbooks/
 RUN ln -s /etc/ansible/roles /playbooks/roles
 RUN echo "localhost ansible_connection=local" >> /etc/ansible/hosts
 WORKDIR /playbooks
-RUN ansible-playbook local.yml --tags image_build -e "operator_dir=/tmp/operator-dir-dummy"
+RUN ansible-playbook local.yml --tags image_build -e "operator_dir=/tmp/operator-dir-dummy" -e "ansible_distribution=CentOS"
 CMD ["/bin/bash"]
