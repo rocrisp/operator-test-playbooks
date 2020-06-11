@@ -12,6 +12,11 @@
     dest: "{{ work_dir }}/validation-version.txt"
   when: sdk_version_result.stdout is defined
 
+- name: Unset variables
+  set_fact:
+    sdk_validation_result:
+  when: run_upstream|bool
+
 - name: "Validate the operator bundle manifest and metadata with operator-sdk bundle validate from image {{ bundle_image }}"
   shell: "{{ operator_sdk_bin_path }} bundle validate --verbose {{ bundle_image }} > {{ work_dir}}/validation-output.txt 2>&1"
   register: sdk_validation_result
