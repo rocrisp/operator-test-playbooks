@@ -1,4 +1,4 @@
-- name: Search for all versions
+- name: Search for all versions_in_dir
   find:
     paths: "{{ operator_dir }}"
     recurse: no
@@ -6,22 +6,48 @@
   register: versions_find
 
 - set_fact:
-    versions: "{{ versions_find.files | map(attribute='path' ) | map('basename') | list | sort_versions }}"
+    versions_in_dir: "{{ versions_find.files | map(attribute='path' ) | map('basename') | list | sort_versions }}"
+    operator_dir_name: "aqua"
 
-- name: Test
-  debug:
-    msg: "{{ item }}"
-  loop: "{{ versions }}"
+# - name: Test
+#   debug:
+#     msg: "{{ item }}"
+#   loop: "{{ versions_in_dir }}"
+
+
+
+- name: Get list of versions_in_dir from bundle registry
+  uri:
+    url: "http://{{ bundle_registry }}/v2/{{ bundle_image_namespace }}/{{ operator_dir_name }}/tags/list"
+    return_content: yes
+  register: bib_registry_versions
+  ignore_errors: yes
+  # failed_when: "'tags' not in this.content"
+
+- set_fact:
+    versions_in_registry: []
+
+- set_fact:
+    versions_in_registry: "{{ bib_registry_versions.content | from_json | json_query('tags') | list | sort_versions | regex_replace('v') }}"
+  when: bib_registry_versions.status == 200
+
+- debug:
+    var: versions_in_registry
+- debug:
+    var: versions_in_dir
+
+- set_fact:
+    verions_add: "{{ versions_in_dir | difference(versions_in_registry) }}"
+    verions_remove: "{{ versions_in_registry | difference(versions_in_dir) }}"
+- debug:
+    var: verions_add
+- debug:
+    var: verions_remove
 
 - name: "Build bundle image"
-  block:
-
-  - name: "Build bundle image"
-    include_role:
-      name: build_image_bundle
-    vars:
-      operator_version: "{{ item }}"
-      operator_input_image_convert: true
-    loop: "{{ versions }}"
-  when: run_upstream|bool
-
+  include_role:
+    name: build_image_bundle
+  vars:
+    operator_version: "{{ item }}"
+    operator_input_image_convert: true
+  loop: "{{ verions_add }}"

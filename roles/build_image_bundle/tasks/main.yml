@@ -45,6 +45,10 @@
 
     - set_fact:
         clusterserviceversion_bundle_file_path: "{{ operator_bundle_src_dir }}/{{ operator_dir_name }}/{{ operator_version }}/{{ csv_file_path | basename }}"
+        # TODO REMOVE channel variables for production
+        # Parse from package.yaml
+        operator_channels: "alpha"
+        operator_channel_default: "alpha"
       when: operator_format == "manifest"
 
     - name: Ensure replaces is removed in this test
@@ -107,7 +111,7 @@
 
     - name: "Generate bundle image {{ bundle_image }} from manifest format"
       shell:
-        cmd: "{{ opm_bin_path }} alpha bundle build --directory {{ operator_version }} --package {{ operator_name }} -t {{ bundle_image }} -b {{ opm_container_tool }}"
+        cmd: "{{ opm_bin_path }} alpha bundle build --directory {{ operator_version }} --package {{ operator_name }} -t {{ bundle_image }} -b {{ opm_container_tool }} -c {{ operator_channels }} -e {{ operator_channel_default }}"
         chdir: "{{ operator_bundle_src_dir }}/{{ operator_dir_name }}"
       when: operator_format == "manifest"
 
