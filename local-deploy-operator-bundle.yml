@@ -1,0 +1,29 @@
+---
+- name: Deploy the operator bundle
+  hosts: all
+  become: false
+  gather_facts: false
+
+  vars:
+    run_upstream: false
+    work_dir: "/tmp/operator-test"
+    testing_bin_path: "{{ work_dir }}/bin"
+
+  tasks:
+    - set_fact:
+        operator_work_dir: "{{ work_dir }}/operator-files"
+        operator_bundle_dir: "{{ work_dir }}/operator-bundle"
+        jq_bin_path: "{{ testing_bin_path }}/jq"
+        yq_bin_path: "{{ testing_bin_path }}/yq"
+        umoci_bin_path: "{{ testing_bin_path }}/umoci"
+        opm_bin_path: "{{ testing_bin_path }}/opm"
+        operator_sdk_bin_path: "{{ testing_bin_path }}/operator-sdk"
+        oc_bin_path: '{{ ''kubectl'' if run_upstream else "{{ testing_bin_path }}/oc" }}'
+
+
+    - name: "Deploy operator bundle (all versions)"
+      include_role:
+        name:
+          build_operator_bundle
+      when:
+        - run_upstream|bool

@@ -105,3 +105,13 @@
   tags:
     - test
     - pure_test
+
+- name: Deploy operator bundle for each
+  import_playbook: local-deploy-operator-bundle.yml
+  when:
+    - run_upstream|bool
+  tags:
+    - never
+    - deploy_bundles
+
+

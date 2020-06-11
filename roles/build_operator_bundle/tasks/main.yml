@@ -1,0 +1,27 @@
+- name: Search for all versions
+  find:
+    paths: "{{ operator_dir }}"
+    recurse: no
+    file_type: directory
+  register: versions_find
+
+- set_fact:
+    versions: "{{ versions_find.files | map(attribute='path' ) | map('basename') | list | sort_versions }}"
+
+- name: Test
+  debug:
+    msg: "{{ item }}"
+  loop: "{{ versions }}"
+
+- name: "Build bundle image"
+  block:
+
+  - name: "Build bundle image"
+    include_role:
+      name: build_image_bundle
+    vars:
+      operator_version: "{{ item }}"
+      operator_input_image_convert: true
+    loop: "{{ versions }}"
+  when: run_upstream|bool
+

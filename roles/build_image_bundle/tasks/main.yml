@@ -9,7 +9,9 @@
     #     msg: "{{ operator_name }} {{ operator_version }}"
     - name: Remove bundle image {{ bundle_image }}
       shell: "{{ opm_container_tool }} rmi -f {{ bundle_image }}"
-  when: not operator_input_image_convert|bool
+  when:
+    - operator_input_image != ""
+    - not operator_input_image_convert|bool
 
 - name: Handle bundle image from source dir
   block:
@@ -29,14 +31,20 @@
 
     - set_fact:
         operator_name: "{{ operator_dir | basename }}"
+        operator_dir_name: "{{ operator_dir | basename }}"
 
     - set_fact:
         bundle_image: "{{ bundle_registry }}/{{ bundle_image_namespace }}/{{ operator_name }}:v{{ operator_version }}"
         clusterserviceversion_bundle_file_path: "{{ operator_bundle_src_dir }}/{{ operator_name }}/{{ operator_version }}/manifests/{{ operator_name }}.v{{ operator_version }}.clusterserviceversion.yaml"
         annotation_file_path: "{{ operator_bundle_src_dir }}/{{ operator_name }}/{{ operator_version }}/metadata/annotations.yaml"
 
+    - name: detect format
+      include_role:
+        name: detect_format
+      # when: operator_format == ""
+
     - set_fact:
-        clusterserviceversion_bundle_file_path: "{{ operator_bundle_src_dir }}/{{ operator_name }}/{{ operator_version }}/{{ csv_file_path | basename }}"
+        clusterserviceversion_bundle_file_path: "{{ operator_bundle_src_dir }}/{{ operator_dir_name }}/{{ operator_version }}/{{ csv_file_path | basename }}"
       when: operator_format == "manifest"
 
     - name: Ensure replaces is removed in this test
@@ -100,7 +108,7 @@
     - name: "Generate bundle image {{ bundle_image }} from manifest format"
       shell:
         cmd: "{{ opm_bin_path }} alpha bundle build --directory {{ operator_version }} --package {{ operator_name }} -t {{ bundle_image }} -b {{ opm_container_tool }}"
-        chdir: "{{ operator_bundle_src_dir }}/{{ operator_name }}"
+        chdir: "{{ operator_bundle_src_dir }}/{{ operator_dir_name }}"
       when: operator_format == "manifest"
 
     - name: Push bundle image {{ bundle_image }}
