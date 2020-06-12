@@ -8,6 +8,7 @@
     run_upstream: false
     work_dir: "/tmp/operator-test"
     testing_bin_path: "{{ work_dir }}/bin"
+    operators_index: []
 
   tasks:
     - set_fact:
@@ -20,10 +21,33 @@
         operator_sdk_bin_path: "{{ testing_bin_path }}/operator-sdk"
         oc_bin_path: '{{ ''kubectl'' if run_upstream else "{{ testing_bin_path }}/oc" }}'
 
+    - set_fact:
+        operators: '["{{ operator_dir | basename }}"]'
+        operators_index: "{{ operators_index }}"
+      when: operators is not defined
 
-    - name: "Deploy operator bundle (all versions)"
+    - debug: var=operators
+
+    - name: "Deploy bundle operators"
       include_role:
         name:
           build_operator_bundle
+      vars:
+        operator_dir: "{{ operator_base_dir }}/{{ op_item }}"
+
+      loop: "{{ operators }}"
+      loop_control:
+        loop_var: op_item
       when:
         - run_upstream|bool
+
+
+    # - name: "Deploy operators to index"
+    #   include_role:
+    #     name:
+    #       build_operator_bundle
+    #   vars:
+    #     operator_dir: "{{ operator_base_dir }}/{{ item }}"
+    #   loop: "{{ operators }}"
+    #   when:
+    #     - run_upstream|bool

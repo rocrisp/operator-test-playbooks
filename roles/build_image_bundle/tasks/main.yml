@@ -15,33 +15,29 @@
 
 - name: Handle bundle image from source dir
   block:
-    - name: "Ensure that the operator manifest to bundle directory is empty"
+    - name: "Ensure that the operator manifest to bundle directory exists and is empty"
       file:
-        state: "absent"
+        state: "{{ item }}"
         path: "{{ operator_bundle_src_dir }}"
-    - name: "Ensure that the operator manifest to bundle directory is created"
-      file:
-        state: "directory"
-        path: "{{ operator_bundle_src_dir }}"
+      with_items:
+        - absent
+        - directory
+      when: operator_bundle_src_dir is defined
+
     - name: "Copy manifest format files to {{ operator_bundle_src_dir }}"
       copy:
         src: "{{ operator_dir }}"
         dest: "{{ operator_bundle_src_dir }}"
         remote_src: yes
 
-    - set_fact:
-        operator_name: "{{ operator_dir | basename }}"
-        operator_dir_name: "{{ operator_dir | basename }}"
+    - name: detect format
+      include_role:
+        name: detect_format
 
     - set_fact:
         bundle_image: "{{ bundle_registry }}/{{ bundle_image_namespace }}/{{ operator_name }}:v{{ operator_version }}"
         clusterserviceversion_bundle_file_path: "{{ operator_bundle_src_dir }}/{{ operator_name }}/{{ operator_version }}/manifests/{{ operator_name }}.v{{ operator_version }}.clusterserviceversion.yaml"
         annotation_file_path: "{{ operator_bundle_src_dir }}/{{ operator_name }}/{{ operator_version }}/metadata/annotations.yaml"
-
-    - name: detect format
-      include_role:
-        name: detect_format
-      # when: operator_format == ""
 
     - set_fact:
         clusterserviceversion_bundle_file_path: "{{ operator_bundle_src_dir }}/{{ operator_dir_name }}/{{ operator_version }}/{{ csv_file_path | basename }}"

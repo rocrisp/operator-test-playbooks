@@ -1,5 +1,5 @@
 ---
-- name: Handle operator input image conversion
+- name: Handle operator input image
   block:
     - set_fact:
         image_protocol: "docker-daemon:"
@@ -22,6 +22,8 @@
       set_fact:
         operator_format: '{{ ''manifest'' if package_presence.files else ''bundle'' }}'
         operator_name: "{{ operator_dir | basename }}"
+        operator_dir_name: "{{ operator_dir | basename }}"
+        operator_base_dir: "{{ operator_dir | dirname }}"
 
     - name: Operator version
       block:
