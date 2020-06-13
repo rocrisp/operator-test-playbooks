@@ -41,13 +41,9 @@
       when:
         - run_upstream|bool
 
-
-    # - name: "Deploy operators to index"
-    #   include_role:
-    #     name:
-    #       build_operator_bundle
-    #   vars:
-    #     operator_dir: "{{ operator_base_dir }}/{{ item }}"
-    #   loop: "{{ operators }}"
-    #   when:
-    #     - run_upstream|bool
+    - name: "Deploy operators to index"
+      include_role:
+        name:
+          build_operator_index_bundle
+      when:
+        - run_upstream|bool

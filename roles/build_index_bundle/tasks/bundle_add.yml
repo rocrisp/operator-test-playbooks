@@ -1,0 +1,8 @@
+- set_fact:
+    bundle_image: "{{ bundle_registry }}/{{ bundle_image_namespace }}/{{ bundle_add_name }}:v{{ bundle_add_ver }}"
+
+- debug:
+    var: bundle_image
+
+- name: Build index image {{ bundle_index_image }}
+  shell: "{{ opm_bin_path }} index add -d {{ bundle_db }} -u {{ opm_container_tool }} --bundles {{ bundle_image }} --tag {{ bundle_index_image }} --skip-tls"
