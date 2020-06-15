@@ -22,10 +22,10 @@ install:
 jobs:
   include:
   - stage: Integration Tests
-    before_script:
-    - ansible-playbook -i localhost, local.yml -e ansible_connection=local -e run_upstream=true -e kind_version=$KIND_VER -e kind_kube_ver=$KUBE_VER --tags host_build --skip-tags always
+    # before_script:
+    # - ansible-playbook -i localhost, local.yml -e ansible_connection=local -e run_upstream=true -e kind_version=$KIND_VER -e kind_kube_ver=$KUBE_VER --tags host_build --skip-tags always
     # - kind get kubeconfig --name operator-test > ~/.kube/config
     # - docker version
 
     script:
-    - ansible-playbook -vv -i localhost, local.yml -e ansible_connection=local -e run_upstream=true -e operator_dir=/tmp/community-operators-for-catalog/upstream-community-operators/aqua -e operator_version=1.0.2 --tags test
+    - ansible-playbook -vv -i localhost, local.yml -e ansible_connection=local -e run_upstream=true -e operator_dir=/tmp/community-operators-for-catalog/upstream-community-operators/aqua -e operator_version=1.0.2
