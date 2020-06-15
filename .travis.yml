@@ -23,7 +23,7 @@ jobs:
   include:
   - stage: Integration Tests
     before_script:
-    - ansible-playbook -i localhost, local.yml -e ansible_connection=local -e run_upstream=true -e kind_version=$KIND_VER -e kind_kube_ver=$KUBE_VER --tags host_build --skip-tags always
+    - ansible-playbook -i localhost, local.yml -e ansible_connection=local -e run_upstream=true -e kind_version=$KIND_VER -e kind_kube_ver=$KUBE_VER -e catalog_repo_dir=$(pwd) --tags host_build
     # - kind get kubeconfig --name operator-test > ~/.kube/config
     # - docker version
 
