@@ -28,9 +28,9 @@ jobs:
     script: $PLAYBOOK_CMD -e operator_dir=/tmp/community-operators-for-catalog/upstream-community-operators/aqua -e operator_version=1.0.2 --tags pure_test
   - name: Testing operator in bundle format
     script: $PLAYBOOK_CMD -e operator_dir=/tmp/community-operators-for-catalog/scripts/bundle-examples/prometheusoperator -e operator_version=0.32.0 --tags pure_test
+  - name: Testing operator in image format
+    script: $PLAYBOOK_CMD -e operator_input_image=quay.io/cvpops/test-bundle:tigera-131 --tags pure_test -e operator_input_image_convert=false
   - name: Testing operator in image format with convertion to dir
     script: $PLAYBOOK_CMD -e operator_input_image=quay.io/cvpops/test-bundle:tigera-131 --tags pure_test -e operator_input_image_convert=true
-  - name: Testing operator in image format with convertion to dir
-    script: $PLAYBOOK_CMD -e operator_input_image=quay.io/cvpops/test-bundle:tigera-131 --tags pure_test -e operator_input_image_convert=false
   - name: Deploying of multiple operators to bundle index test
     script: $PLAYBOOK_CMD --tags deploy_bundles --skip-tags always -e operators_config=test/operatos_config.yaml
