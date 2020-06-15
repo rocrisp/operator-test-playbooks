@@ -40,6 +40,7 @@
     - setup:
       tags:
         - always
+        - host_build
       when: run_upstream|bool
 
     - set_fact:
@@ -62,12 +63,14 @@
         operator_format: "bundle"
       tags:
         - always
+        - host_build
 
   roles:
     - { role: install_base_packages, tags: ["base"], when: run_host_init|bool }
     - { role: install_docker, tags: ["docker"], when: run_host_init|bool }
     - { role: install_kubectl, tags: ["kubectl"], when: run_host_init|bool }
     - { role: install_kind, tags: ["kind"], when: run_host_init|bool }
+    - { role: install_operator_prereqs, tags: ["never", "host_build"], when: run_upstream|bool }
     - { role: prepare_catalog_repo_upstream, tags: ["always"], when: run_upstream|bool }
     - { role: detect_format, tags: ["always"], when: run_upstream|bool }
 
