@@ -10,7 +10,7 @@ python:
 - "3.8"
 
 env:
-- DISTRO_TYPE=upstream KIND_VER=v0.8.1 KUBE_VER=v1.18.2 OLM_VER=0.14.1 SDK_VER=v0.16.0 PLAYBOOK_REPO=https://github.com/J0zi/operator-test-playbooks PLAYBOOK_BRANCH=PR/RHO-642-package-and-bundle-tests-v2
+- DISTRO_TYPE=upstream KIND_VER=v0.8.1 KUBE_VER=v1.18.2 OLM_VER=0.14.1 SDK_VER=v0.16.0 PLAYBOOK_CMD="ansible-playbook -i localhost, local.yml -e ansible_connection=local -e run_upstream=true -e run_remove_catalog_repo=false -e catalog_repo_dir=$(pwd)"
 
 services:
   - docker
@@ -23,10 +23,10 @@ jobs:
   include:
   - stage: Integration Tests
     before_script:
-    - ansible-playbook -i localhost, local.yml -e ansible_connection=local -e run_upstream=true -e kind_version=$KIND_VER -e kind_kube_ver=$KUBE_VER -e catalog_repo_dir=$(pwd) --tags host_build
+    - $PLAYBOOK_CMD -e kind_version=$KIND_VER -e kind_kube_ver=$KUBE_VER --tags host_build
     # - kind get kubeconfig --name operator-test > ~/.kube/config
     # - docker version
 
     script:
-    - ansible-playbook -vv -i localhost, local.yml -e ansible_connection=local -e run_upstream=true -e operator_dir=/tmp/community-operators-for-catalog/upstream-community-operators/aqua -e operator_version=1.0.2 --tags pure_test
-    - ansible-playbook -vv -i localhost, local.yml -e ansible_connection=local -e run_upstream=true --tags deploy_bundles --skip-tags always -e run_remove_catalog_repo=false -e operators_config=$(pwd)/test/operatos_config.yaml
+    - $PLAYBOOK_CMD -e operator_dir=/tmp/community-operators-for-catalog/upstream-community-operators/aqua -e operator_version=1.0.2 --tags pure_test
+    - $PLAYBOOK_CMD --tags deploy_bundles --skip-tags always -e operators_config=$(pwd)/test/operatos_config.yaml
