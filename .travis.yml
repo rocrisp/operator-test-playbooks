@@ -29,3 +29,4 @@ jobs:
 
     script:
     - ansible-playbook -vv -i localhost, local.yml -e ansible_connection=local -e run_upstream=true -e operator_dir=/tmp/community-operators-for-catalog/upstream-community-operators/aqua -e operator_version=1.0.2 --tags pure_test
+    - ansible-playbook -vv -i localhost, local.yml -e ansible_connection=local -e run_upstream=true -e operator_base_dir=/tmp/community-operators-for-catalog/upstream-community-operators --tags deploy_bundles --skip-tags always -e run_remove_catalog_repo=false -e '{"operators": ["prometheus","aqua"]}'
