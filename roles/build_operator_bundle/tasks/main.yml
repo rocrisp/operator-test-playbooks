@@ -55,5 +55,5 @@
     loop_var: op_ver_item
 
 - set_fact:
-    operators_index: "{{ operators_index | default([]) | union( [{'name': operator_name, 'versions': verions_add }]) }}"
+    operators_for_index: "{{ operators_for_index | default([]) | union( [{'name': operator_name, 'versions': verions_add }]) }}"
   when: verions_add.0 is defined
