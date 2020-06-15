@@ -27,6 +27,7 @@ jobs:
     name: Testing operator
     script:
     - $PLAYBOOK_CMD -e operator_dir=/tmp/community-operators-for-catalog/upstream-community-operators/aqua -e operator_version=1.0.2 --tags pure_test
+    - $PLAYBOOK_CMD -e operator_dir=/tmp/community-operators-for-catalog/scripts/bundle-examples/prometheusoperator -e operator_version=0.32.0 --tags pure_test
   - stage: Operator Index Deploy Tests
     name: Deploying of multiple operators to bundle index test
     script:
