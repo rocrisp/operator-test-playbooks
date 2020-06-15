@@ -1,4 +1,4 @@
-operator_base_dir: /tmp/community-operators-for-catalog/upstream-community-operators
+operator_base_dir: upstream-community-operators
 operators:
 - aqua
 - prometheus

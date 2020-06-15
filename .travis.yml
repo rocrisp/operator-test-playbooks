@@ -28,5 +28,5 @@ jobs:
     # - docker version
 
     script:
-    - $PLAYBOOK_CMD -e operator_dir=/tmp/community-operators-for-catalog/upstream-community-operators/aqua -e operator_version=1.0.2 --tags pure_test
-    - $PLAYBOOK_CMD --tags deploy_bundles --skip-tags always -e operators_config=$(pwd)/test/operatos_config.yaml
+    - $PLAYBOOK_CMD -e operator_dir=$(pwd)/upstream-community-operators/aqua -e operator_version=1.0.2 --tags pure_test
+    - $PLAYBOOK_CMD --tags deploy_bundles --skip-tags always -e operators_config=test/operatos_config.yaml
