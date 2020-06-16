@@ -7,7 +7,9 @@
       shell: "{{ opm_container_tool }} tag {{ operator_input_image  }} {{ bundle_image }}"
     - name: Push image {{ bundle_image }}
       shell: "{{ opm_container_tool }} push {{ bundle_image }}"
-  when: operator_input_image != ""
+  when:
+  - operator_input_image is defined
+  - operator_input_image != ""
 
 - debug:
     var: bundle_image
