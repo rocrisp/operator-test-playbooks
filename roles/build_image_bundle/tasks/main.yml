@@ -50,6 +50,13 @@
         - op_manifest_pkg_vars is defined
         - operator_format == "manifest"
 
+    - set_fact:
+        operator_channels: "{{ operator_channel_force }}"
+        operator_channel_default: "{{ operator_channel_force }}"
+      when:
+        - operator_channel_force is defined
+        - operator_format == "manifest"
+
     - name: Ensure replaces is removed in this test
       block:
         - name: Check if csv file exists
