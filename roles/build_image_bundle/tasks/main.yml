@@ -41,11 +41,17 @@
 
     - set_fact:
         clusterserviceversion_bundle_file_path: "{{ operator_bundle_src_dir }}/{{ operator_dir_name }}/{{ operator_version }}/{{ csv_file_path | basename }}"
-        # TODO REMOVE channel variables for production
-        # Parse from package.yaml
-        operator_channels: "alpha"
-        operator_channel_default: "alpha"
       when: operator_format == "manifest"
+
+    - set_fact:
+        operator_channels: "{{ op_manifest_pkg_vars.channels | map(attribute='name' ) | list | join(',') | default('alpha') }}"
+        operator_channel_default: "{{ op_manifest_pkg_vars.defaultChannel | default('alpha') }}"
+      when:
+        - op_manifest_pkg_vars is defined
+        - operator_format == "manifest"
+
+    - fail:
+        msg: "{{ operator_channels }} {{ operator_channel_default }}"
 
     - name: Ensure replaces is removed in this test
       block:
