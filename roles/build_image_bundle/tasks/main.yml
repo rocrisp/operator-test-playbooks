@@ -2,16 +2,17 @@
   block:
     - name: Set input image
       set_fact:
-        bundle_image: "{{ operator_input_image | regex_replace('[A-z]*://', '') }}"
-        operator_name: "{{ operator_input_image.split(':')[0] | regex_replace('[A-z]*://', '') | basename }}"
+        bundle_image: "{{ operator_input_image }}"
+        operator_name: "{{ operator_input_image.split(':')[0] | basename }}"
         operator_version: "{{ operator_input_image.split(':')[1] }}"
+        operator_format: "bundle"
     # - fail:
     #     msg: "{{ operator_name }} {{ operator_version }}"
     - name: Remove bundle image {{ bundle_image }}
       shell: "{{ opm_container_tool }} rmi -f {{ bundle_image }}"
   when:
     - operator_input_image != ""
-    - not operator_input_image_convert|bool
+    # - not operator_input_image_convert|bool
 
 - name: Handle bundle image from source dir
   block:
@@ -24,15 +25,15 @@
         - directory
       when: operator_bundle_src_dir is defined
 
+    - name: detect format
+      include_role:
+        name: detect_format
+
     - name: "Copy manifest format files to {{ operator_bundle_src_dir }}"
       copy:
         src: "{{ operator_dir }}"
         dest: "{{ operator_bundle_src_dir }}"
         remote_src: yes
-
-    - name: detect format
-      include_role:
-        name: detect_format
 
     - set_fact:
         bundle_image: "{{ bundle_registry }}/{{ bundle_image_namespace }}/{{ operator_name }}:v{{ operator_version }}"
