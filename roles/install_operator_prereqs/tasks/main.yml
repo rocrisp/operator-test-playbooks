@@ -130,7 +130,7 @@
             mode: "0755"
           when: ansible_distribution == 'Debian' or ansible_distribution == 'Ubuntu'
 
-        - name: "Configuring Kind with registry"
+        - name: "Installing skopeo for ubuntu"
           shell: "/tmp/install_skopeo.sh"
           when: ansible_distribution == 'Debian' or ansible_distribution == 'Ubuntu'
         - package:

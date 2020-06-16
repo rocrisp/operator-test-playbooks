@@ -52,6 +52,9 @@
     - name: "Build the operator bundle index"
       include_role:
         name: build_index_bundle
+      vars:
+        ba_name: "{{ operator_name }}"
+        ba_versions: '[ "{{ operator_version }}" ]'
       when: run_upstream|bool
 
     - name: "OLM"
