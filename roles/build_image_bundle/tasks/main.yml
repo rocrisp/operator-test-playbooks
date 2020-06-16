@@ -98,19 +98,19 @@
             operator_package_name: "{{ annotations_vars.annotations['operators.operatorframework.io.bundle.package.v1'] }}"
         - name: "Generate bundle image {{ bundle_image }} from bundle format"
           shell:
-            cmd: "{{ opm_bin_path }} alpha bundle build --directory {{ operator_version }}/{{ operator_manifest_dir }} --package {{ operator_package_name }} -t {{ bundle_image }} -c {{ operator_channels }} -e {{ operator_channel_default }} -b {{ opm_container_tool }}"
+            cmd: "{{ opm_bin_path }} alpha bundle build --directory {{ operator_version }}/{{ operator_manifest_dir }} --package {{ operator_package_name }} -t {{ bundle_image }} -c {{ operator_channels }} -e {{ operator_channels }},{{ operator_channel_default }} -b {{ opm_container_tool }}"
             chdir: "{{ operator_bundle_src_dir }}/{{ operator_name }}"
       when: operator_format == "bundle"
 
     - name: "Generate bundle image {{ bundle_image }} from bundle format"
       shell:
-        cmd: "{{ opm_bin_path }} alpha bundle build --directory {{ operator_version }}/{{ operator_manifest_dir }} --package {{ operator_package_name }} -t {{ bundle_image }} -c {{ operator_channels }} -e {{ operator_channel_default }} -b {{ opm_container_tool }}"
+        cmd: "{{ opm_bin_path }} alpha bundle build --directory {{ operator_version }}/{{ operator_manifest_dir }} --package {{ operator_package_name }} -t {{ bundle_image }} -c {{ operator_channels }} -e {{ operator_channels }},{{ operator_channel_default }} -b {{ opm_container_tool }}"
         chdir: "{{ operator_bundle_src_dir }}/{{ operator_name }}"
       when: operator_format == "bundle"
 
     - name: "Generate bundle image {{ bundle_image }} from manifest format"
       shell:
-        cmd: "{{ opm_bin_path }} alpha bundle build --directory {{ operator_version }} --package {{ operator_name }} -t {{ bundle_image }} -b {{ opm_container_tool }} -c {{ operator_channels }} -e {{ operator_channel_default }}"
+        cmd: "{{ opm_bin_path }} alpha bundle build --directory {{ operator_version }} --package {{ operator_name }} -t {{ bundle_image }} -b {{ opm_container_tool }} -c {{ operator_channels }} -e {{ operator_channels }},{{ operator_channel_default }}"
         chdir: "{{ operator_bundle_src_dir }}/{{ operator_dir_name }}"
       when: operator_format == "manifest"
 
