@@ -49,7 +49,6 @@
     name: build_image_bundle
   vars:
     operator_version: "{{ op_ver_item }}"
-    operator_input_image_convert: true
   loop: "{{ verions_add }}"
   loop_control:
     loop_var: op_ver_item

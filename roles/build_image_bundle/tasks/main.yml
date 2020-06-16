@@ -12,7 +12,6 @@
       shell: "{{ opm_container_tool }} rmi -f {{ bundle_image }}"
   when:
     - operator_input_image != ""
-    # - not operator_input_image_convert|bool
 
 - name: Handle bundle image from source dir
   block:
@@ -114,5 +113,3 @@
 
     - name: Push bundle image {{ bundle_image }}
       shell: "{{ opm_container_tool }} push {{ bundle_image }}"
-
-  when: operator_input_image_convert|bool

@@ -3,5 +3,4 @@ operator_name: ""
 operator_version: latest
 bundle_image_namespace: test-operator
 bundle_registry: localhost:5000
-operator_input_image_convert: true
 operators_for_index: []

@@ -8,7 +8,6 @@
         name: convert_bundle_image_to_dir
   when:
     - operator_input_image != ""
-    - operator_input_image_convert|bool
 
 - name: Detect operator format
   block:
@@ -52,13 +51,10 @@
         op_dir: "{{ operator_dir }}"
       when: operator_format == "manifest"
 
-    # - fail:
-    #     msg: "AAA"
     - name: Set operator name variable from csv
       set_fact:
         operator_name: "{{ operator_vars.metadata.name.split('.')[0] }}"
         image_protocol: "docker-daemon:"
         run_manifest_test: "{{ run_manifest_test | default(false) }}"
         run_bundle_test: "{{ run_bundle_test | default(true) }}"
-  when:
-    - operator_input_image_convert|bool
+

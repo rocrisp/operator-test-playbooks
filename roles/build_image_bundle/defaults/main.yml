@@ -4,7 +4,6 @@ operator_name: ""
 operator_dir_name: ""
 operator_version: "latest"
 operator_input_image: ""
-operator_input_image_convert: false
 opm_container_tool: "docker"
 bundle_registry: localhost:5000
 bundle_image_namespace: test-operator

@@ -75,4 +75,3 @@
             operator_dir: "{{ operator_dir | dirname }}"
   when:
     - operator_input_image != ""
-    - operator_input_image_convert|bool
