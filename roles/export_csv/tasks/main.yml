@@ -45,20 +45,12 @@
     fail:
     when: not csv_file_st.stat.exists
   - name: "Getting content of package file"
-    shell: "cat {{ csv_file_path }}"
+    shell: "{{ yq_bin_path }} r {{ csv_file_path }} -t metadata"
     register: csv_data
   - name: Set facts
     set_fact:
-      operator_vars_tmp: "{{ csv_data.stdout | from_yaml }}"
-
+      operator_vars:
+        metadata: "{{ csv_data.stdout | from_yaml }}"
   - debug:
-      var: operator_vars_tmp
+      var: operator_vars
       verbosity: 2
-
-  - name: Set facts
-    set_fact:
-      operator_vars: "{{ operator_vars_tmp | from_yaml }}"
-
-- debug:
-    var: operator_vars
-    verbosity: 3
