@@ -26,7 +26,7 @@
           dest: /usr/local/bin/kubectl
           mode: '0755'
         register: kubectl_install_result
-        until: kubectl_install_result.status_code == 200
+        until: kubectl_install_result.status_code is undefined or kubectl_install_result.status_code < 400
         retries: 10
         delay: 15
         failed_when: kubectl_install_result is failure
@@ -35,4 +35,3 @@
       - install
       - image_build
       - host_build
-
