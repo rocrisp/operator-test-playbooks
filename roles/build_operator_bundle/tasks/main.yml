@@ -1,4 +1,4 @@
-- name: Search for all versions_in_dir
+- name: "Search for all versions for operator '{{ operator_dir | basename }}'"
   find:
     paths: "{{ operator_dir }}"
     recurse: no
@@ -22,7 +22,6 @@
     return_content: yes
   register: bib_registry_versions
   ignore_errors: yes
-  # failed_when: "'tags' not in this.content"
 
 - set_fact:
     versions_in_registry: []
@@ -46,7 +45,7 @@
 
 - name: "Build bundle image"
   include_role:
-    name: build_image_bundle
+    name: build_operator_version_bundle
   vars:
     operator_version: "{{ op_ver_item }}"
   loop: "{{ verions_add }}"
@@ -54,5 +53,5 @@
     loop_var: op_ver_item
 
 - set_fact:
-    operators_for_index: "{{ operators_for_index | default([]) | union( [{'name': operator_name, 'versions': verions_add }]) }}"
+    operators_for_index: "{{ operators_for_index | default([]) | union( [{'name': operator_name, 'versions': versions_in_dir }]) }}"
   when: verions_add.0 is defined

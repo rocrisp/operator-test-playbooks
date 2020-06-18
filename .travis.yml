@@ -41,6 +41,4 @@ jobs:
 
   - stage: Operator Tests to deploy operators to index
     name: Deploying of multiple operators to bundle index test
-    script: $PLAYBOOK_CMD --tags deploy_bundles --skip-tags always -e operators_config=test/operatos_config.yaml -e operator_channel_force=stable
-
-
+    script: $PLAYBOOK_CMD --tags deploy_bundles -e operators_config=test/operatos_config.yaml -e operator_channel_force=stable

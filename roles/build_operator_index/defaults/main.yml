@@ -7,5 +7,7 @@ bundle_index_image_namespace: test-operator
 bundle_index_image_name: "index"
 bundle_index_image_version: "latest"
 bundle_index_image: "{{ bundle_registry }}/{{ bundle_index_image_namespace }}/{{ bundle_index_image_name }}:{{ bundle_index_image_version }}"
+bundle_index_image_from: ""
 ba_add_name: ""
 ba_add_versions: []
+opm_index_add_extra_args: ""
