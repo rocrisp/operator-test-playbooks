@@ -1,4 +1,3 @@
----
 - set_fact:
     bundle_index_image: "{{ bundle_registry }}/{{ bundle_index_image_namespace }}/{{ bundle_index_image_name }}:{{ bundle_index_image_version }}"
 
@@ -6,15 +5,18 @@
   shell: "{{ opm_container_tool }} rmi -f {{ bundle_index_image }}"
 
 - debug:
-    var: ba_versions
+    var: operators_for_index
 
-- name: Add all bundle images to index
-  include_tasks: bundle_add.yml
+- name: "Build index image for all operators"
+  include_role:
+    name: build_operator_index
   vars:
-    bundle_add_name: "{{ ba_name }}"
-  loop: "{{ ba_versions }}"
+    ba_name: "{{ ops_item.name }}"
+    ba_versions: "{{ ops_item.versions }}"
+  loop: "{{ operators_for_index }}"
   loop_control:
-    loop_var: bundle_add_ver
+    loop_var: ops_item
 
 - name: Push bundle image {{ bundle_index_image }}
   shell: "{{ opm_container_tool }} push {{ bundle_index_image }}"
+  when: operators_for_index[0] is defined

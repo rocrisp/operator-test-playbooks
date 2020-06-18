@@ -35,12 +35,20 @@
 
         - name: Set facts from config variables
           set_fact:
-            operators: "{{ operators_config_vars.operators }}"
+            operators: "{{ operators_config_vars.operators | default([])}}"
             operator_base_dir: "{{ operators_config_vars.operator_base_dir | default('') }}"
 
-        - debug:
-            var: operators
-            verbosity: 2
+        - fail:
+            msg: "'operator_base_dir' was not found in config file '{{ operators_config }}' !!!"
+          when: operator_base_dir == ""
+
+        - stat:
+            path: "{{ operator_base_dir }}"
+          register: operator_base_dir_st
+        - fail:
+            msg: "Operator base dir '{{ operator_base_dir }}' was not found !!!"
+          when: not operator_base_dir_st.stat.exists
+
         - debug:
             var: operator_base_dir
             verbosity: 2
@@ -59,15 +67,15 @@
     - set_fact:
         operators_for_index: "{{ operators_for_index }}"
 
-    - debug: var=operators
+    - debug:
+        var: operators
 
-    - name: "Deploy bundle operators"
+    - name: "Deploy operators bundle images"
       include_role:
         name:
           build_operator_bundle
       vars:
         operator_dir: "{{ operator_base_dir }}/{{ op_item }}"
-
       loop: "{{ operators }}"
       loop_control:
         loop_var: op_item
@@ -77,6 +85,6 @@
     - name: "Deploy operators to index"
       include_role:
         name:
-          build_operator_index_bundle
+          build_operators_index
       when:
         - run_upstream|bool
