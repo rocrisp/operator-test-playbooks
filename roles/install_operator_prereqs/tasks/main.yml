@@ -43,7 +43,7 @@
     dest: "{{ operator_sdk_bin_path }}"
     mode: "0755"
   register: operator_sdk_install_result
-  until: operator_sdk_install_result.status_code == 200
+  until: operator_sdk_install_result.status_code is undefined or operator_sdk_install_result.status_code == 200
   retries: 10
   delay: 15
   failed_when: operator_sdk_install_result is failure
@@ -57,7 +57,7 @@
     dest: "{{ opm_bin_path }}"
     mode: "0755"
   register: opm_install_result
-  until: opm_install_result.status_code == 200
+  until: opm_install_result.status_code is undefined or opm_install_result.status_code == 200
   retries: 10
   delay: 15
   failed_when: opm_install_result is failure
@@ -71,7 +71,7 @@
     dest: "{{ jq_bin_path }}"
     mode: "0755"
   register: jq_install_result
-  until: jq_install_result.status_code == 200
+  until: jq_install_result.status_code is undefined or jq_install_result.status_code == 200
   retries: 10
   delay: 15
   failed_when: jq_install_result is failure
@@ -85,7 +85,7 @@
     dest: "{{ yq_bin_path }}"
     mode: "0755"
   register: yq_install_result
-  until: yq_install_result.status_code == 200
+  until: yq_install_result.status_code is undefined or yq_install_result.status_code == 200
   retries: 10
   delay: 15
   failed_when: yq_install_result is failure
@@ -172,7 +172,7 @@
         dest: "{{ umoci_bin_path }}"
         mode: "0755"
       register: umoci_install_result
-      until: umoci_install_result.status_code == 200
+      until: umoci_install_result.status_code is undefined or umoci_install_result.status_code == 200
       retries: 10
       delay: 15
       failed_when: umoci_install_result is failure
