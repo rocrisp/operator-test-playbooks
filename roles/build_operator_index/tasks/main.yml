@@ -2,16 +2,87 @@
 - set_fact:
     bundle_index_image: "{{ bundle_registry }}/{{ bundle_index_image_namespace }}/{{ bundle_index_image_name }}:{{ bundle_index_image_version }}"
 
+
+- name: Get list of tags for index image from bundle registry
+  uri:
+    url: "http://{{ bundle_registry }}/v2/{{ bundle_index_image_namespace }}/{{ bundle_index_image_name }}/tags/list"
+    return_content: yes
+  register: boi_registry_versions
+  ignore_errors: yes
+
+- set_fact:
+    index_versions_in_registry: []
+
+- set_fact:
+    index_versions_in_registry: "{{ boi_registry_versions.content | from_json | json_query('tags') | list | sort_versions | regex_replace('v') }}"
+  when: boi_registry_versions.status == 200
+
+
+- set_fact:
+    bundle_index_image_from: "{{ bundle_registry }}/{{ bundle_index_image_namespace }}/{{ bundle_index_image_name }}:{{ index_versions_in_registry[0] }}"
+    opm_index_add_extra_args: "--from-index {{ bundle_registry }}/{{ bundle_index_image_namespace }}/{{ bundle_index_image_name }}:{{ index_versions_in_registry[0] }}"
+  when:
+    - index_versions_in_registry[0] is defined
+    # - boi_registry_versions.status == 200
+
+
+
+- debug:
+    var: opm_index_add_extra_args
+
+- name: Handling previous index image
+  block:
+    - name: "Remove previous versions of operator '{{ ba_name }}' from index image {{ bundle_index_image }}"
+      shell: "{{ opm_bin_path }} index rm  -c {{ opm_container_tool }} --operators {{ ba_name }} --tag {{ bundle_index_image }}  {{ opm_index_add_extra_args }}"
+    - name: Push bundle image {{ bundle_index_image }}
+      shell: "{{ opm_container_tool }} push {{ bundle_index_image }}"
+
+    # - name: Remove index image {{ bundle_index_image }}
+    #   shell: "{{ opm_container_tool }} rmi -f {{ bundle_index_image }}"
+
+    - pause:
+        seconds: 30
+  when:
+    - bundle_index_image_from is defined
+    - bundle_index_image_from != ""
+
 - debug:
     var: ba_name
 
 - debug:
     var: ba_versions
 
-- name: Add all vesions for operator '{{ ba_name }}' to index
-  include_tasks: bundle_add.yml
-  vars:
-    bundle_add_name: "{{ ba_name }}"
-  loop: "{{ ba_versions }}"
-  loop_control:
-    loop_var: bundle_add_ver
+# - name: Add all vesions for operator '{{ ba_name }}' to index
+#   include_tasks: bundle_add.yml
+#   vars:
+#     bundle_add_name: "{{ ba_name }}"
+#   loop: "{{ ba_versions }}"
+#   loop_control:
+#     loop_var: bundle_add_ver
+
+- set_fact:
+    bundles_arr: "{{ bundles_arr | default([]) }} + [ '{{ bundle_registry }}/{{ bundle_image_namespace }}/{{ ba_name }}:v{{ item }}' ]"
+  with_items: "{{ ba_versions }}"
+
+
+- set_fact:
+    bundle_images: "{{ bundles_arr | join(',') }}"
+
+- debug:
+    var: bundle_images
+
+- name: Retag bundle input image
+  block:
+    - name: Retag image {{ operator_input_image }}
+      shell: "{{ opm_container_tool }} tag {{ operator_input_image  }} {{ bundle_images }}"
+    - name: Push image {{ operator_input_image }}
+      shell: "{{ opm_container_tool }} push {{ bundle_images }}"
+  when:
+  - operator_input_image is defined
+  - operator_input_image != ""
+
+- name: "Add operator '{{ ba_name }}' to index image {{ bundle_index_image }}"
+  shell: "{{ opm_bin_path }} index add -u {{ opm_container_tool }} --bundles {{ bundle_images }} --tag {{ bundle_index_image }} {{ opm_index_add_extra_args }} --skip-tls"
+
+- name: Push bundle image {{ bundle_index_image }}
+  shell: "{{ opm_container_tool }} push {{ bundle_index_image }}"

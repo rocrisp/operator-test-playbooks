@@ -37,20 +37,24 @@
 
 - name: "Include the package path into the operator_vars (upstream only)"
   block:
-  - name: Check if package file exists
+  - name: "Check if csv file '{{ csv_file_path }}' exists"
     stat:
       path: "{{ csv_file_path }}"
     register: csv_file_st
+
   - name: Fail if package file doesn't exists
     fail:
     when: not csv_file_st.stat.exists
-  - name: "Getting content of package file"
+
+  - name: "Getting metadata content from csv"
     shell: "{{ yq_bin_path }} r {{ csv_file_path }} -t metadata"
     register: csv_data
-  - name: Set facts
+
+  - name: "Sets operator variables from csv '{{ csv_file_path }}'"
     set_fact:
       operator_vars:
         metadata: "{{ csv_data.stdout | from_yaml }}"
+
   - debug:
       var: operator_vars
       verbosity: 2

@@ -17,6 +17,6 @@
   loop_control:
     loop_var: ops_item
 
-- name: Push bundle image {{ bundle_index_image }}
-  shell: "{{ opm_container_tool }} push {{ bundle_index_image }}"
-  when: operators_for_index[0] is defined
+# - name: Push bundle image {{ bundle_index_image }}
+#   shell: "{{ opm_container_tool }} push {{ bundle_index_image }}"
+#   when: operators_for_index[0] is defined
