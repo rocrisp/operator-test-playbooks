@@ -168,7 +168,7 @@
 
     - name: "Install umoci if not installed"
       get_url:
-        url: "https://github.com/openSUSE/umoci/releases/download/{{ umoci_version }}/umoci.amd64"
+        url: "https://github.com/opencontainers/umoci/releases/download/{{ umoci_version }}/umoci.amd64"
         dest: "{{ umoci_bin_path }}"
         mode: "0755"
       register: umoci_install_result
