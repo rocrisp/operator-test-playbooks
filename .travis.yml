@@ -3,7 +3,7 @@ language: python
 os: linux
 sudo: required
 
-if: type = pull_request
+#if: type = pull_request
 
 python:
 - "3.8"
