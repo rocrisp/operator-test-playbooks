@@ -34,7 +34,7 @@ jobs:
   - name: 3. Testing operator in manifest format, converting to bundle and bundle test
     script: $PLAYBOOK_CMD -e operator_dir=/tmp/community-operators-for-catalog/upstream-community-operators/jaeger -e operator_version=1.18.0 --tags pure_test
 
-  # - stage: Operator Tests from image input (internal purposes only)
+  - stage: Operator Tests from image input (internal purposes only)
   - name: Testing operator in image format
     script: $PLAYBOOK_CMD -e operator_input_image=quay.io/cvpops/test-bundle:tigera-131 --tags pure_test
 
