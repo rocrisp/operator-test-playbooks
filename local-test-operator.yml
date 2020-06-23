@@ -151,10 +151,19 @@
             openshift_images_before: " {{ os_registry_is_result_before.stdout_lines }} + {{ os_pod_is_result_before.stdout_lines }}"
           when: not run_upstream|bool
 
-        - name: "Deploy the operator on the OpenShift 4.0/Kind cluster with OLM"
+        - name: "Deploy the operator on the OpenShift 4.0 with OLM"
           include_role:
             name: deploy_olm_operator
-          when: run_deploy|bool
+          when:
+            - run_deploy|bool
+            - not run_upstream|bool
+
+        - name: "Deploy the operator on the Kind cluster with OLM"
+          include_role:
+            name: deploy_olm_operator_upstream
+          when:
+            - run_deploy|bool
+            - run_upstream|bool
 
         - name: "Get all openshift registry images"
           shell: "{{ oc_bin_path }} get is --all-namespaces -o json | jq '.items[].spec.tags[] | select(.from.kind == \"DockerImage\") | .from.name' --raw-output | sort -u"
