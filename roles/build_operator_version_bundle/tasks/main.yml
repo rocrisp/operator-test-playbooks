@@ -44,23 +44,30 @@
       when: operator_format == "manifest"
 
     - set_fact:
-        operator_channels: "{{ op_manifest_pkg_vars.channels | map(attribute='name' ) | list | join(',') }}"
+        operator_channels_list: "{{ op_manifest_pkg_vars.channels | map(attribute='name' ) | list }}"
       when:
         - op_manifest_pkg_vars is defined
         - operator_format == "manifest"
 
+    - set_fact:
+        operator_channels: "{{ operator_channels_list | join(',') }}"
+      when:
+        - operator_format == "manifest"
+        - operator_channels_list.0 is defined
+
     # we tolerate no default_channel in case the only channel
     - set_fact:
-        operator_channel_default: "{{ op_manifest_pkg_vars.defaultChannel | default(operator_channels) }}"
+        operator_channel_default: "{{ op_manifest_pkg_vars.defaultChannel | default(operator_channels_list[0]) }}"
       when:
-        - op_manifest_pkg_vars is defined
         - operator_format == "manifest"
+        - operator_channels_list.0 is defined
 
     - set_fact:
         operator_channels: "{{ operator_channel_force }}"
         operator_channel_default: "{{ operator_channel_force }}"
       when:
         - operator_channel_force is defined
+        - operator_channel_force != ""
         - operator_format == "manifest"
 
     - name: Ensure replaces is removed in this test
@@ -115,18 +122,19 @@
             chdir: "{{ operator_bundle_src_dir }}/{{ operator_name }}"
       when: operator_format == "bundle"
 
-    - name: "Generate bundle image {{ bundle_image }} from bundle format"
-      shell:
-        cmd: "{{ opm_bin_path }} alpha bundle build --directory {{ operator_version }}/{{ operator_manifest_dir }} --package {{ operator_package_name }} -t {{ bundle_image }} -c {{ operator_channels }} -e {{ operator_channel_default }} -b {{ opm_container_tool }}"
-        chdir: "{{ operator_bundle_src_dir }}/{{ operator_name }}"
-      when: operator_format == "bundle"
-
     - debug:
         var: operator_channel_default
 
+    - name: "Adding operator channels and default channel as arguments"
+      set_fact:
+        opm_bundle_alpha_add_args: "-c {{ operator_channels }} -e {{ operator_channel_default }}"
+      when:
+        - operator_format == "manifest"
+        - operator_channel_force is defined
+
     - name: "Generate bundle image {{ bundle_image }} from manifest format"
       shell:
-        cmd: "{{ opm_bin_path }} alpha bundle build --directory {{ operator_version }} --package {{ operator_name }} -t {{ bundle_image }} -b {{ opm_container_tool }} -c {{ operator_channels }} -e {{ operator_channel_default }}"
+        cmd: "{{ opm_bin_path }} alpha bundle build --directory {{ operator_version }} --package {{ operator_name }} -t {{ bundle_image }} -b {{ opm_container_tool }} {{ opm_bundle_alpha_add_args }}"
         chdir: "{{ operator_bundle_src_dir }}/{{ operator_dir_name }}"
       when: operator_format == "manifest"
 
