@@ -44,8 +44,14 @@
       when: operator_format == "manifest"
 
     - set_fact:
-        operator_channels: "{{ op_manifest_pkg_vars.channels | map(attribute='name' ) | list | join(',') | default('alpha') }}"
-        operator_channel_default: "{{ op_manifest_pkg_vars.defaultChannel | default('alpha') }}"
+        operator_channels: "{{ op_manifest_pkg_vars.channels | map(attribute='name' ) | list | join(',') }}"
+      when:
+        - op_manifest_pkg_vars is defined
+        - operator_format == "manifest"
+
+    # we tolerate no default_channel in case the only channel
+    - set_fact:
+        operator_channel_default: "{{ op_manifest_pkg_vars.defaultChannel | default(operator_channels) }}"
       when:
         - op_manifest_pkg_vars is defined
         - operator_format == "manifest"
@@ -114,6 +120,9 @@
         cmd: "{{ opm_bin_path }} alpha bundle build --directory {{ operator_version }}/{{ operator_manifest_dir }} --package {{ operator_package_name }} -t {{ bundle_image }} -c {{ operator_channels }} -e {{ operator_channel_default }} -b {{ opm_container_tool }}"
         chdir: "{{ operator_bundle_src_dir }}/{{ operator_name }}"
       when: operator_format == "bundle"
+
+    - debug:
+        var: operator_channel_default
 
     - name: "Generate bundle image {{ bundle_image }} from manifest format"
       shell:
