@@ -55,6 +55,16 @@
         - operator_format == "manifest"
         - operator_channels_list.0 is defined
 
+    - fail:
+        msg: "Multiple channels defined and 'defaultChannel' is missing !!!"
+      when:
+        - operator_channel_force is defined
+        - operator_channel_force == ""
+        - op_manifest_pkg_vars is defined
+        - operator_channels_list is defined
+        - operator_channels_list|length > 1
+        - op_manifest_pkg_vars.defaultChannel is undefined
+
     # we tolerate no default_channel in case the only channel
     - set_fact:
         operator_channel_default: "{{ op_manifest_pkg_vars.defaultChannel | default(operator_channels_list[0]) }}"
