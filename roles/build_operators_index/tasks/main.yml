@@ -4,6 +4,10 @@
 - name: Remove index image {{ bundle_index_image }}
   shell: "{{ opm_container_tool }} rmi -f {{ bundle_index_image }}"
 
+- set_fact:
+    operators_for_index: "[]"
+  when: index_skip is defined and index_skip|bool
+
 - debug:
     var: operators_for_index
 

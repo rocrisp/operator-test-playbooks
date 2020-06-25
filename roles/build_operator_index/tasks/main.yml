@@ -34,14 +34,13 @@
   block:
     - name: "Remove previous versions of operator '{{ ba_name }}' from index image {{ bundle_index_image }}"
       shell: "{{ opm_bin_path }} index rm  -c {{ opm_container_tool }} --operators {{ ba_name }} --tag {{ bundle_index_image }}  {{ opm_index_add_extra_args }}"
+
     - name: Push bundle image {{ bundle_index_image }}
       shell: "{{ opm_container_tool }} push {{ bundle_index_image }}"
 
     # - name: Remove index image {{ bundle_index_image }}
     #   shell: "{{ opm_container_tool }} rmi -f {{ bundle_index_image }}"
 
-    - pause:
-        seconds: 30
   when:
     - bundle_index_image_from is defined
     - bundle_index_image_from != ""

@@ -63,7 +63,7 @@
         - op_manifest_pkg_vars is defined
         - operator_channels_list is defined
         - operator_channels_list|length > 1
-        - op_manifest_pkg_vars.defaultChannel is undefined
+        - op_manifest_pkg_vars.defaultChannel is undefined or op_manifest_pkg_vars.defaultChannel == ""
 
     # we tolerate no default_channel in case the only channel
     - set_fact:
@@ -96,6 +96,7 @@
             path: '{{ clusterserviceversion_bundle_file_path }}'
             regexp: '^\s*replaces:'
             state: absent
+          when: remove_replaces is defined
 
     - name: Remove bundle image {{ bundle_image }}
       shell: "{{ opm_container_tool }} rmi -f {{ bundle_image }}"
