@@ -5,3 +5,4 @@ kind_bin_path: "/usr/local/bin/kind"
 # KIND_bin_path: "{{ testing_bin_path }}/kind"
 kind_cluster_name: operator-test
 kind_tmp_dir: /tmp
+kind_registry_ssl: false

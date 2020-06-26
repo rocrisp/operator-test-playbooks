@@ -12,10 +12,11 @@ reg_port='5000'
 docker rm -f "${reg_name}" || true
 # fi
 
-# docker run \
-#     -d --restart=always -p "${reg_port}:443" --name "${reg_name}" \
-#     registry:2
-
+{% if kind_registry_ssl == false %}
+docker run \
+    -d --restart=always -p ${reg_port}:5000 --name "${reg_name}" \
+    registry:2
+{% else %}
 [ -d $CERTS_DIR ] && rm -rf $CERTS_DIR || true
 mkdir -p $CERTS_DIR
 openssl req -newkey rsa:4096 -nodes -sha256 -keyout $CERTS_DIR/domain.key -x509 -days 365 -out $CERTS_DIR/domain.crt -batch
@@ -29,7 +30,7 @@ docker run -d \
    -e REGISTRY_HTTP_TLS_KEY=/certs/domain.key \
    -p ${reg_port}:5000 \
    registry:2
-
+{% endif %}
 
 # Remove existing cluster if it exists
 if [ -n "$($KIND_CMD get clusters | grep {{ kind_cluster_name }})" ];then
@@ -48,7 +49,11 @@ apiVersion: kind.x-k8s.io/v1alpha4
 containerdConfigPatches:
 - |-
   [plugins."io.containerd.grpc.v1.cri".registry.mirrors."localhost:${reg_port}"]
+{% if kind_registry_ssl == false %}
+    endpoint = ["http://${reg_name}:${reg_port}"]
+{% else %}
     endpoint = ["https://${reg_name}:${reg_port}"]
+{% endif %}
 EOF
 
 # connect the registry to the cluster network
