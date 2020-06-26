@@ -34,14 +34,14 @@
         dest: "{{ operator_bundle_src_dir }}"
         remote_src: yes
 
-    - name: "Setting 'bundle_image' and path names for csv and annotation"
+    - name: "Setting path names for csv and annotation"
       set_fact:
-        bundle_image: "{{ bundle_registry }}/{{ bundle_image_namespace }}/{{ operator_package_name }}:v{{ operator_version }}"
         clusterserviceversion_bundle_file_path: "{{ operator_bundle_src_dir }}/{{ operator_name }}/{{ operator_version }}/manifests/{{ operator_name }}.v{{ operator_version }}.clusterserviceversion.yaml"
         annotation_file_path: "{{ operator_bundle_src_dir }}/{{ operator_name }}/{{ operator_version }}/metadata/annotations.yaml"
 
-    - name: "Setting 'clusterserviceversion_bundle_file_path' in case of manifest format"
+    - name: "Setting 'bundle_image' and 'clusterserviceversion_bundle_file_path' in case of manifest format"
       set_fact:
+        bundle_image: "{{ bundle_registry }}/{{ bundle_image_namespace }}/{{ operator_package_name }}:v{{ operator_version }}"
         clusterserviceversion_bundle_file_path: "{{ operator_bundle_src_dir }}/{{ operator_dir_name }}/{{ operator_version }}/{{ csv_file_path | basename }}"
       when: operator_format == "manifest"
 
@@ -104,8 +104,6 @@
             state: absent
           when: remove_replaces is defined
 
-    - name: Remove bundle image {{ bundle_image }}
-      shell: "{{ opm_container_tool }} rmi -f {{ bundle_image }}"
 
     - name: "Read the variables from annotations.yaml"
       block:
@@ -133,27 +131,31 @@
             operator_manifest_dir: "{{ annotations_vars.annotations['operators.operatorframework.io.bundle.manifests.v1'] }}"
             operator_metadata_dir: "{{ annotations_vars.annotations['operators.operatorframework.io.bundle.metadata.v1'] }}"
             operator_package_name: "{{ annotations_vars.annotations['operators.operatorframework.io.bundle.package.v1'] }}"
+            bundle_image: "{{ bundle_registry }}/{{ bundle_image_namespace }}/{{ operator_package_name }}:v{{ operator_version }}"
+
+        - name: Remove bundle image {{ bundle_image }}
+          shell: "{{ opm_container_tool }} rmi -f {{ bundle_image }}"
+
         - name: "Generate bundle image {{ bundle_image }} from bundle format"
           shell:
             cmd: "{{ opm_bin_path }} alpha bundle build --directory {{ operator_version }}/{{ operator_manifest_dir }} --package {{ operator_package_name }} -t {{ bundle_image }} -c {{ operator_channels }} -e {{ operator_channel_default }} -b {{ opm_container_tool }}"
             chdir: "{{ operator_bundle_src_dir }}/{{ operator_name }}"
       when: operator_format == "bundle"
 
-    - debug:
-        var: operator_channel_default
-        verbosity: 2
+    - name: "Handle bundle image from manifest format"
+      block:
+        - name: "Adding operator channels and default channel as arguments"
+          set_fact:
+            opm_bundle_alpha_add_args: "-c {{ operator_channels }} -e {{ operator_channel_default }}"
+          when: operator_channel_force is defined
 
-    - name: "Adding operator channels and default channel as arguments"
-      set_fact:
-        opm_bundle_alpha_add_args: "-c {{ operator_channels }} -e {{ operator_channel_default }}"
-      when:
-        - operator_format == "manifest"
-        - operator_channel_force is defined
+        - name: Remove bundle image {{ bundle_image }}
+          shell: "{{ opm_container_tool }} rmi -f {{ bundle_image }}"
 
-    - name: "Generate bundle image {{ bundle_image }} from manifest format"
-      shell:
-        cmd: "{{ opm_bin_path }} alpha bundle build --directory {{ operator_version }} --package {{ operator_package_name }} -t {{ bundle_image }} -b {{ opm_container_tool }} {{ opm_bundle_alpha_add_args }}"
-        chdir: "{{ operator_bundle_src_dir }}/{{ operator_dir_name }}"
+        - name: "Generate bundle image {{ bundle_image }} from manifest format"
+          shell:
+            cmd: "{{ opm_bin_path }} alpha bundle build --directory {{ operator_version }} --package {{ operator_package_name }} -t {{ bundle_image }} -b {{ opm_container_tool }} {{ opm_bundle_alpha_add_args }}"
+            chdir: "{{ operator_bundle_src_dir }}/{{ operator_dir_name }}"
       when: operator_format == "manifest"
 
     - name: Push bundle image {{ bundle_image }}
