@@ -22,7 +22,8 @@
     return_content: yes
     validate_certs: false
   register: bib_registry_versions
-  ignore_errors: yes
+  failed_when: false
+  changed_when: false
 
 - name: "Reseting 'versions_in_registry' variable"
   set_fact:

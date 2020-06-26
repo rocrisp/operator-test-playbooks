@@ -9,7 +9,7 @@
     return_content: yes
     validate_certs: false
   register: boi_registry_versions
-  ignore_errors: yes
+  failed_when: false
 
 - name: "Reseting 'index_versions_in_registry' variable"
   set_fact:

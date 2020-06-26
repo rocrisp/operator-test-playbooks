@@ -76,7 +76,7 @@
         - name: "Check if OLM is needed"
           shell: "{{ oc_bin_path }} api-resources | grep -o operatorgroup"
           register: olm_needed
-          ignore_errors: true
+          failed_when: false
 
         - name: "Install OLM"
           block:
@@ -85,7 +85,7 @@
 
             - name: "Delete catalogsource"
               shell: "{{ oc_bin_path }} delete catalogsource operatorhubio-catalog -n olm"
-              ignore_errors: true
+              failed_when: false
           when:
             - olm_needed.stdout != "operatorgroup"
       when: run_upstream|bool
@@ -198,7 +198,7 @@
             - name: "Get the pod container logs of the operator after running scorecard tests"
               shell: "{{ oc_bin_path }} get --output=name pods | grep {{ operator_pod_name }} | xargs -I{} {{ oc_bin_path }} logs {} -c {{ operator_container_name }}"
               register: operator_container_result
-              ignore_errors: true
+              failed_when: false
               environment:
                 KUBECONFIG: "{{ kubeconfig_path }}"
               no_log: true
