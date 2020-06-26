@@ -3,9 +3,14 @@
   set_fact:
     bundle_index_image: "{{ bundle_registry }}/{{ bundle_index_image_namespace }}/{{ bundle_index_image_name }}:{{ bundle_index_image_version }}"
 
+- name: "Setting bundle image name"
+  set_fact:
+    registry_api_http_protocol: "https"
+  when: (registry_api_http_protocol is defined and registry_api_http_protocol == "https") or bundle_registry == "quay.io"
+
 - name: Get list of tags for index image from bundle registry
   uri:
-    url: "https://{{ bundle_registry }}/v2/{{ bundle_index_image_namespace }}/{{ bundle_index_image_name }}/tags/list"
+    url: "{{ registry_api_http_protocol | default('http') }}://{{ bundle_registry }}/v2/{{ bundle_index_image_namespace }}/{{ bundle_index_image_name }}/tags/list"
     return_content: yes
     validate_certs: false
   register: boi_registry_versions
@@ -50,6 +55,10 @@
 - debug:
     var: ba_versions
     verbosity: 2
+
+- name: "Setting empty bundles array"
+  set_fact:
+    bundles_arr: []
 
 - name: "Filling bundle versions array"
   set_fact:
