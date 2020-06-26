@@ -34,22 +34,26 @@
         dest: "{{ operator_bundle_src_dir }}"
         remote_src: yes
 
-    - set_fact:
+    - name: "Setting 'bundle_image' and path names for csv and annotation"
+      set_fact:
         bundle_image: "{{ bundle_registry }}/{{ bundle_image_namespace }}/{{ operator_name }}:v{{ operator_version }}"
         clusterserviceversion_bundle_file_path: "{{ operator_bundle_src_dir }}/{{ operator_name }}/{{ operator_version }}/manifests/{{ operator_name }}.v{{ operator_version }}.clusterserviceversion.yaml"
         annotation_file_path: "{{ operator_bundle_src_dir }}/{{ operator_name }}/{{ operator_version }}/metadata/annotations.yaml"
 
-    - set_fact:
+    - name: "Setting 'clusterserviceversion_bundle_file_path' in case of manifest format"
+      set_fact:
         clusterserviceversion_bundle_file_path: "{{ operator_bundle_src_dir }}/{{ operator_dir_name }}/{{ operator_version }}/{{ csv_file_path | basename }}"
       when: operator_format == "manifest"
 
-    - set_fact:
+    - name: "Setting 'operator_channels_list' in case of manifest format and if package file was parsed"
+      set_fact:
         operator_channels_list: "{{ op_manifest_pkg_vars.channels | map(attribute='name' ) | list }}"
       when:
         - op_manifest_pkg_vars is defined
         - operator_format == "manifest"
 
-    - set_fact:
+    - name: "Setting 'operator_channels'"
+      set_fact:
         operator_channels: "{{ operator_channels_list | join(',') }}"
       when:
         - operator_format == "manifest"
@@ -66,13 +70,15 @@
         - op_manifest_pkg_vars.defaultChannel is undefined or op_manifest_pkg_vars.defaultChannel == ""
 
     # we tolerate no default_channel in case the only channel
-    - set_fact:
+    - name: "Setting 'operator_channel_default'"
+      set_fact:
         operator_channel_default: "{{ op_manifest_pkg_vars.defaultChannel | default(operator_channels_list[0]) }}"
       when:
         - operator_format == "manifest"
         - operator_channels_list.0 is defined
 
-    - set_fact:
+    - name: "Forcing to set 'operator_channels' and 'operator_channel_default' when 'operator_channel_force' is defined and empty"
+      set_fact:
         operator_channels: "{{ operator_channel_force }}"
         operator_channel_default: "{{ operator_channel_force }}"
       when:
@@ -116,7 +122,7 @@
           shell: "cat {{ annotation_file_path }}"
           register: annotation_data
 
-        - name: Set facts
+        - name: Sets `annotations_vars` from yaml file
           set_fact:
             annotations_vars: "{{ annotation_data.stdout | from_yaml }}"
 
@@ -135,6 +141,7 @@
 
     - debug:
         var: operator_channel_default
+        verbosity: 2
 
     - name: "Adding operator channels and default channel as arguments"
       set_fact:

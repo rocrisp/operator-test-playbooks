@@ -18,31 +18,40 @@
 
 - name: Get list of versions_in_dir from bundle registry
   uri:
-    url: "http://{{ bundle_registry }}/v2/{{ bundle_image_namespace }}/{{ operator_name }}/tags/list"
+    url: "https://{{ bundle_registry }}/v2/{{ bundle_image_namespace }}/{{ operator_name }}/tags/list"
     return_content: yes
+    validate_certs: false
   register: bib_registry_versions
   ignore_errors: yes
 
-- set_fact:
+- name: "Reseting 'versions_in_registry' variable"
+  set_fact:
     versions_in_registry: []
 
-- set_fact:
+- name: "Setting all versions to 'versions_in_registry' variable"
+  set_fact:
     versions_in_registry: "{{ bib_registry_versions.content | from_json | json_query('tags') | list | sort_versions | regex_replace('v') }}"
   when: bib_registry_versions.status == 200
 
 - debug:
     var: versions_in_registry
+    verbosity: 2
 - debug:
     var: versions_in_dir
+    verbosity: 2
 
-- set_fact:
+- name: "Filtring versions to add and remove"
+  set_fact:
     verions_add: "{{ versions_in_dir | difference(versions_in_registry) }}"
     verions_remove: "{{ versions_in_registry | difference(versions_in_dir) }}"
 
 - debug:
     var: verions_add
+    verbosity: 2
+
 - debug:
     var: verions_remove
+    verbosity: 2
 
 - name: "Build bundle image"
   include_role:
@@ -53,6 +62,7 @@
   loop_control:
     loop_var: op_ver_item
 
-- set_fact:
+- name: "Adding current operator to the 'operators_for_index'"
+  set_fact:
     operators_for_index: "{{ operators_for_index | default([]) | union( [{'name': operator_name, 'versions': versions_in_dir }]) }}"
   when: verions_add.0 is defined or (index_force_rebuild is defined and index_force_rebuild|bool)

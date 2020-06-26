@@ -2,6 +2,7 @@
 set -o errexit
 
 KIND_CMD=${1-{{ kind_bin_path }}}
+CERTS_DIR="/tmp/certs"
 
 # create registry container unless it already exists
 reg_name='kind-registry'
@@ -10,9 +11,25 @@ reg_port='5000'
 # if [ "${running}" == 'true' ]; then
 docker rm -f "${reg_name}" || true
 # fi
-docker run \
-    -d --restart=always -p "${reg_port}:5000" --name "${reg_name}" \
-    registry:2
+
+# docker run \
+#     -d --restart=always -p "${reg_port}:443" --name "${reg_name}" \
+#     registry:2
+
+[ -d $CERTS_DIR ] && rm -rf $CERTS_DIR
+mkdir -p $CERTS_DIR
+openssl req -newkey rsa:4096 -nodes -sha256 -keyout $CERTS_DIR/domain.key -x509 -days 365 -out $CERTS_DIR/domain.crt -batch
+
+docker run -d \
+   --restart=always \
+   --name "${reg_name}" \
+   -v $CERTS_DIR:/certs \
+   -e REGISTRY_HTTP_ADDR=0.0.0.0:${reg_port} \
+   -e REGISTRY_HTTP_TLS_CERTIFICATE=/certs/domain.crt \
+   -e REGISTRY_HTTP_TLS_KEY=/certs/domain.key \
+   -p ${reg_port}:5000 \
+   registry:2
+
 
 # Remove existing cluster if it exists
 if [ -n "$($KIND_CMD get clusters | grep {{ kind_cluster_name }})" ];then
@@ -31,7 +48,7 @@ apiVersion: kind.x-k8s.io/v1alpha4
 containerdConfigPatches:
 - |-
   [plugins."io.containerd.grpc.v1.cri".registry.mirrors."localhost:${reg_port}"]
-    endpoint = ["http://${reg_name}:${reg_port}"]
+    endpoint = ["https://${reg_name}:${reg_port}"]
 EOF
 
 # connect the registry to the cluster network
