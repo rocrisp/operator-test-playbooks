@@ -52,7 +52,7 @@
         name: validate_operator_bundle
 
     - set_fact:
-        operators_for_index: '{{ operators_for_index | default([]) | union( [{"name": "{{ operator_name }}", "versions": [ "{{ operator_version }}" ] }]) }}'
+        operators_for_index: '{{ operators_for_index | default([]) | union( [{"name": "{{ operator_package_name }}", "versions": [ "{{ operator_version }}" ] }]) }}'
 
     - debug:
         var: operators_for_index
