@@ -19,7 +19,15 @@ docker run \
 {% else %}
 [ -d $CERTS_DIR ] && rm -rf $CERTS_DIR || true
 mkdir -p $CERTS_DIR
-openssl req -newkey rsa:4096 -nodes -sha256 -keyout $CERTS_DIR/domain.key -x509 -days 365 -subj '/CN=localhost' -out $CERTS_DIR/domain.crt -batch
+
+sudo sed -i 's/^127.0.0.1.*/127.0.0.1 localhost kind-registry/g' /etc/hosts
+
+openssl req -newkey rsa:4096 -nodes -sha256 -keyout $CERTS_DIR/domain.key -x509 -days 365 -subj '/CN='${reg_name}'' -out $CERTS_DIR/domain.crt -batch
+
+# Working for ubuntu
+# TODO handle CentOS also
+sudo cp $CERTS_DIR/domain.crt /etc/ssl/certs/
+sudo update-ca-certificates --fresh
 
 docker run -d \
    --restart=always \
@@ -30,6 +38,8 @@ docker run -d \
    -e REGISTRY_HTTP_TLS_KEY=/certs/domain.key \
    -p ${reg_port}:5000 \
    registry:2
+
+
 {% endif %}
 
 # Remove existing cluster if it exists
@@ -54,6 +64,7 @@ containerdConfigPatches:
 {% else %}
     endpoint = ["https://${reg_name}:${reg_port}"]
 {% endif %}
+
 EOF
 
 # connect the registry to the cluster network
@@ -63,4 +74,6 @@ docker network connect "kind" "${reg_name}"
 # https://docs.tilt.dev/choosing_clusters.html#discovering-the-registry
 for node in $(kind get nodes --name {{ kind_cluster_name }}); do
   kubectl annotate node "${node}" "kind.x-k8s.io/registry=localhost:${reg_port}";
+  docker cp $CERTS_DIR/domain.crt ${node}:/usr/local/share/ca-certificates/ca.crt
+  docker exec -it ${node} update-ca-certificates
 done
