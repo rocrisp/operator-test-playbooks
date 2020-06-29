@@ -17,17 +17,18 @@ docker run \
     -d --restart=always -p ${reg_port}:5000 --name "${reg_name}" \
     registry:2
 {% else %}
-[ -d $CERTS_DIR ] && rm -rf $CERTS_DIR || true
-mkdir -p $CERTS_DIR
+# [ -d $CERTS_DIR ] && rm -rf $CERTS_DIR || true
+if [ ! -f $CERTS_DIR/domain.crt ];then
 
-openssl req -newkey rsa:4096 -nodes -sha256 -keyout $CERTS_DIR/domain.key -x509 -days 365 -subj '/CN='${reg_name}'' -out $CERTS_DIR/domain.crt -batch
+  mkdir -p $CERTS_DIR
+  openssl req -newkey rsa:4096 -nodes -sha256 -keyout $CERTS_DIR/domain.key -x509 -days 365 -subj '/CN='${reg_name}'' -out $CERTS_DIR/domain.crt -batch
 
-# Working for ubuntu
-# TODO handle CentOS also
-sudo cp $CERTS_DIR/domain.crt /etc/ssl/certs/
-#sudo update-ca-certificates --fresh
-sudo update-ca-certificates
-
+  # Working for ubuntu
+  # TODO handle CentOS also
+  sudo cp -f $CERTS_DIR/domain.crt /etc/ssl/certs/
+  sudo update-ca-certificates --fresh
+  #sudo update-ca-certificates
+fi
 docker run -d \
    --restart=always \
    --name "${reg_name}" \
@@ -38,8 +39,7 @@ docker run -d \
    -p ${reg_port}:5000 \
    registry:2
 
-
-# sudo sh -c "sed -i 's/^127.0.0.1.*/127.0.0.1 localhost kind-registry/g' /etc/hosts"
+sudo sh -c "sed -i 's/^127.0.0.1.*/127.0.0.1 localhost kind-registry/g' /etc/hosts"
 
 {% endif %}
 
@@ -76,5 +76,6 @@ docker network connect "kind" "${reg_name}"
 for node in $(kind get nodes --name {{ kind_cluster_name }}); do
   kubectl annotate node "${node}" "kind.x-k8s.io/registry=localhost:${reg_port}";
   docker cp $CERTS_DIR/domain.crt ${node}:/usr/local/share/ca-certificates/ca.crt
-  docker exec -it ${node} update-ca-certificates
+  docker exec ${node} update-ca-certificates --fresh
 done
+
