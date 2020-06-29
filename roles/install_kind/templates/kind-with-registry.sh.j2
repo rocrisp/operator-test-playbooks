@@ -27,7 +27,8 @@ openssl req -newkey rsa:4096 -nodes -sha256 -keyout $CERTS_DIR/domain.key -x509 
 # Working for ubuntu
 # TODO handle CentOS also
 sudo cp $CERTS_DIR/domain.crt /etc/ssl/certs/
-sudo update-ca-certificates --fresh
+#sudo update-ca-certificates --fresh
+sudo update-ca-certificates
 
 docker run -d \
    --restart=always \
