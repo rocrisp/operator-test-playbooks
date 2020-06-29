@@ -3,14 +3,9 @@
   set_fact:
     bundle_index_image: "{{ bundle_registry }}/{{ bundle_index_image_namespace }}/{{ bundle_index_image_name }}:{{ bundle_index_image_version }}"
 
-- name: "Setting bundle image name"
-  set_fact:
-    registry_api_http_protocol: "https"
-  when: (registry_api_http_protocol is defined and registry_api_http_protocol == "https") or bundle_registry == "quay.io"
-
 - name: Get list of tags for index image from bundle registry
   uri:
-    url: "{{ registry_api_http_protocol | default('http') }}://{{ bundle_registry }}/v2/{{ bundle_index_image_namespace }}/{{ bundle_index_image_name }}/tags/list"
+    url: "{{ registry_api_http_protocol | default('https') }}://{{ bundle_registry }}/v2/{{ bundle_index_image_namespace }}/{{ bundle_index_image_name }}/tags/list"
     return_content: yes
     validate_certs: false
   register: boi_registry_versions
@@ -74,7 +69,7 @@
     var: bundle_images
     verbosity: 2
 
-- name: Retag bundle input image
+- name: "Retag bundle input image"
   block:
     - name: Retag image {{ operator_input_image }}
       shell: "{{ opm_container_tool }} tag {{ operator_input_image  }} {{ bundle_images }}"
@@ -85,7 +80,9 @@
   - operator_input_image != ""
 
 - name: "Add operator '{{ ba_name }}' to index image {{ bundle_index_image }}"
-  shell: "{{ opm_bin_path }} index add -u {{ opm_container_tool }} --bundles {{ bundle_images }} --tag {{ bundle_index_image }} {{ opm_index_add_extra_args }} --skip-tls"
+  shell: "{{ opm_bin_path }} index add -u {{ opm_container_tool }} --bundles {{ bundle_images }} --tag {{ bundle_index_image }} {{ opm_index_add_extra_args }}"
+  environment:
+    SSL_CERT_FILE: /tmp/certs/domain.crt
 
 - name: Push bundle image {{ bundle_index_image }}
   shell: "{{ opm_container_tool }} push {{ bundle_index_image }}"
