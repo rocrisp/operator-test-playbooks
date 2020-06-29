@@ -7,6 +7,6 @@ metadata:
     operator: test
 spec:
   displayName: Community Operators
-  image: localhost:5000/operatorhub/operatorhub-catalog:dev
+  image: {{ bundle_registry }}/operatorhub/operatorhub-catalog:dev
   publisher: upstream-community-operators
   sourceType: grpc
