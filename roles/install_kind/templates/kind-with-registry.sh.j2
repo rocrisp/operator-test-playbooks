@@ -20,8 +20,6 @@ docker run \
 [ -d $CERTS_DIR ] && rm -rf $CERTS_DIR || true
 mkdir -p $CERTS_DIR
 
-sudo sed -i 's/^127.0.0.1.*/127.0.0.1 localhost kind-registry/g' /etc/hosts
-
 openssl req -newkey rsa:4096 -nodes -sha256 -keyout $CERTS_DIR/domain.key -x509 -days 365 -subj '/CN='${reg_name}'' -out $CERTS_DIR/domain.crt -batch
 
 # Working for ubuntu
@@ -40,6 +38,7 @@ docker run -d \
    -p ${reg_port}:5000 \
    registry:2
 
+sudo sed -i 's/^127.0.0.1.*/127.0.0.1 localhost kind-registry/g' /etc/hosts
 
 {% endif %}
 
