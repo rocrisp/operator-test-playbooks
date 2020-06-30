@@ -100,13 +100,13 @@ ansible-playbook -vv -i myhost, local.yml \
 -e operators_config=test/operatos_config.yaml
 ```
 
-### Deploy starting index image from localhost:5000/test-operator/index:latest
+### Deploy starting index image from kind-registry:5000/test-operator/index:latest
 ```
 ansible-playbook -vv -i myhost, local.yml \
 -e run_upstream=true \
 --tags reset,deploy_bundles \
 -e operators_config=test/operatos_config.yaml \
--e bundle_index_image_from="localhost:5000/test-operator/index:latest"
+-e bundle_index_image_from="kind-registry:5000/test-operator/index:latest"
 ```
 
 ### Deploy index image and force channels to stable

@@ -4,6 +4,7 @@
   package:
     name:
       - curl
+      - openssl
       - ca-certificates
       - python3-pip
       - python3-setuptools

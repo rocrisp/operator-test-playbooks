@@ -35,6 +35,8 @@
     - name: "Build bundle image"
       include_role:
         name: build_operator_version_bundle
+      vars:
+        remove_replaces: true
       when: run_upstream|bool
 
     - name: "Extract the operator bundle image into files needed to run the tests"
@@ -50,7 +52,7 @@
         name: validate_operator_bundle
 
     - set_fact:
-        operators_for_index: '{{ operators_for_index | default([]) | union( [{"name": "{{ operator_name }}", "versions": [ "{{ operator_version }}" ] }]) }}'
+        operators_for_index: '{{ operators_for_index | default([]) | union( [{"name": "{{ operator_package_name }}", "versions": [ "{{ operator_version }}" ] }]) }}'
 
     - debug:
         var: operators_for_index
@@ -66,7 +68,7 @@
         - name: "Check if OLM is needed"
           shell: "{{ oc_bin_path }} api-resources | grep -o operatorgroup"
           register: olm_needed
-          ignore_errors: true
+          failed_when: false
 
         - name: "Install OLM"
           block:
@@ -75,7 +77,7 @@
 
             - name: "Delete catalogsource"
               shell: "{{ oc_bin_path }} delete catalogsource operatorhubio-catalog -n olm"
-              ignore_errors: true
+              failed_when: false
           when:
             - olm_needed.stdout != "operatorgroup"
       when: run_upstream|bool

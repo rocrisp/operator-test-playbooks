@@ -1,5 +1,5 @@
 ---
-- name: Test
+- name: "Test operator main playbook"
   hosts: all
   become: false
   gather_facts: false
@@ -70,7 +70,8 @@
     - { role: prepare_catalog_repo_upstream, tags: ["always"], when: run_upstream|bool }
 
   tasks:
-    - set_fact:
+    - name: "Setting input variables for testing"
+      set_fact:
         run_manifest_test: "{{ run_manifest_test | default(false) }}"
         run_bundle_test: "{{ run_bundle_test | default(true) }}"
         image_protocol: "{{ image_protocol | default('docker://') }}"
@@ -80,13 +81,14 @@
         - test
         - pure_test
 
-    - set_fact:
+    - name: "Sets 'run_prereqs' to false when running 'pure_test' tag"
+      set_fact:
         run_prereqs: false
       tags:
         - never
         - pure_test
 
-- name: Running operator manifest test
+- name: "Running operator manifest test"
   import_playbook: local-test-operator.yml
   when:
     - run_upstream|bool
@@ -95,7 +97,7 @@
     - test
     - pure_test
 
-- name: Running operator bundle test
+- name: "Running operator bundle test"
   import_playbook: local-test-operator-bundle.yml
   when:
     - run_upstream|bool
@@ -104,7 +106,7 @@
     - test
     - pure_test
 
-- name: Deploy operator bundle for each
+- name: "Deploy operator bundle for each"
   import_playbook: local-deploy-operator-bundle.yml
   when:
     - run_upstream|bool
