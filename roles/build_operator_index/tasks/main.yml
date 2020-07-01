@@ -11,6 +11,24 @@
   register: boi_registry_versions
   failed_when: false
 
+
+- name: "Create repo for index image with public visibility"
+  uri:
+    url: "https://quay.io/api/v1/repository"
+    method: POST
+    body: '{"kind":"image","namespace":"{{ bundle_image_namespace }}","repository":"{{ bundle_index_image_name }}","description":"","visibility":"public"}'
+    body_format: json
+    force_basic_auth: yes
+    headers:
+      Authorization: "Bearer {{ quay_api_token }}"
+    status_code: 201
+    return_content: yes
+  when:
+    - quay_api_token is defined
+    - quay_api_token != ""
+    - boi_registry_versions.status != 200
+
+
 - name: "Reseting 'index_versions_in_registry' variable"
   set_fact:
     index_versions_in_registry: []
