@@ -7,7 +7,7 @@
   uri:
     url: "{{ registry_api_http_protocol | default('https') }}://{{ bundle_registry }}/v2/{{ bundle_index_image_namespace }}/{{ bundle_index_image_name }}/tags/list"
     return_content: yes
-    validate_certs: false
+    # validate_certs: false
   register: boi_registry_versions
   failed_when: false
 
