@@ -97,7 +97,7 @@
   - operator_input_image is defined
   - operator_input_image != ""
 - fail:
-    msg: "opm index add mode has to be set to following values: [replaces, semver, semver-skippatch] (default "replaces")"
+    msg: "opm index add mode has to be set to following values: [replaces, semver, semver-skippatch] (default  replaces)"
   when:
     - opm_index_add_mode is undefined
     - opm_index_add_mode == ""
