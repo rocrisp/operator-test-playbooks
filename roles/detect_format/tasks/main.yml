@@ -49,6 +49,12 @@
         run_manifest_test: "{{ run_manifest_test | default(false) }}"
         run_bundle_test: "{{ run_bundle_test | default(true) }}"
 
+    - name: "Setting path names for csv and annotation"
+      set_fact:
+        clusterserviceversion_bundle_file_path: "{{ operator_bundle_src_dir }}/{{ operator_name }}/{{ operator_version }}/manifests/{{ operator_name }}.v{{ operator_version }}.clusterserviceversion.yaml"
+        annotation_file_path: "{{ operator_bundle_src_dir }}/{{ operator_name }}/{{ operator_version }}/metadata/annotations.yaml"
+      when: operator_format == "bundle"
+
     - name: "Read the variables from annotations.yaml"
       block:
         - name: Check if annotation file exists
