@@ -24,15 +24,15 @@
         - directory
       when: operator_bundle_src_dir is defined
 
+    - name: detect format
+      include_role:
+        name: detect_format
+
     - name: "Copy manifest format files to {{ operator_bundle_src_dir }}"
       copy:
         src: "{{ operator_dir }}"
         dest: "{{ operator_bundle_src_dir }}"
         remote_src: yes
-
-    - name: detect format
-      include_role:
-        name: detect_format
 
     - name: "Setting 'bundle_image' and 'clusterserviceversion_bundle_file_path' in case of manifest format"
       set_fact:
