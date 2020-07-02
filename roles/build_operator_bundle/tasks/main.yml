@@ -20,7 +20,6 @@
   uri:
     url: "{{ registry_api_http_protocol | default('https') }}://{{ bundle_registry }}/v2/{{ bundle_image_namespace }}/{{ operator_package_name }}/tags/list"
     return_content: yes
-    # validate_certs: false
   register: bib_registry_versions
   failed_when: false
   changed_when: false
