@@ -24,20 +24,15 @@
         - directory
       when: operator_bundle_src_dir is defined
 
-    - name: detect format
-      include_role:
-        name: detect_format
-
     - name: "Copy manifest format files to {{ operator_bundle_src_dir }}"
       copy:
         src: "{{ operator_dir }}"
         dest: "{{ operator_bundle_src_dir }}"
         remote_src: yes
 
-    - name: "Setting path names for csv and annotation"
-      set_fact:
-        clusterserviceversion_bundle_file_path: "{{ operator_bundle_src_dir }}/{{ operator_name }}/{{ operator_version }}/manifests/{{ operator_name }}.v{{ operator_version }}.clusterserviceversion.yaml"
-        annotation_file_path: "{{ operator_bundle_src_dir }}/{{ operator_name }}/{{ operator_version }}/metadata/annotations.yaml"
+    - name: detect format
+      include_role:
+        name: detect_format
 
     - name: "Setting 'bundle_image' and 'clusterserviceversion_bundle_file_path' in case of manifest format"
       set_fact:
@@ -104,34 +99,22 @@
             state: absent
           when: remove_replaces is defined
 
+    - name: "The first operator has no package conflict"
+      set_fact:
+        previous_package: "{{ operator_package_name }}"
+      when: previous_package == ''
+
+    - name: "Fail if operators in one dir are not related to the only package"
+      fail:
+        msg: "Versions of {{ operator_name }} must be in one package, not a mix of {{ operator_package_name }} and {{ previous_package }}"
+      when:  operator_package_name != previous_package
+
+    - name: "Set package for test with next operator"
+      set_fact:
+        previous_package: "{{ operator_package_name }}"
 
     - name: "Read the variables from annotations.yaml"
       block:
-        - name: Check if annotation file exists
-          stat:
-            path: "{{ annotation_file_path }}"
-          register: annotation_file_st
-
-        - name: Fail if annotation file doesn't exists
-          fail:
-          when: not annotation_file_st.stat.exists
-
-        - name: "Getting content of annotation.yaml file"
-          shell: "cat {{ annotation_file_path }}"
-          register: annotation_data
-
-        - name: Sets `annotations_vars` from yaml file
-          set_fact:
-            annotations_vars: "{{ annotation_data.stdout | from_yaml }}"
-
-        - name: Set annotation variables
-          set_fact:
-            operator_channel_default: "{{ annotations_vars.annotations['operators.operatorframework.io.bundle.channel.default.v1'] }}"
-            operator_channels: "{{ annotations_vars.annotations['operators.operatorframework.io.bundle.channels.v1'] }}"
-            operator_manifest_dir: "{{ annotations_vars.annotations['operators.operatorframework.io.bundle.manifests.v1'] }}"
-            operator_metadata_dir: "{{ annotations_vars.annotations['operators.operatorframework.io.bundle.metadata.v1'] }}"
-            operator_package_name: "{{ annotations_vars.annotations['operators.operatorframework.io.bundle.package.v1'] }}"
-
         - name: Set bundle image name
           set_fact:
             bundle_image: "{{ bundle_registry }}/{{ bundle_image_namespace }}/{{ operator_package_name }}:v{{ operator_version }}"

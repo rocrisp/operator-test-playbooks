@@ -70,6 +70,10 @@
     var: verions_remove
     verbosity: 2
 
+- name: "Reset value for unified package test"
+  set_fact:
+    previous_package: ''
+
 - name: "Build bundle image"
   include_role:
     name: build_operator_version_bundle
