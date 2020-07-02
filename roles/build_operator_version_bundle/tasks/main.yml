@@ -29,7 +29,6 @@
         src: "{{ operator_dir }}"
         dest: "{{ operator_bundle_src_dir }}"
         remote_src: yes
-      when: {{ operator_dir }} != 'dummy'
 
     - name: detect format
       include_role:
