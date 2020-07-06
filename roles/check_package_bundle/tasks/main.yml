@@ -1,0 +1,38 @@
+- name: "Search for all versions for operator '{{ operator_dir | basename }}'"
+  find:
+    paths: "{{ operator_dir }}"
+    recurse: no
+    file_type: directory
+  register: versions_find
+
+- set_fact:
+    versions_in_dir: "{{ versions_find.files | map(attribute='path' ) | map('basename') | list | sort_versions }}"
+    operator_dir_name: "{{ operator_dir | basename }}"
+
+- debug:
+    var: operator_dir
+    verbosity: 2
+
+- name: "Determine the path in the operator metadata directory"
+  find:
+    paths: "{{ operator_dir }}"
+    recurse: true
+    file_type: file
+    patterns: "annotations.yaml"
+  register: annotations_paths_raw
+
+- name: "Set list of annotation files"
+  set_fact:
+    annotations_paths: "{{ annotations_paths_raw.files | map(attribute='path' ) | list }}"
+
+- debug:
+    var: annotations_paths
+    verbosity: 1
+
+- name: "Reset value for unified package test"
+  set_fact:
+    previous_package: ''
+
+- name: "Loop, load and compare package info"
+  include_tasks: load_and_compare_package_info.yml
+  loop: "{{ annotations_paths}}"

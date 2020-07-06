@@ -36,6 +36,13 @@
       set_fact:
         previous_package: ''
 
+    - name: "Check package unification"
+      include_role:
+        name: check_package_bundle
+      when:
+        - run_upstream|bool
+        - operator_format == "bundle"
+
     - name: "Build bundle image"
       include_role:
         name: build_operator_version_bundle
