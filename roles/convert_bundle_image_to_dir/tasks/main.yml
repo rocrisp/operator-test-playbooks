@@ -44,16 +44,18 @@
         operator_bundle_dir: "{{ bundle_input_tmp_dir }}"
         operator_work_dir: "{{ bundle_input_src_dir }}"
 
-    - name: Prepare operator directory from bundle src (bundle input)
+    - name: "Prepare operator directory from bundle src (bundle input)"
       block:
         - name: "Export CSV variables"
           include_role:
             name: export_csv
           vars:
             op_csv_dir: "{{ bundle_input_src_dir }}"
-        - name: Set facts
+
+        - name: "Set operator_dir"
           set_fact:
             operator_dir: "{{ bundle_input_src_dir }}/{{ operator_vars.metadata.name | replace('.v','/') }}"
+
         - name: "Ensure that the operator bundle input directory exists and is empty"
           file:
             state: "{{ item }}"
@@ -61,7 +63,8 @@
           with_items:
             - absent
             - directory
-        - name : Move bundle dir to {{ operator_dir }}
+
+        - name : "Move bundle dir to {{ operator_dir }}"
           copy:
             src: "{{ bundle_input_src_dir }}/{{ item }}"
             dest: "{{ operator_dir }}/"

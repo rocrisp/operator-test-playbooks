@@ -88,6 +88,15 @@
         - never
         - pure_test
 
+    - fail:
+        msg: "Input image is not supported for now"
+      when:
+        - operator_input_image != ""
+      tags:
+        - always
+        - test
+        - pure_test
+
 - name: "Running operator manifest test"
   import_playbook: local-test-operator.yml
   when:

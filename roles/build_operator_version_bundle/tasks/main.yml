@@ -146,3 +146,5 @@
 
     - name: Push bundle image {{ bundle_image }}
       shell: "{{ opm_container_tool }} push {{ bundle_image }}"
+  when:
+    - operator_input_image == ""
