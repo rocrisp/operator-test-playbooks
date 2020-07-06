@@ -56,7 +56,7 @@
     var: versions_in_dir
     verbosity: 2
 
-- name: "Filtring versions to add and remove"
+- name: "Filtering versions to add and remove"
   set_fact:
     verions_add: "{{ versions_in_dir | difference(versions_in_registry) }}"
     verions_remove: "{{ versions_in_registry | difference(versions_in_dir) }}"
