@@ -9,6 +9,7 @@
     work_dir: "/tmp/operator-test"
     testing_bin_path: "{{ work_dir }}/bin"
     operators_for_index: []
+    opm_container_tool: "docker"
 
   tasks:
     - name: "Setting basic variables for deploy tasks"
@@ -21,6 +22,15 @@
         opm_bin_path: "{{ testing_bin_path }}/opm"
         operator_sdk_bin_path: "{{ testing_bin_path }}/operator-sdk"
         oc_bin_path: '{{ ''kubectl'' if run_upstream else "{{ testing_bin_path }}/oc" }}'
+
+    - name: "Quay login"
+      shell: "{{ opm_container_tool }} login -u=\"{{ quay_user }}\" -p={{ quay_password }} quay.io"
+      no_log: True
+      when:
+        - quay_user is defined
+        - quay_password is defined
+        - quay_user != ""
+        - quay_password != ""
 
     - name: "Handle operators input file"
       block:

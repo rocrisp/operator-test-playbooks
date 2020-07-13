@@ -1,6 +1,5 @@
 # Instruction for operator test via ansible
 
-
 ## Standard test on clean machine
 ```
 ansible-playbook -vv -i myhost, local.yml \
@@ -72,15 +71,13 @@ ansible-playbook -vv -i myhost, local.yml \
 --tags image_build
 ```
 
-## Input source image
+## Input source image (not supported now)
 ```
 ansible-playbook -vv -i myhost, local.yml \
 -e run_upstream=true \
 -e operator_input_image=quay.io/cvpops/test-bundle:tigera-131 \
 --tags pure_test
 ```
-
-
 
 ## Deploy operators to index
 Config file:
@@ -92,7 +89,7 @@ operators:
 - prometheus
 ```
 
-### Deploy starting index image from scratch
+### Deploy starting index image
 ```
 ansible-playbook -vv -i myhost, local.yml \
 -e run_upstream=true \
@@ -100,13 +97,26 @@ ansible-playbook -vv -i myhost, local.yml \
 -e operators_config=test/operatos_config.yaml
 ```
 
-### Deploy starting index image from kind-registry:5000/test-operator/index:latest
+### Deploy starting index image
 ```
 ansible-playbook -vv -i myhost, local.yml \
 -e run_upstream=true \
---tags reset,deploy_bundles \
--e operators_config=test/operatos_config.yaml \
--e bundle_index_image_from="kind-registry:5000/test-operator/index:latest"
+--tags deploy_bundles \
+-e operators_config=test/operatos_config.yaml
+-e bundle_registry=quay.io \
+-e bundle_image_namespace=operator_testing \
+-e bundle_index_image_namespace=operator_testing \
+-e bundle_index_image_name=upstream-community-operators-index \
+-e quay_api_token=<quay-api-token>
+```
+
+### Deploy index image and force channels to be autodetected by playbook
+```
+ansible-playbook -vv -i myhost, local.yml \
+-e run_upstream=true \
+--tags deploy_bundles \
+-e operators_config=test/operatos_config.yaml
+-e operator_channel_force=""
 ```
 
 ### Deploy index image and force channels to stable
@@ -118,6 +128,30 @@ ansible-playbook -vv -i myhost, local.yml \
 -e operator_channel_force=stable
 ```
 
+## Misc options to use
 
+Usage:
 
+```
+-e <option>=<value>
+```
+
+| Option  | Description  | Default value |
+|---|---|---|
+| run_upstream | Flag when running upstream part of playbooks. [bool] | false |
+| run_remove_catalog_repo | Removes existing git repo for comunity-operators. [bool] | true |
+| catalog_repo | Community operators repo url. [string] | https://github.com/operator-framework/community-operators.git |
+| catalog_repo_branch | Community operators branch in repo. [string] | master |
+| operators_config  | Path to operators config file using when deploying multiple operators. Examle in test/operatos_config.yaml. [string] | undefined  |
+| quay_user | Username in quay registry login. [string] | undefined  |
+| quay_password | Password in quay registry login. [string] | undefined  |
+| quay_api_token | Quay api token to create project, delete tag. [string] | undefined |
+| bundle_registry | Quay bundle and index registry url. [string] | kind-registry:5000 |
+| bundle_image_namespace | Quay registry url. [string] | test-operator |
+| bundle_index_image_namespace | Quay registry url. [string] | test-operator |
+| bundle_index_image_name | Quay registry url. [string] | index |
+| opm_container_tool | Container tool to use when using opm tool. [string] | docker  |
+| operator_channel_force | Forcing to adde channel and default channed to current string value. When empty string it is autodetected by playbook. [string] | undefined  |
+| index_force_rebuild | Force to rebuild currently running operators in index. [bool] | false  |
+| index_skip | Skip building index (it will build bundle only). [bool] | undefined |
 
