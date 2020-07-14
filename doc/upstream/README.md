@@ -158,7 +158,7 @@ Usage:
 | run_bundle_scorecard_test | Runs bundle scorecard test. [bool] | undefined | undefined |
 | bundle_scorecard_test_config | Config file where scorecard tests are defined. [string] | generated | n/a |
 | bundle_scorecard_test_select | Runs specific scorecard tests. [string] | basic-check-spec-test,olm-bundle-validation-test,olm-status-descriptors-test | n/a |
-
+| recreate_skip_repo_clean | Skip removing all repos in namespace from registry. (Applied only when is defined and value is true). [bool] | undefined | undefined |
 
 ## Tags to use
 

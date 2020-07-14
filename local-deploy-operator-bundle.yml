@@ -42,7 +42,6 @@
       no_log: True
       when: (quay_user is undefined or quay_password is undefined or quay_user == "" or quay_password == "") and quay_api_token is defined and quay_api_token != ""
 
-
     - name: "Generate Operators config file from all operators"
       block:
         - name: "Search for all operators '{{ regenerate_operators_path | basename }}'"
@@ -83,6 +82,7 @@
           when:
             - quay_api_token is defined
             - quay_api_token != ""
+            - (recreate_skip_repo_clean is undefined or not recreate_skip_repo_clean|bool)
 
       when:
         - regenerate_operators_path is defined
