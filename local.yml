@@ -30,6 +30,11 @@
     umoci_bin_path: "{{ testing_bin_path }}/umoci"
     opm_bin_path: "{{ testing_bin_path }}/opm"
     offline_cataloger_bin_path: "offline-cataloger"
+    kind_version: v0.8.1
+    kind_kube_version: v1.18.2
+    operator_sdk_version: v0.18.2
+    olm_version: 0.14.1
+    opm_version: v1.13.0
 
   environment:
     PATH: "{{ ansible_env.PATH }}:{{ ansible_env.HOME }}/.local/bin"
