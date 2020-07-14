@@ -42,10 +42,11 @@
   debug:
     var: bundle_scorecard_result.stdout
 
-# - name: "Delete the operator CR"
-#   shell: "{{ oc_bin_path }} delete -f {{ cr_path }} --ignore-not-found=true --grace-period=60 --timeout=120s"
-#   environment:
-#     KUBECONFIG: "{{ kubeconfig_path }}"
+- name: "Failing when bundle scorecard test failed"
+  fail:
+    msg: "Bundle scorecard test failed for bundle image {{ bundle_image }} !!!"
+  when: bundle_scorecard_result.rc != 0
+
 
 # - name: "Fail if the operator didn't satisfy the Basic Tests requirement"
 #   fail:
