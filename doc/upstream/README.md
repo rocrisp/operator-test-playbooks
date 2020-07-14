@@ -156,3 +156,22 @@ Usage:
 | index_skip | Skip building index (it will build bundle only). [bool] | undefined | undefined |
 | package_name_strict | Test if package name is same as operator directory name. [bool] | undefined | undefined |
 
+
+## Tags to use
+
+Usage:
+
+```
+--tags <tag1>,<tag2>...<tagN>
+```
+
+| Tag  | Description |
+|---|---|
+|host_build| Installs base packages needed to run on host (docker,kind,registry, ...) |
+|install| Installs all packages incluing operator testing tools (--tags host_build + testing tools). |
+|uninstall| Uninstall packages that were installed by `install` tag|
+|reset| Resets kind cluster and recreate kind registry |
+|reinstall_tools| Reinstall testing tools (operator-sdk,olm,opm,umoci,yq,jq). Used when updating versions of these tools. |
+|test| Runs test including installing operator prerequisites |
+|pure_test| Runs test excluding installing operator prerequisites (Faster then `test` once operator tools are installed. ) |
+|deploy_bundles| Deploy all bundles defined by `operator_dir` or `operator_config` |
