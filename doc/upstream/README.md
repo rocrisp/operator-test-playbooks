@@ -155,6 +155,9 @@ Usage:
 | index_force_rebuild | Force to rebuild currently running operators in index. [bool] | false | false |
 | index_skip | Skip building index (it will build bundle only). [bool] | undefined | undefined |
 | package_name_strict | Test if package name is same as operator directory name. [bool] | undefined | undefined |
+| run_bundle_scorecard_test | Runs bundle scorecard test. [bool] | undefined | undefined |
+| bundle_scorecard_test_config | Config file where scorecard tests are defined. [string] | generated | n/a |
+| bundle_scorecard_test_select | Runs specific scorecard tests. [string] | basic-check-spec-test,olm-bundle-validation-test,olm-status-descriptors-test | n/a |
 
 
 ## Tags to use
