@@ -154,3 +154,11 @@
           build_operators_index
       when:
         - run_upstream|bool
+
+    - name: "Handle failed operators"
+      include_role:
+        name:
+          handle_failed_operators
+      when:
+        - run_upstream|bool
+
