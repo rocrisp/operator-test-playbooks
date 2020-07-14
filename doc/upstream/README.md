@@ -145,7 +145,7 @@ Usage:
 | operators_config  | Path to operators config file using when deploying multiple operators. Examle in test/operatos_config.yaml. [string] | undefined  | operatos_config.yaml |
 | quay_user | Username in quay registry login. [string] | undefined | undefined |
 | quay_password | Password in quay registry login. [string] | undefined  | undefined |
-| quay_api_token | Quay api token to create project, delete tag. If 'quay_user' or 'quay_password' is undefined. This token is used to push images to quay as '$oauthtoken' user. [string] | undefined | hidden |
+| quay_api_token | Quay api token to create project, delete tag. If 'quay_user' or 'quay_password' is undefined. This token is used to push images to quay as '$oauthtoken' user. More info about creating token is [here](https://docs.quay.io/api/).  [string] | undefined | hidden |
 | bundle_registry | Quay bundle and index registry url. [string] | kind-registry:5000 | quay.io |
 | bundle_image_namespace | Quay registry url. [string] | test-operator | operator_testing |
 | bundle_index_image_namespace | Quay registry url. [string] | test-operator | operator_testing |
