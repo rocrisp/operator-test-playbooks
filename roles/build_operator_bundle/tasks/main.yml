@@ -27,7 +27,7 @@
 
 - name: "Create repo with public visibility"
   uri:
-    url: "https://quay.io/api/v1/repository"
+    url: "{{ registry_api_http_protocol | default('https') }}://quay.io/api/v1/repository"
     method: POST
     body: '{"kind":"image","namespace":"{{ bundle_image_namespace }}","repository":"{{ operator_package_name }}","description":"Bundle image for {{ operator_package_name }} operator","visibility":"public"}'
     body_format: json
