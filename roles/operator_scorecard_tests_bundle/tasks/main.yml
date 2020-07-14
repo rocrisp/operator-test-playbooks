@@ -1,0 +1,33 @@
+---
+# scorecard_config.yml
+# alpha scorecard kind-registry:5000/test-operator/aqua:v1.0.0 -c {{ work_dir }}/scorecard_config.yml -l 'test in (basic-check-spec-test,olm-bundle-validation-test,olm-status-descriptors-test)' -L
+
+- name: "Process the scorecard config template"
+  template:
+    src: "scorecard_config.j2"
+    dest: "{{ work_dir }}/scorecard_config.yml"
+
+- name: "Run operator-sdk scorecard tests on the deployed operator in json form"
+  shell: "{{ operator_sdk_bin_path }}alpha scorecard {{ bundle_image }} -c {{ work_dir }}/scorecard_config.yml -l 'test in (basic-check-spec-test,olm-bundle-validation-test,olm-status-descriptors-test)' -L"
+  failed_when: false
+  register: bundle_scorecard_result
+
+# - name: "Parse json operator scorecard results"
+#   shell: "cat {{ work_dir }}/{{ cr_kind }}-{{ cr_name }}-scorecard-results.json | {{ jq_bin_path }} '.results[] | select(.labels.suite == \"basic\") | select(.state == \"pass\").name' | wc -l"
+#   register: scorecard_results_passed_result
+
+- name: "Print score card results"
+  debug:
+    var: bundle_scorecard_result.stdout
+
+# - name: "Delete the operator CR"
+#   shell: "{{ oc_bin_path }} delete -f {{ cr_path }} --ignore-not-found=true --grace-period=60 --timeout=120s"
+#   environment:
+#     KUBECONFIG: "{{ kubeconfig_path }}"
+
+# - name: "Fail if the operator didn't satisfy the Basic Tests requirement"
+#   fail:
+#     msg: 'Operator scorecard basic tests failed, check scorecard_results.txt for more details'
+#   when:
+#     - check_scorecard_results|bool
+#     - scorecard_results_passed_result.stdout|int < 2
