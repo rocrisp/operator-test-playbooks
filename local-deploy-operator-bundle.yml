@@ -9,15 +9,12 @@
     work_dir: "/tmp/operator-test"
     testing_bin_path: "{{ work_dir }}/bin"
     operators_for_index: []
-<<<<<<< HEAD
     opm_container_tool: "docker"
-=======
     recreate_operators_config: "{{ work_dir }}/operators_config.yaml"
     bundle_registry: kind-registry:5000
     bundle_image_namespace: test-operator
     bundle_index_image_namespace: test-operator
     bundle_index_image_name: "index"
->>>>>>> 0282661... Partially implemented recreate
 
   tasks:
     - name: "Setting basic variables for deploy tasks"
@@ -39,6 +36,12 @@
         - quay_password is defined
         - quay_user != ""
         - quay_password != ""
+
+    - name: "Quay login via auth token"
+      shell: "{{ opm_container_tool }} login -u=\"$oauthtoken\" -p={{ quay_api_token }} quay.io"
+      no_log: True
+      when: (quay_user is undefined or quay_password is undefined or quay_user == "" or quay_password == "") and quay_api_token is defined and quay_api_token != ""
+
 
     - name: "Generate Operators config file from all operators"
       block:

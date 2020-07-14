@@ -143,9 +143,9 @@ Usage:
 | catalog_repo | Community operators repo url. [string] | https://github.com/operator-framework/community-operators.git | as default |
 | catalog_repo_branch | Community operators branch in repo. [string] | master | as default |
 | operators_config  | Path to operators config file using when deploying multiple operators. Examle in test/operatos_config.yaml. [string] | undefined  | operatos_config.yaml |
-| quay_user | Username in quay registry login. [string] | undefined | ??? |
-| quay_password | Password in quay registry login. [string] | undefined  | hidden |
-| quay_api_token | Quay api token to create project, delete tag. [string] | undefined | hidden |
+| quay_user | Username in quay registry login. [string] | undefined | undefined |
+| quay_password | Password in quay registry login. [string] | undefined  | undefined |
+| quay_api_token | Quay api token to create project, delete tag. If 'quay_user' or 'quay_password' is undefined. This token is used to push images to quay as '$oauthtoken' user. [string] | undefined | hidden |
 | bundle_registry | Quay bundle and index registry url. [string] | kind-registry:5000 | quay.io |
 | bundle_image_namespace | Quay registry url. [string] | test-operator | operator_testing |
 | bundle_index_image_namespace | Quay registry url. [string] | test-operator | operator_testing |
@@ -154,4 +154,5 @@ Usage:
 | operator_channel_force | Forcing to adde channel and default channed to current string value. When empty string it is autodetected by playbook. [string] | undefined | undefined |
 | index_force_rebuild | Force to rebuild currently running operators in index. [bool] | false | false |
 | index_skip | Skip building index (it will build bundle only). [bool] | undefined | undefined |
+| package_name_strict | Test if package name is same as operator directory name. [bool] | undefined | undefined |
 
