@@ -1,7 +1,6 @@
 ---
 - name: "Prepare comunity operator directory"
   block:
-
     - name: Remove catalog directory
       file:
         path: "{{ catalog_repo_dir }}"
@@ -20,6 +19,15 @@
         version: "{{ catalog_repo_branch }}"
         force: true
       when: not operator_dir_st.stat.exists
+
+    - name: "Remove operator dir '{{ remove_operator_dir }}' (testing only)"
+      file:
+        path: "{{ remove_operator_dir }}"
+        state: absent
+      when:
+        - remove_operator_dir is defined
+        - remove_operator_dir != ""
+
   when: operator_input_image == ""
   tags:
     - catalog_build

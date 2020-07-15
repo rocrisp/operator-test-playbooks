@@ -14,12 +14,12 @@
 - name: "Detect operator format"
   block:
     - fail:
-        msg: "Operator version is unefined !!! Try '-e operator_version=x.y.z'."
-      when: operator_version is undefined
+        msg: "Operator version 'op_version' is undefined !!!"
+      when: op_version is undefined
 
     - name: "Search for annotations.yml"
       find:
-        paths: "{{ operator_dir }}/{{ operator_version }}/metadata"
+        paths: "{{ operator_dir }}/{{ op_version }}/metadata"
         patterns: "annotations.yaml"
       register: annotations_presence
 
@@ -34,7 +34,7 @@
       include_role:
         name: export_csv
       vars:
-        op_csv_dir: "{{ operator_dir }}/{{ operator_version }}"
+        op_csv_dir: "{{ operator_dir }}/{{ op_version }}"
 
     - name: "Export Package variables"
       include_role:
@@ -52,8 +52,8 @@
 
     - name: "Setting path names for csv and annotation"
       set_fact:
-        clusterserviceversion_bundle_file_path: "{{ operator_bundle_src_dir }}/{{ operator_name }}/{{ operator_version }}/manifests/{{ operator_name }}.v{{ operator_version }}.clusterserviceversion.yaml"
-        annotation_file_path: "{{ operator_bundle_src_dir }}/{{ operator_name }}/{{ operator_version }}/metadata/annotations.yaml"
+        clusterserviceversion_bundle_file_path: "{{ operator_bundle_src_dir }}/{{ operator_name }}/{{ op_version }}/manifests/{{ operator_name }}.v{{ op_version }}.clusterserviceversion.yaml"
+        annotation_file_path: "{{ operator_bundle_src_dir }}/{{ operator_name }}/{{ op_version }}/metadata/annotations.yaml"
       when: operator_format == "bundle"
 
     - name: "Read the variables from annotations.yaml"

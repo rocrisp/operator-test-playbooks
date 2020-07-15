@@ -41,6 +41,7 @@
       include_role:
         name: build_operator_version_bundle
       vars:
+        op_version: "{{ operator_version }}"
         remove_replaces: true
       when: run_upstream|bool
 

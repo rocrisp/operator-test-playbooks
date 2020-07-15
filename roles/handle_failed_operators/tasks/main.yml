@@ -19,12 +19,15 @@
   block:
     - name: "Generate operators config file from failed operators"
       copy: content="{{ operators_config_failed | to_nice_yaml }}" dest=/tmp/operators_failed.yaml
+      when: operators_config_failed is defined
 
     - name: "Generate operators file from failed operators and versions"
       copy: content="{{ bundle_add_failed_name_version | to_nice_yaml }}" dest=/tmp/operators_versions_failed.yaml
+      when: bundle_add_failed_name_version is defined
 
     - name: "Fetch failed operators file to controller machine to path '/tmp/operators_failed-{{ inventory_hostname }}.yaml'"
       fetch: src=/tmp/operators_failed.yaml dest=/tmp/operators_failed-{{ inventory_hostname }}.yaml flat=yes
+      when: operators_config_failed is defined
 
     - debug:
         var: operators_config_failed

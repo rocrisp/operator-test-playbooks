@@ -4,7 +4,7 @@
       set_fact:
         bundle_image: "{{ operator_input_image }}"
         operator_name: "{{ operator_input_image.split(':')[0] | basename }}"
-        operator_version: "{{ operator_input_image.split(':')[1] }}"
+        op_version: "{{ operator_input_image.split(':')[1] }}"
         operator_format: "bundle"
     - name: "Remove bundle image {{ bundle_image }}"
       shell: "{{ opm_container_tool }} rmi -f {{ bundle_image }}"
@@ -31,11 +31,13 @@
     - name: detect format
       include_role:
         name: detect_format
+      # vars:
+      #   op_version: "{{ op_version }}"
 
     - name: "Setting 'bundle_image' and 'clusterserviceversion_bundle_file_path' in case of manifest format"
       set_fact:
-        bundle_image: "{{ bundle_registry }}/{{ bundle_image_namespace }}/{{ operator_package_name }}:v{{ operator_version }}"
-        clusterserviceversion_bundle_file_path: "{{ operator_bundle_src_dir }}/{{ operator_dir_name }}/{{ operator_version }}/{{ csv_file_path | basename }}"
+        bundle_image: "{{ bundle_registry }}/{{ bundle_image_namespace }}/{{ operator_package_name }}:v{{ op_version }}"
+        clusterserviceversion_bundle_file_path: "{{ operator_bundle_src_dir }}/{{ operator_dir_name }}/{{ op_version }}/{{ csv_file_path | basename }}"
       when: operator_format == "manifest"
 
     - name: "Setting 'operator_channels_list' in case of manifest format and if package file was parsed"
@@ -88,6 +90,7 @@
 
         - name: "Fail if csv file doesn't exists"
           fail:
+            msg: "CSV file '{{ clusterserviceversion_bundle_file_path }}' doesn't exists !!!"
           when: not clusterserviceversion_bundle_file_st.stat.exists
 
         - name: "Ensure replaces is removed in the csv file"
@@ -117,14 +120,14 @@
       block:
         - name: "Set bundle image name"
           set_fact:
-            bundle_image: "{{ bundle_registry }}/{{ bundle_image_namespace }}/{{ operator_package_name }}:v{{ operator_version }}"
+            bundle_image: "{{ bundle_registry }}/{{ bundle_image_namespace }}/{{ operator_package_name }}:v{{ op_version }}"
 
         - name: "Remove bundle image {{ bundle_image }}"
           shell: "{{ opm_container_tool }} rmi -f {{ bundle_image }}"
 
         - name: "Generate bundle image {{ bundle_image }} from bundle format"
           shell:
-            cmd: "{{ opm_bin_path }} alpha bundle build --directory {{ operator_version }}/{{ operator_manifest_dir }} --package {{ operator_package_name }} -t {{ bundle_image }} -c {{ operator_channels }} -e {{ operator_channel_default }} -b {{ opm_container_tool }}"
+            cmd: "{{ opm_bin_path }} alpha bundle build --directory {{ op_version }}/{{ operator_manifest_dir }} --package {{ operator_package_name }} -t {{ bundle_image }} -c {{ operator_channels }} -e {{ operator_channel_default }} -b {{ opm_container_tool }}"
             chdir: "{{ operator_bundle_src_dir }}/{{ operator_name }}"
           failed_when: false
           register: bb_rc
@@ -155,7 +158,7 @@
 
         - name: "Generate bundle image {{ bundle_image }} from manifest format"
           shell:
-            cmd: "{{ opm_bin_path }} alpha bundle build --directory {{ operator_version }} --package {{ operator_package_name }} -t {{ bundle_image }} -b {{ opm_container_tool }} {{ opm_bundle_alpha_add_args }}"
+            cmd: "{{ opm_bin_path }} alpha bundle build --directory {{ op_version }} --package {{ operator_package_name }} -t {{ bundle_image }} -b {{ opm_container_tool }} {{ opm_bundle_alpha_add_args }}"
             chdir: "{{ operator_bundle_src_dir }}/{{ operator_dir_name }}"
           failed_when: false
           register: mb_rc
