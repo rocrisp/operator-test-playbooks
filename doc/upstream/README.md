@@ -212,3 +212,16 @@ Usage:
 |test| Runs test including installing operator prerequisites |
 |pure_test| Runs test excluding installing operator prerequisites (Faster then `test` once operator tools are installed. ) |
 |deploy_bundles| Deploy all bundles defined by `operator_dir` or `operator_config` |
+
+
+## Misc recreate
+```
+ansible-pull -U https://github.com/J0zi/operator-test-playbooks -C RHO675 -vv -i localhost, local.yml \
+-e run_upstream=true --tags deploy_bundles \
+-e bundle_registry=quay.io -e bundle_image_namespace=operator_testing -e bundle_index_image_namespace=operator_testing \
+-e bundle_index_image_name=upstream-community-operators-index \
+-e regenerate_operators_path=/tmp/community-operators-for-catalog/upstream-community-operators \
+-e opm_index_add_mode=semver -e operator_channel_force="" \
+-e quay_api_token=<token> \
+| tee -a recreate.log 1>&2
+```
