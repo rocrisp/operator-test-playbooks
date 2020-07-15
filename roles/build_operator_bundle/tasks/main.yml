@@ -79,8 +79,6 @@
         versions_in_dir: "{{ versions_in_dir | intersect(version_list) }}"
       when: operator_version is defined
 
-    - pause:
-
     - name: "Delete all tags from operrator {{ operator_package_name }}. Tags: '{{ verions_remove | join(',') }}'"
       uri:
         url: "{{ registry_api_http_protocol | default('https') }}://quay.io/api/v1/repository/{{ bundle_image_namespace }}/{{ operator_package_name }}/tag/v{{ item }}"
