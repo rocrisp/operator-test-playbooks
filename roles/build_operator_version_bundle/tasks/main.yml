@@ -129,6 +129,10 @@
           failed_when: false
           register: bb_rc
 
+        - name: "Push bundle image {{ bundle_image }}"
+          shell: "{{ opm_container_tool }} push {{ bundle_image }}"
+          when: bb_rc.rc == 0
+
         - name: "Operator scorcard bundle test"
           include_role:
             name: operator_scorecard_tests_bundle
@@ -136,10 +140,6 @@
             - run_bundle_scorecard_test is defined
             - run_bundle_scorecard_test|bool
             - bb_rc.rc == 0
-
-        - name: "Push bundle image {{ bundle_image }}"
-          shell: "{{ opm_container_tool }} push {{ bundle_image }}"
-          when: bb_rc.rc == 0
 
       when: operator_format == "bundle"
 
@@ -160,6 +160,10 @@
           failed_when: false
           register: mb_rc
 
+        - name: "Push bundle image {{ bundle_image }}"
+          shell: "{{ opm_container_tool }} push {{ bundle_image }}"
+          when: mb_rc.rc == 0
+
         - name: "Operator scorcard bundle test"
           include_role:
             name: operator_scorecard_tests_bundle
@@ -167,10 +171,6 @@
             - run_bundle_scorecard_test is defined
             - run_bundle_scorecard_test|bool
             - mb_rc.rc == 0
-
-        - name: "Push bundle image {{ bundle_image }}"
-          shell: "{{ opm_container_tool }} push {{ bundle_image }}"
-          when: mb_rc.rc == 0
 
       when: operator_format == "manifest"
 

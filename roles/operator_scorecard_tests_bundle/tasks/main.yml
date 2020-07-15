@@ -3,11 +3,11 @@
 # alpha scorecard kind-registry:5000/test-operator/aqua:v1.0.0 -c {{ work_dir }}/scorecard_config.yml -l 'test in (basic-check-spec-test,olm-bundle-validation-test,olm-status-descriptors-test)' -L
 
 - name: "Seting scorecards select variables"
-  set_facts:
+  set_fact:
     bundle_scorecard_test_select_args: ""
 
 - name: "Seting scorecards variables by default setup"
-  set_facts:
+  set_fact:
     bundle_scorecard_test_config: "{{ work_dir }}/scorecard_config.yml"
     bundle_scorecard_test_select_args: "-l 'test in (basic-check-spec-test,olm-bundle-validation-test,olm-status-descriptors-test)'"
   when:
@@ -16,21 +16,21 @@
 
 - name: "Process the scorecard config template"
   template:
-    src: "scorecard_config.j2"
+    src: "scorecard_config.yml.j2"
     dest: "{{ work_dir }}/scorecard_config.yml"
-  when:
-    - (bundle_scorecard_test_config is undefined or bundle_scorecard_test_config == "")
-    - (bundle_scorecard_test_select is undefined or bundle_scorecard_test_select == "")
+  # when:
+  #   - (bundle_scorecard_test_config is undefined or bundle_scorecard_test_config == "")
+  #   - (bundle_scorecard_test_select is undefined or bundle_scorecard_test_select == "")
 
 - name: "Seting scorecards variables by select '{{ bundle_scorecard_test_select_args }}'"
-  set_facts:
+  set_fact:
     bundle_scorecard_test_select_args: "-l 'test in ({{ bundle_scorecard_test_select }})'"
   when:
     - bundle_scorecard_test_select is defined
     - bundle_scorecard_test_select != ""
 
 - name: "Run operator-sdk scorecard tests on the deployed operator in json form"
-  shell: "{{ operator_sdk_bin_path }}alpha scorecard {{ bundle_image }} -c {{ bundle_scorecard_test_config }} {{ bundle_scorecard_test_select_args }} -L"
+  shell: "{{ operator_sdk_bin_path }} alpha scorecard {{ bundle_image }} -c {{ bundle_scorecard_test_config }} {{ bundle_scorecard_test_select_args }} -L"
   failed_when: false
   register: bundle_scorecard_result
 

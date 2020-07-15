@@ -45,7 +45,7 @@
   tags:
     - install
     - uninstall
-    - reinstall_tools
+    - reset_tools
 
 - name: "Install operator-sdk"
   get_url:
@@ -60,7 +60,7 @@
   tags:
     - install
     - host_build
-    - reinstall_tools
+    - reset_tools
 
 - name: "Remove '{{ opm_bin_path }}' binary"
   file:
@@ -69,7 +69,7 @@
   tags:
     - install
     - uninstall
-    - reinstall_tools
+    - reset_tools
 
 - name: "Install opm"
   get_url:
@@ -84,7 +84,7 @@
   tags:
     - install
     - host_build
-    - reinstall_tools
+    - reset_tools
 
 - name: "Remove '{{ jq_bin_path }}' binary"
   file:
@@ -93,7 +93,7 @@
   tags:
     - install
     - uninstall
-    - reinstall_tools
+    - reset_tools
 
 - name: "Download jq {{ jq_version }}"
   get_url:
@@ -108,7 +108,7 @@
   tags:
     - install
     - image_build
-    - reinstall_tools
+    - reset_tools
 
 - name: "Remove '{{ yq_bin_path }}' binary"
   file:
@@ -117,7 +117,7 @@
   tags:
     - install
     - uninstall
-    - reinstall_tools
+    - reset_tools
 
 - name: "Download yq {{ yq_version }}"
   get_url:
@@ -133,7 +133,7 @@
     - install
     - image_build
     - uninstall
-    - reinstall_tools
+    - reset_tools
 
 - name: "Install prerequisites specific to legacy operator manifest testing"
   block:
@@ -212,7 +212,7 @@
       tags:
         - install
         - uninstall
-        - reinstall_tools
+        - reset_tools
 
     - name: "Check if umoci is installed"
       shell: "{{ umoci_bin_path }} -h"
@@ -235,7 +235,7 @@
       tags:
         - install
         - uninstall
-        - reinstall_tools
+        - reset_tools
   when:
     - bundle_image is defined
     - bundle_image != ""

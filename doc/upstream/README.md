@@ -174,7 +174,7 @@ Usage:
 |install| Installs all packages incluing operator testing tools (--tags host_build + testing tools). |
 |uninstall| Uninstall packages that were installed by `install` tag|
 |reset| Resets kind cluster and recreate kind registry |
-|reinstall_tools| Reinstall testing tools (operator-sdk,olm,opm,umoci,yq,jq). Used when updating versions of these tools. |
+|reset_tools| Reinstall testing tools (operator-sdk,olm,opm,umoci,yq,jq). Used when updating versions of these tools. |
 |test| Runs test including installing operator prerequisites |
 |pure_test| Runs test excluding installing operator prerequisites (Faster then `test` once operator tools are installed. ) |
 |deploy_bundles| Deploy all bundles defined by `operator_dir` or `operator_config` |
