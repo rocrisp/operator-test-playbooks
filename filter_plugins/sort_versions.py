@@ -1,7 +1,7 @@
-from distutils.version import LooseVersion
+from pkg_resources import parse_version
 
 def filter_sort_versions(value):
-    return sorted(value, key=LooseVersion)
+    return sorted(value, key=parse_version)
 
 class FilterModule(object):
     filter_sort = {
