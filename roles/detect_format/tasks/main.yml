@@ -29,7 +29,7 @@
         operator_name: "{{ operator_dir | basename }}"
         operator_dir_name: "{{ operator_dir | basename }}"
         operator_base_dir: "{{ operator_dir | dirname }}"
-    - pause:
+
     - name: "Export CSV variables"
       include_role:
         name: export_csv
