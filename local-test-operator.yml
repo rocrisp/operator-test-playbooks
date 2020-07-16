@@ -91,6 +91,14 @@
             - olm_needed.stdout != "operatorgroup"
       when: run_upstream|bool
 
+    - name: "Detect format"
+      include_role:
+        name: detect_format
+      vars:
+        operator_input_image: ""
+        op_version: "{{ operator_version }}"
+      when: run_upstream|bool
+
     - name: "Build upstream catalog"
       include_role:
         name: build_catalog_upstream
