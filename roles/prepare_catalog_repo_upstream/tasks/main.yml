@@ -20,13 +20,22 @@
         force: true
       when: not operator_dir_st.stat.exists
 
-    - name: "Remove operator dir '{{ remove_operator_dir }}' (testing only)"
-      file:
-        path: "{{ remove_operator_dir }}"
-        state: absent
+    - name: "Handle removing operators"
+      block:
+        - name: "Parse 'remove_operators_dir'"
+          set_fact:
+            bob_remove_operators_list: "{{ remove_operator_dirs.split(',') }}"
+
+        - name: "Remove operator dirs (testing only)"
+          file:
+            path: "{{ remove_base_dir }}/{{ item }}"
+            state: absent
+          with_items: "{{ bob_remove_operators_list }}"
       when:
-        - remove_operator_dir is defined
-        - remove_operator_dir != ""
+        - remove_base_dir is defined
+        - remove_base_dir != ""
+        - remove_operator_dirs is defined
+        - remove_operator_dirs != ""
 
   when: operator_input_image == ""
   tags:

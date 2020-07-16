@@ -144,7 +144,7 @@ ansible-playbook -vv -i myhost, local.yml \
 ansible-playbook -vv -i myhost, local.yml \
 -e run_upstream=true \
 -e operator_dir=/tmp/community-operators-for-catalog/upstream-community-operators/aqua \
---tags deploy_bundles -e remove_operator_dir=/tmp/community-operators-for-catalog/upstream-community-operators/aqua \
+--tags deploy_bundles -e remove_operators_dir=/tmp/community-operators-for-catalog/upstream-community-operators/aqua \
 -e bundle_registry=quay.io -e bundle_image_namespace=operator_testing -e bundle_index_image_namespace=operator_testing \
 -e bundle_index_image_name=upstream-community-operators-index \
 -e quay_api_token=<token>
@@ -155,10 +155,10 @@ ansible-playbook -vv -i myhost, local.yml \
 ansible-playbook -vv -i myhost, local.yml \
 -e run_upstream=true \
 -e operator_dir=/tmp/community-operators-for-catalog/upstream-community-operators/aqua \
---tags deploy_bundles -e remove_operator_dir=/tmp/community-operators-for-catalog/upstream-community-operators/aqua/1.0.2 \
--e bundle_registry=quay.io -e bundle_image_namespace=operator_testing -e bundle_index_image_namespace=operator_testing \
--e bundle_index_image_name=upstream-community-operators-index \
--e quay_api_token=<token>
+--tags deploy_bundles -e quay_api_token=<token> \
+-e bundle_registry=quay.io -e bundle_image_namespace=operator_testing \
+-e bundle_index_image_namespace=operator_testing -e bundle_index_image_name=upstream-community-operators-index  \
+-e remove_base_dir=/tmp/community-operators-for-catalog/upstream-community-operators -e remove_operator_dirs="aqua/1.0.2,aqua/1.0.1"
 ```
 ## Misc options to use
 
@@ -191,8 +191,8 @@ Usage:
 | bundle_scorecard_test_config | Config file where scorecard tests are defined. [string] | generated | n/a |
 | bundle_scorecard_test_select | Runs specific scorecard tests. [string] | basic-check-spec-test,olm-bundle-validation-test,olm-status-descriptors-test | n/a |
 | recreate_skip_repo_clean | Skip removing all repos in namespace from registry. (Applied only when is defined and value is true). [bool] | undefined | undefined |
-| remove_operator_dir | Removed directory right after cloning comunity-operators project. [string] | undefined | undefined |
-
+| remove_base_dir | Sepcify base directory right after cloning comunity-operators project. Needs to specify `remove_operator_dirs`. See bellow. [string] | undefined | undefined |
+| remove_operator_dirs | List directory right after cloning comunity-operators project relative to `remove_base_dir`. [string] | undefined | undefined |
 
 ## Tags to use
 
