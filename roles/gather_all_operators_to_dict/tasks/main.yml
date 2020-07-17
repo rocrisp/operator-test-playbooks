@@ -4,6 +4,7 @@
     paths: "{{ operator_base_dir }}"
     recurse: no
     file_type: directory
+  no_log: True
   register: gaotd_operators_find
 
 - name: "Setting list of all operators"
