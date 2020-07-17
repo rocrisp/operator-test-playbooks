@@ -1,0 +1,25 @@
+- name: "Reseting kind cluster"
+  include_role:
+    name: install_kind
+
+- name: "Setting operator variables"
+  set_fact:
+    operator_package_name: "{{ lat_op.name }}"
+    operator_dir: "{{ operator_base_dir }}/{{ lat_op.name }}"
+    operator_version: "{{ lov_op_version }}"
+    operators_for_index: []
+
+- name: "Running manifest test for operator '{{ operator_package_name }}:{{ operator_version }}'"
+  include_role:
+    name: test_opertator_manifest
+  when:
+    - run_manifest_test|bool
+
+- name: "Running bundle test for operator '{{ operator_package_name }}:{{ operator_version }}'"
+  include_role:
+    name: test_opertator_bundle
+  when:
+    - run_bundle_test|bool
+
+- debug:
+    var: test_all_add_failed_name_version

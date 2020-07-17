@@ -2,6 +2,7 @@
 - name: "Search for all operators in '{{ operator_base_dir }}'"
   find:
     paths: "{{ operator_base_dir }}"
+    patterns: "{{ all_operator_find_filter }}"
     recurse: no
     file_type: directory
   no_log: True

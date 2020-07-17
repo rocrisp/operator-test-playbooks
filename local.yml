@@ -66,6 +66,13 @@
         operator_format: "bundle"
       tags:
         - always
+    - name: "Sets 'run_prereqs' to false when running 'pure_test' tag"
+      set_fact:
+        run_prereqs: false
+      tags:
+        - never
+        - pure_test
+        - pure_test_all
 
   roles:
     - { role: install_base_packages, tags: ["base"], when: run_host_init|bool }
@@ -74,7 +81,7 @@
     - { role: install_kind, tags: ["kind"], when: run_host_init|bool }
     - { role: install_operator_prereqs, tags: ["never", "host_build"], when: run_upstream|bool }
     - { role: prepare_catalog_repo_upstream, tags: ["always"], when: run_upstream|bool }
-    - { role: gather_all_operators_to_dict, tags: [never,"gaotd"], when: run_upstream|bool }
+    - { role: loop_all_tests, tags: [never,"test_all","pure_test_all"], when: run_upstream|bool }
 
   tasks:
     - name: "Setting input variables for testing"
@@ -94,6 +101,7 @@
       tags:
         - never
         - pure_test
+        - pure_test_all
 
     - name: "Failing when input image is specified"
       fail:
@@ -130,15 +138,3 @@
   tags:
     - never
     - deploy_bundles
-
-# - name: "Running operator bundle test for all operators and its all versions"
-#   import_playbook: local-test-operator-bundle.yml
-#     vars:
-#       operator_dir:
-#   when:
-#     - run_upstream|bool
-#     - run_bundle_test|bool
-#   tags:
-#     - never
-#     - test_all
-#     - pure_test_all

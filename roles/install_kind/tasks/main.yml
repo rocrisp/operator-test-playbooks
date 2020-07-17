@@ -21,6 +21,7 @@
     - never
     - reset
     - uninstall
+    - reset_minimal
 
 - name: "Uninstall kind binary"
   file:
@@ -68,3 +69,4 @@
     - reset
     - install
     - host_build
+    - reset_minimal
