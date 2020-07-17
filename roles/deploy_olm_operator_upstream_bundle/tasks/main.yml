@@ -213,6 +213,5 @@
   when:
     - permisive is defined
     - permisive|bool
-    - operator_result.rc != 0
-    - operator_uptime is undefined or operator_uptime.rc != 0
+    - operator_result.rc != 0 or operator_uptime is undefined or (operator_uptime is defined and operator_uptime.rc != 0)
     - run_upstream|bool
