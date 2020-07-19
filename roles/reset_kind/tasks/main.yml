@@ -9,33 +9,26 @@
     - name: "Delete kind cluster"
       shell: "kind delete cluster --name {{ kind_cluster_name }}"
       when: rc_kind.stat.exists
-  tags:
-    - never
-    - reset
-    - uninstall
-    - reset_minimal
 
-- name: "Destroy current registry"
-  shell: "docker rm -f kind-registry"
-  failed_when: false
-  tags:
-    - never
-    - reset
-    - uninstall
-    - reset_minimal
+    - name: "Destroy current registry"
+      shell: "docker rm -f kind-registry"
+      failed_when: false
+      tags:
+        - never
+        - reset
+        - uninstall
+        - reset_minimal
 
-- name: "Installing Kind with registry"
-  block:
-    - name: "Generating file for kind and registry"
-      template:
-        src: kind-with-registry.sh.j2
-        dest: "{{ kind_tmp_dir }}/kind-with-registry.sh"
-        mode: '0755'
+    - name: "Installing Kind with registry"
+      block:
+        - name: "Generating file for kind and registry"
+          template:
+            src: kind-with-registry.sh.j2
+            dest: "{{ kind_tmp_dir }}/kind-with-registry.sh"
+            mode: '0755'
 
-    - name: "Configuring Kind with registry"
-      shell: "{{ kind_tmp_dir }}/kind-with-registry.sh"
+        - name: "Configuring Kind with registry"
+          shell: "{{ kind_tmp_dir }}/kind-with-registry.sh"
+      when: rc_kind.stat.exists
   tags:
-    - reset
-    - install
-    - host_build
-    - reset_minimal
+    - always
