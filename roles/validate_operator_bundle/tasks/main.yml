@@ -54,6 +54,16 @@
       fail:
         msg: 'Operator sdk validation test failed, check validation-output.txt for more details'
       when:
+        - permisive is not defined or not permisive|bool
         - check_validation_result|bool
         - sdk_validation_upstream_result.rc != 0
+
+    - name: "Handle permisive mode when operator is failing to deploy on kind cluster"
+      set_fact:
+        test_all_add_failed_name_version_validation: "{{ test_all_add_failed_name_version_validation | default([]) }} + [ '{{ operator_name }}:{{ operator_version }}' ]"
+      when:
+        - permisive is defined
+        - permisive|bool
+        - sdk_validation_upstream_result.rc != 0
+
   when: run_upstream|bool
