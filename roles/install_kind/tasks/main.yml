@@ -29,9 +29,9 @@
       become: yes
       when: rc_kind.stat.exists == false
   tags:
+    - reset
     - install
     - host_build
-    - reset
 
 - name: "Reset Kind with registry"
   include_role:
