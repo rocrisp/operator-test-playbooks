@@ -1,6 +1,6 @@
 - name: "Reseting kind cluster"
   include_role:
-    name: install_kind
+    name: reset_kind
 
 - name: "Setting operator variables"
   set_fact:
@@ -23,3 +23,6 @@
 
 - debug:
     var: test_all_add_failed_name_version
+
+- debug:
+    var: test_all_add_failed_name_version_validation
