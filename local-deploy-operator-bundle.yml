@@ -14,7 +14,7 @@
     bundle_registry: kind-registry:5000
     bundle_image_namespace: test-operator
     bundle_index_image_namespace: test-operator
-    bundle_index_image_name: "index"
+    bundle_index_image_name: "catalog"
 
   tasks:
     - name: "Setting basic variables for deploy tasks"

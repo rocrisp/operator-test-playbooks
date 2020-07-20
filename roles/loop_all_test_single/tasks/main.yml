@@ -1,6 +1,7 @@
 - name: "Reseting kind cluster"
   include_role:
     name: reset_kind
+  when: test_all_reset_kind is undefined or test_all_reset_kind|bool
 
 - name: "Setting operator variables"
   set_fact:
@@ -24,5 +25,13 @@
 - debug:
     var: test_all_add_failed_name_version
 
+- name: "Generate 'test_all_add_failed_name_version' from failed operators"
+  copy: content="{{ test_all_add_failed_name_version | to_nice_yaml }}" dest=/tmp/test_all_add_failed_name_version.yaml
+  when: test_all_add_failed_name_version is defined
+
 - debug:
     var: test_all_add_failed_name_version_validation
+
+- name: "Generate 'test_all_add_failed_name_version_validation' from failed operators"
+  copy: content="{{ test_all_add_failed_name_version_validation | to_nice_yaml }}" dest=/tmp/test_all_add_failed_name_version_validation.yaml
+  when: test_all_add_failed_name_version_validation is defined

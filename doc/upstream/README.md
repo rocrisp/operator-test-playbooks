@@ -196,6 +196,7 @@ Usage:
 | all_operator_find_filter | Filter pattern to find list of operators when running all tests (tags: test_all, pure_test_all). [string] | undefined | undefined |
 | all_operator_find_excludes | Comma separated list of operators that should be excluded (tags: test_all, pure_test_all). [string] | undefined | undefined |
 | permisive | Olm deploy will not fail when this flag is true. [bool] | undefined | undefined |
+| test_all_reset_kind | Force to reset kind cluster before every test (undefined means true). [bool] | undefined | undefined |
 
 ## Tags to use
 
