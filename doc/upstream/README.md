@@ -160,6 +160,33 @@ ansible-playbook -vv -i myhost, local.yml \
 -e bundle_index_image_namespace=operator_testing -e bundle_index_image_name=upstream-community-operators-index  \
 -e remove_base_dir=/tmp/community-operators-for-catalog/upstream-community-operators -e remove_operator_dirs="aqua/1.0.2,aqua/1.0.1"
 ```
+
+## Recreate catalog (operatorhubio)
+```
+TOKEN="<token>"
+
+ansible-pull -U https://github.com/J0zi/operator-test-playbooks -C RHO675 -vv -i localhost, local.yml \
+-e run_upstream=true --tags deploy_bundles \
+-e regenerate_operators_path=/tmp/community-operators-for-catalog/upstream-community-operators \
+-e bundle_registry=quay.io \
+-e bundle_image_namespace=operatorhubio \
+-e bundle_index_image_namespace=operatorhubio \
+-e bundle_index_image_name=catalog \
+-e quay_api_token=$TOKEN \
+-e opm_index_add_mode=semver -e operator_channel_force="" \
+| tee -a $HOME/recreate_operatorhubio-$(date +%F_%H%M).log 1>&2
+```
+
+## Test all operators
+```
+export ANSIBLE_STDOUT_CALLBACK=yaml
+time ansible-pull -U https://github.com/J0zi/operator-test-playbooks -C RHO675 -vv -i localhost, local.yml \
+-e run_upstream=true --tags pure_test_all -e operator_base_dir=/tmp/community-operators-for-catalog/upstream-community-operators  \
+-e permisive=true -e pod_start_retries=30 -e pod_start_delay=5 \
+-e opm_index_add_mode=semver -e operator_channel_force="" \
+-e all_operator_find_excludes="planetscale"| tee -a $HOME/test_all_upstream-$(date +%F_%H%M).log 1>&2
+```
+
 ## Misc options to use
 
 Usage:
@@ -218,14 +245,3 @@ Usage:
 |deploy_bundles| Deploy all bundles defined by `operator_dir` or `operator_config` |
 
 
-## Misc recreate
-```
-ansible-pull -U https://github.com/J0zi/operator-test-playbooks -C RHO675 -vv -i localhost, local.yml \
--e run_upstream=true --tags deploy_bundles \
--e bundle_registry=quay.io -e bundle_image_namespace=operator_testing -e bundle_index_image_namespace=operator_testing \
--e bundle_index_image_name=upstream-community-operators-index \
--e regenerate_operators_path=/tmp/community-operators-for-catalog/upstream-community-operators \
--e opm_index_add_mode=semver -e operator_channel_force="" \
--e quay_api_token=<token> \
-| tee -a recreate.log 1>&2
-```
