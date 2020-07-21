@@ -49,10 +49,10 @@ if [ -n "$($KIND_CMD get clusters | grep {{ kind_cluster_name }})" ];then
 fi
 
 # create a cluster with the local registry enabled in containerd
-{% if kind_kube_ver == '' %}
+{% if kind_kube_version == '' %}
 cat <<EOF | $KIND_CMD create cluster --name {{ kind_cluster_name }} --config=-
 {% else %}
-cat <<EOF | $KIND_CMD create cluster --name {{ kind_cluster_name }} --image kindest/node:{{ kind_kube_ver }} --config=-
+cat <<EOF | $KIND_CMD create cluster --name {{ kind_cluster_name }} --image kindest/node:{{ kind_kube_version }} --config=-
 {% endif %}
 
 kind: Cluster

@@ -9,7 +9,7 @@ python:
 - "3.8"
 
 env:
-- DISTRO_TYPE=upstream PLAYBOOK_CMD="ansible-playbook -vv -i localhost, local.yml -e kind_version=v0.8.1 -e kind_kube_ver=v1.18.2 -e olm_ver=0.14.1 -e operator_sdk_version=v0.18.2 -e ansible_connection=local -e run_upstream=true -e run_remove_catalog_repo=false -e bundle_registry=kind-registry:5000"
+- DISTRO_TYPE=upstream ANSIBLE_STDOUT_CALLBACK=yaml PLAYBOOK_CMD="ansible-playbook -vv -i localhost, local.yml -e kind_version=v0.8.1 -e kind_kube_version=v1.18.2 -e olm_version=0.14.1 -e operator_sdk_version=v0.18.2 -e opm_version=v1.13.0 -e ansible_connection=local -e run_upstream=true -e run_remove_catalog_repo=false -e bundle_registry=kind-registry:5000"
 
 services:
   - docker
@@ -30,6 +30,8 @@ jobs:
     script: $PLAYBOOK_CMD -e operator_dir=/tmp/community-operators-for-catalog/upstream-community-operators/eclipse-che -e operator_version=7.14.2 -e operator_channel_force=stable --tags pure_test
   - name: 3. Testing operator in manifest format, converting to bundle and bundle test
     script: $PLAYBOOK_CMD -e operator_dir=/tmp/community-operators-for-catalog/upstream-community-operators/jaeger -e operator_version=1.18.0 --tags pure_test
+  - name: 4. Testing operator in manifest format and manifest test only (Without conversion to bundle )
+    script: $PLAYBOOK_CMD -e operator_dir=/tmp/community-operators-for-catalog/upstream-community-operators/aqua -e operator_version=1.0.2 --tags pure_test -e run_bundle_test=false -e run_manifest_test=true
 
   # # - stage: Operator Tests from image input (internal purposes only)
   # - name: Testing operator in image format

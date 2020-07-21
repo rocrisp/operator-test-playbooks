@@ -30,6 +30,11 @@
     umoci_bin_path: "{{ testing_bin_path }}/umoci"
     opm_bin_path: "{{ testing_bin_path }}/opm"
     offline_cataloger_bin_path: "offline-cataloger"
+    kind_version: v0.8.1
+    kind_kube_version: v1.18.2
+    operator_sdk_version: v0.18.2
+    olm_version: 0.15.1
+    opm_version: v1.13.0
 
   environment:
     PATH: "{{ ansible_env.PATH }}:{{ ansible_env.HOME }}/.local/bin"
@@ -61,6 +66,13 @@
         operator_format: "bundle"
       tags:
         - always
+    - name: "Sets 'run_prereqs' to false when running 'pure_test' tag"
+      set_fact:
+        run_prereqs: false
+      tags:
+        - never
+        - pure_test
+        - pure_test_all
 
   roles:
     - { role: install_base_packages, tags: ["base"], when: run_host_init|bool }
@@ -69,6 +81,7 @@
     - { role: install_kind, tags: ["kind"], when: run_host_init|bool }
     - { role: install_operator_prereqs, tags: ["never", "host_build"], when: run_upstream|bool }
     - { role: prepare_catalog_repo_upstream, tags: ["always"], when: run_upstream|bool }
+    - { role: loop_all_tests, tags: [never,"test_all","pure_test_all"], when: run_upstream|bool }
 
   tasks:
     - name: "Setting input variables for testing"
@@ -88,6 +101,7 @@
       tags:
         - never
         - pure_test
+        - pure_test_all
 
     - name: "Failing when input image is specified"
       fail:
@@ -124,5 +138,3 @@
   tags:
     - never
     - deploy_bundles
-
-

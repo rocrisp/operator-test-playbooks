@@ -42,5 +42,5 @@
     - name: "Setting operator name and version from csv file"
       set_fact:
         operator_name: "{{ operator_vars.metadata.name.split('.')[0] }}"
-        operator_version: "{{ operator_vars.metadata.name.split('.v')[1:] | join('.') }}"
+        op_version: "{{ operator_vars.metadata.name.split('.v')[1:] | join('.') }}"
   when: operator_input_image != ""

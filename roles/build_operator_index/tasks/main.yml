@@ -29,6 +29,7 @@
 - name: "Reseting 'index_versions_in_registry' variable"
   set_fact:
     index_versions_in_registry: []
+    opm_index_add_extra_args: ""
 
 - name: "Setting all versions to 'index_versions_in_registry' variable"
   set_fact:
@@ -40,9 +41,9 @@
     bundle_index_image_from: "{{ bundle_registry }}/{{ bundle_index_image_namespace }}/{{ bundle_index_image_name }}:{{ index_versions_in_registry[0] }}"
     opm_index_add_extra_args: "--from-index {{ bundle_registry }}/{{ bundle_index_image_namespace }}/{{ bundle_index_image_name }}:{{ index_versions_in_registry[0] }}"
   when:
-    - index_versions_in_registry[0] is defined
+    - index_versions_in_registry.0 is defined
 
-- name: Handling previous index image
+- name: "Handling previous index image"
   block:
     - name: "Remove previous versions of operator '{{ ba_name }}' from index image {{ bundle_index_image }}"
       shell: "{{ opm_bin_path }} index rm  -c {{ opm_container_tool }} --operators {{ ba_name }} --tag {{ bundle_index_image }}  {{ opm_index_add_extra_args }}"
@@ -50,6 +51,7 @@
     - name: Push bundle image {{ bundle_index_image }}
       shell: "{{ opm_container_tool }} push {{ bundle_index_image }}"
   when:
+    - index_versions_in_registry.0 is defined
     - bundle_index_image_from is defined
     - bundle_index_image_from != ""
 
@@ -84,6 +86,14 @@
 
 - name: "Add operator '{{ ba_name }}' to index image {{ bundle_index_image }}"
   shell: "{{ opm_bin_path }} index add -u {{ opm_container_tool }} --bundles {{ bundle_images }} --tag {{ bundle_index_image }} --mode {{ opm_index_add_mode }} {{ opm_index_add_extra_args }}"
+  failed_when: false
+  register: ia_rc
 
 - name: Push bundle image {{ bundle_index_image }}
   shell: "{{ opm_container_tool }} push {{ bundle_index_image }}"
+  when: ia_rc.rc == 0
+
+- name: "Add failed operators when creating index from bundle"
+  set_fact:
+    bundle_index_add_failed: "{{ bundle_index_add_failed | default([]) }} + [ '{{ operator_package_name }}' ]"
+  when: ia_rc.rc is defined and ia_rc.rc != 0
