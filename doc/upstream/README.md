@@ -201,7 +201,7 @@ Usage:
 | run_remove_catalog_repo | Removes existing git repo for comunity-operators. [bool] | true | true |
 | catalog_repo | Community operators repo url. [string] | https://github.com/operator-framework/community-operators.git | as default |
 | catalog_repo_branch | Community operators branch in repo. [string] | master | as default |
-| operators_config  | Path to operators config file using when deploying multiple operators. Examle in test/operatos_config.yaml. [string] | undefined  | operatos_config.yaml |
+| operators_config | Path to operators config file using when deploying multiple operators. Examle in test/operatos_config.yaml. [string] | undefined  | operatos_config.yaml |
 | quay_user | Username in quay registry login. [string] | undefined | undefined |
 | quay_password | Password in quay registry login. [string] | undefined  | undefined |
 | quay_api_token | Quay api token to create project, delete tag. If 'quay_user' or 'quay_password' is undefined. This token is used to push images to quay as '$oauthtoken' user. More info about creating token is [here](https://docs.quay.io/api/).  [string] | undefined | hidden |
@@ -224,6 +224,7 @@ Usage:
 | all_operator_find_excludes | Comma separated list of operators that should be excluded (tags: test_all, pure_test_all). [string] | undefined | undefined |
 | permisive | Olm deploy will not fail when this flag is true. [bool] | undefined | undefined |
 | test_all_reset_kind | Force to reset kind cluster before every test (undefined means true). [bool] | undefined | undefined |
+| production_registry_namespace | Check if bundle exists in production registry. Used in local `deploy_bundle` test. (e.g. "quay.io/operatorhubio") [string] | undefined | undefined |
 
 ## Tags to use
 
