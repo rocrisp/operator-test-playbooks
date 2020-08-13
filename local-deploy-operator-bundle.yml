@@ -49,8 +49,8 @@
 
     - name: "Quay login via auth token"
       shell: "{{ opm_container_tool }} login -u=\\$oauthtoken -p={{ quay_api_token }} quay.io"
-      # no_log: True
-      when: (quay_user is undefined or quay_password is undefined or quay_user == "" or quay_password == "") and quay_api_token is defined and quay_api_token != ""
+      no_log: True
+      when: quay_api_token is defined and quay_api_token != ""
 
     - name: "Generate Operators config file from all operators"
       block:

@@ -1,4 +1,13 @@
 ---
+- name: "Quay login"
+  shell: "{{ opm_container_tool }} login -u=\"{{ quay_user }}\" -p={{ quay_password }} quay.io"
+  no_log: True
+  when:
+    - quay_user is defined
+    - quay_password is defined
+    - quay_user != ""
+    - quay_password != ""
+
 - name: "Setting bundle image name"
   set_fact:
     bundle_index_image: "{{ bundle_registry }}/{{ bundle_index_image_namespace }}/{{ bundle_index_image_name }}:{{ bundle_index_image_version }}"
@@ -8,6 +17,7 @@
     url: "{{ registry_api_http_protocol | default('https') }}://{{ bundle_registry }}/v2/{{ bundle_index_image_namespace }}/{{ bundle_index_image_name }}/tags/list"
   register: boi_registry_versions
   failed_when: false
+  when: quay_user is not defined
 
 - name: "Create repo for index image with public visibility"
   uri:
@@ -21,6 +31,7 @@
     status_code: 201
     return_content: yes
   when:
+    - quay_user is not defined
     - quay_api_token is defined
     - quay_api_token != ""
     - boi_registry_versions.status != 200
@@ -33,14 +44,26 @@
 - name: "Setting all versions to 'index_versions_in_registry' variable"
   set_fact:
     index_versions_in_registry: "{{ boi_registry_versions.json.tags | sort_versions | regex_replace('v') }}"
-  when: boi_registry_versions.status == 200
+  when:
+   - quay_user is not defined
+   - boi_registry_versions.status == 200
 
 - name: "Settig opm index extra arguments"
   set_fact:
     bundle_index_image_from: "{{ bundle_registry }}/{{ bundle_index_image_namespace }}/{{ bundle_index_image_name }}:{{ index_versions_in_registry[0] }}"
     opm_index_add_extra_args: "--from-index {{ bundle_registry }}/{{ bundle_index_image_namespace }}/{{ bundle_index_image_name }}:{{ index_versions_in_registry[0] }}"
   when:
+    - quay_user is not defined
     - index_versions_in_registry.0 is defined
+
+
+- name: "Settig opm index extra arguments"
+  set_fact:
+    bundle_index_image_from: "{{ bundle_registry }}/{{ bundle_index_image_namespace }}/{{ bundle_index_image_name }}:latest"
+    opm_index_add_extra_args: "--from-index {{ bundle_registry }}/{{ bundle_index_image_namespace }}/{{ bundle_index_image_name }}:latest"
+  when:
+    - index_versions_in_registry.0 is defined
+    - quay_user is defined
 
 - name: "Handling previous index image"
   block:
@@ -125,3 +148,8 @@
   vars:
     operator_work_dir: "{{ operator_bundle_dir_for_courier }}"
   when: run_lint|bool
+
+- name: "Quay login via auth token"
+  shell: "{{ opm_container_tool }} login -u=\\$oauthtoken -p={{ quay_api_token }} quay.io"
+  no_log: True
+  when: quay_api_token is defined and quay_api_token != ""
