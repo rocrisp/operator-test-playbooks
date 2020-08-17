@@ -2,9 +2,9 @@
   set_fact:
     operator_dir_name: "{{ operator_dir | basename }}"
 
-- name: "Remove repo '{{ bundle_index_image_namespace }}/{{ operator_dir_name }}' from 'quay'"
+- name: "Remove repo '{{ bundle_image_namespace }}/{{ operator_dir_name }}' from 'quay'"
   uri:
-    url: "{{ registry_api_http_protocol | default('https') }}://quay.io/api/v1/repository/{{ bundle_index_image_namespace }}/{{ operator_dir_name }}"
+    url: "{{ registry_api_http_protocol | default('https') }}://quay.io/api/v1/repository/{{ bundle_image_namespace }}/{{ operator_dir_name }}"
     method: DELETE
     force_basic_auth: yes
     headers:
@@ -15,6 +15,15 @@
     - quay_api_token is defined
     - quay_api_token != ""
 
+- name: "Quay login"
+  shell: "{{ opm_container_tool }} login -u=\"{{ quay_user }}\" -p={{ quay_password }} quay.io"
+  no_log: True
+  when:
+    - quay_user is defined
+    - quay_password is defined
+    - quay_user != ""
+    - quay_password != ""
+
 - name: "Setting bundle image name"
   set_fact:
     bundle_index_image: "{{ bundle_registry }}/{{ bundle_index_image_namespace }}/{{ bundle_index_image_name }}:{{ bundle_index_image_version }}"
@@ -24,7 +33,7 @@
   shell: "{{ opm_bin_path }} index rm  -c {{ opm_container_tool }} --operators {{ operator_dir_name }} --tag {{ bundle_index_image }}  {{ opm_index_add_extra_args }}"
   failed_when: false
 
-- name: Push bundle image {{ bundle_index_image }}
+- name: "Push bundle image {{ bundle_index_image }}"
   shell: "{{ opm_container_tool }} push {{ bundle_index_image }}"
   failed_when: false
 
@@ -52,5 +61,10 @@
 - name: "Setting operator was removed"
   set_fact:
     operator_removed: true
+
+- name: "Quay login via auth token"
+  shell: "{{ opm_container_tool }} login -u=\\$oauthtoken -p={{ quay_api_token }} quay.io"
+  no_log: True
+  when: quay_api_token is defined and quay_api_token != ""
 
 # - meta: end_play
