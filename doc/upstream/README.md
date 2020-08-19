@@ -196,6 +196,15 @@ time ansible-playbook -vv -i localhost, local.yml \
 -e bundle_index_image=quay.io/operatorhubio/catalog:latest
 ```
 
+## Push to Quay AppRegistry for backward compatibility with 4.6
+```
+export ANSIBLE_STDOUT_CALLBACK=yaml
+ansible-playbook -vv -i localhost, local.yml \
+-e run_upstream=true --tags push_to_quay \
+-e operator_dir=/tmp/community-operators-for-catalog/community-operators/<operator-name> \
+-e quay_appregistry_api_token=<token>
+```
+
 ## Misc options to use
 
 Usage:
@@ -267,7 +276,7 @@ export MY_OPT=""
 #export MY_OPT="-e opm_index_add_mode=semver -e operator_channel_force=\"\" $*"
 
 # operatorhubio
-TOKEN="<toker>"
+TOKEN="<token>"
 time ansible-pull -U https://github.com/J0zi/operator-test-playbooks -C sprint-8 -vv -i localhost, local.yml \
 -e run_upstream=true --tags deploy_bundles \
 -e regenerate_operators_path=/tmp/community-operators-for-catalog/upstream-community-operators \

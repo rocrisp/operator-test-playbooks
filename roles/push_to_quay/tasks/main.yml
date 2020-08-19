@@ -1,0 +1,58 @@
+---
+#- name: "Quay login"
+#  shell: "{{ opm_container_tool }} login -u=\"{{ quay__appreg_user }}\" -p={{ quay__appreg_password }} quay.io"
+#  no_log: True
+#  when:
+#    - quay_appreg_user is defined
+#    - quay_appreg_password is defined
+#    - quay__appreg_user != ""
+#    - quay__appreg_password != ""
+#
+#- name: "Get list of tags for {{ operator_dir_name }} from Quay AppRegistry"
+#  uri:
+#    url: "{{ registry_api_http_protocol | default('https') }}://{{ bundle_registry }}/v2/{{ ptq_namespace }}/{{ operator_dir_name }}/tags/list"
+#  register: ptq_operator_versions
+#  failed_when: false
+
+- name: "Check for the existence of earlier releases of the operator on the quay.io app repository"
+  shell: "curl -s -H \"Authorization: basic {{ quay_appregistry_api_token }}\" https://quay.io/cnr/api/v1/packages/{{ ptq_namespace }}/{{ operator_dir_name }} | {{ jq_bin_path }} '.[].release' | sort --version-sort | tail -n 1"
+  register: quay_release_result
+  no_log: true
+
+- name: "Increment quay app release if exists"
+  shell: "echo {{ quay_release_result.stdout }} | awk -F. -v OFS=. 'NF==1{print ++$NF}; NF>1{if(length($NF+1)>length($NF))$(NF-1)++; $NF=sprintf(\"%0*d\", length($NF), ($NF+1)%(10^length($NF))); print}'"
+  register: quay_increment_release_result
+  when:
+    - quay_release_result is defined
+    - quay_release_result.stdout is defined
+    - quay_release_result.stdout != ""
+    - quay_release_result.stdout != "null"
+
+- name: "Set quay release to the incremented one if exists"
+  set_fact:
+    quay_release: "{{ quay_increment_release_result.stdout }}"
+  when:
+    - quay_increment_release_result is defined
+    - quay_increment_release_result.stdout is defined
+    - quay_increment_release_result.stdout != ""
+
+- name: "Push the operator metadata to the quay.io repository"
+  shell: "operator-courier push {{ operator_dir }} {{ ptq_namespace }} {{ operator_dir_name }} {{ quay_release }} \"basic {{ quay_appregistry_api_token }}\""
+  no_log: true
+
+#TODO: set dir public
+
+#- name: "Create repo for {{ operator_dir_name }} with public visibility"
+#  uri:
+#    url: "https://quay.io/api/v1/repository"
+#    method: POST
+#    body: '{"kind":"image","namespace":"{{ ptq_namespace }}","repository":"{{ operator_dir_name }}","description":"","visibility":"public"}'
+#    body_format: json
+#    force_basic_auth: yes
+#    headers:
+#      Authorization: "Bearer {{ quay_appregistry_api_token }}"
+#    status_code: 201
+#    return_content: yes
+#  when:
+#    - quay_appregistry_api_token != ""
+#    - quay_release_result.status != 200
