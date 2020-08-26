@@ -12,6 +12,13 @@
   set_fact:
     bundle_index_image: "{{ bundle_registry }}/{{ bundle_index_image_namespace }}/{{ bundle_index_image_name }}:{{ bundle_index_image_version }}"
 
+- name: "Get list of tags for index image from bundle registry"
+  uri:
+    url: "{{ registry_api_http_protocol | default('https') }}://{{ bundle_registry }}/v2/{{ bundle_index_image_namespace }}/{{ bundle_index_image_name }}/tags/list"
+  register: boi_registry_versions
+  failed_when: false
+  when: quay_user is not defined
+
 - name: "Create primary index repo"
   include_tasks: create_index_repo.yml
   vars:
