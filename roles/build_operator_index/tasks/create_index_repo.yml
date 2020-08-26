@@ -1,0 +1,19 @@
+- name: "Check if directory for index is needed"
+  uri:
+    url: "{{ registry_api_http_protocol | default('https') }}://{{ bundle_registry }}/v2/{{ bundle_index_image_specific_namespace }}/{{ bundle_index_image_specific_name }}/tags/list"
+  register: boi_registry_specific_versions
+  failed_when: false
+
+- name: "Create repo for specific index image with public visibility"
+  uri:
+    url: "https://quay.io/api/v1/repository"
+    method: POST
+    body: '{"kind":"image","namespace":"{{ bundle_index_image_specific_namespace }}","repository":"{{ bundle_index_image_specific_name }}","description":"","visibility":"public"}'
+    body_format: json
+    force_basic_auth: yes
+    headers:
+      Authorization: "Bearer {{ quay_api_token }}"
+    status_code: 201
+    return_content: yes
+  when:
+    - boi_registry_specific_versions.status != 200
