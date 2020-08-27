@@ -169,7 +169,7 @@
         - run_upstream|bool
         - not operator_removed|bool
 
-#TODO: handle recreate
+#TODO: check if blocked on  recreate
     - name: "Push to old Appregistry"
       include_role:
         name:
@@ -177,6 +177,7 @@
       when:
         - run_upstream|bool
         - not operator_removed|bool
+        - push_to_quay_appreg|bool
 
     - name: "Handle failed operators"
       include_role:

@@ -202,7 +202,8 @@ export ANSIBLE_STDOUT_CALLBACK=yaml
 ansible-playbook -vv -i localhost, local.yml \
 -e run_upstream=true --tags push_to_quay \
 -e operator_dir=/tmp/community-operators-for-catalog/community-operators/<operator-name> \
--e quay_appregistry_api_token=<OAuth_token> -e quay_appregistry_courier_token=<courier_token>
+-e quay_appregistry_api_token=<OAuth_token> -e quay_appregistry_courier_token=<courier_token> \
+-e push_to_quay_appreg=true
 ```
 
 ## Misc options to use
