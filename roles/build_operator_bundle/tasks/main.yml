@@ -33,7 +33,7 @@
         operator_input_image: ""
         op_version: "{{ versions_in_dir[0] }}"
 
-    - name: "Get list of versions_in_dir from bundle registry"
+    - name: "Get list of 'versions_in_registry' from bundle registry"
       uri:
         url: "{{ registry_api_http_protocol | default('https') }}://{{ bundle_registry }}/v2/{{ bundle_image_namespace }}/{{ operator_package_name }}/tags/list"
       register: bob_registry_versions
@@ -73,14 +73,14 @@
 
     - name: "Setting all versions to 'versions_in_registry' variable"
       set_fact:
-        versions_in_registry: "{{ bob_registry_versions.json.tags | sort_versions | regex_replace('v') }}"
+        versions_in_registry: "{{ bob_registry_versions.json.tags | sort_versions | regex_replace('^v') }}"
       when:
       - bob_registry_versions.status is defined
       - bob_registry_versions.status == 200
 
     - name: "Setting all versions to 'versions_in_prod_registry' variable"
       set_fact:
-        versions_in_prod_registry: "{{ bob_prod_registry_versions.json.tags | sort_versions | regex_replace('v') }}"
+        versions_in_prod_registry: "{{ bob_prod_registry_versions.json.tags | sort_versions | regex_replace('^v') }}"
       when:
       - bob_prod_registry_versions.status is defined
       - bob_prod_registry_versions.status == 200
