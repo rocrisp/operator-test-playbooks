@@ -5,8 +5,8 @@
 
 - name: "Setting export directory"
   set_fact:
-    ptq_operator_package_name: "{{ operator_dir_name }}"
-    ptq_download_folder: "{{ work_dir }}/export-for-appreg/{{ operator_dir_name }}"
+    ptq_operator_package_name: "{{ ptq_operator_dir_name }}"
+    ptq_download_folder: "/tmp/export-for-appreg/{{ ptq_operator_dir_name }}"
 
 - name: "Ensure that the 'ptq_download_folder' directory exists and is empty"
   file:
@@ -35,24 +35,24 @@
   when: quay_api_token is defined and quay_api_token != ""
 
 - name: "Check for the existence of earlier releases of the operator on the quay.io app repository"
-  shell: "curl -s -H \"Authorization: basic {{ quay_appregistry_api_token }}\" https://quay.io/cnr/api/v1/packages/{{ ptq_namespace }}/{{ operator_dir_name }} | {{ jq_bin_path }} '.[].release' | sort --version-sort | tail -n 1"
+  shell: "curl -s -H \"Authorization: basic {{ quay_appregistry_api_token }}\" https://quay.io/cnr/api/v1/packages/{{ ptq_namespace }}/{{ ptq_operator_dir_name }} | {{ jq_bin_path }} '.[].release' | sort --version-sort | tail -n 1"
   register: quay_release_result
   no_log: true
 
-- name: "Check for the existence of {{ operator_dir_name }} directory on the quay.io app repository"
+- name: "Check for the existence of {{ ptq_operator_dir_name }} directory on the quay.io app repository"
   uri:
-    url: "https://quay.io/cnr/api/v1/packages/{{ ptq_namespace }}/{{ operator_dir_name }}"
+    url: "https://quay.io/cnr/api/v1/packages/{{ ptq_namespace }}/{{ ptq_operator_dir_name }}"
     headers:
       Authorization: "basic {{ quay_appregistry_api_token }}"
   register: ptq_dir_existence
   failed_when: false
 #    force_basic_auth: yes
 
-- name: "Create repo for {{ operator_dir_name }} with public visibility"
+- name: "Create repo for {{ ptq_operator_dir_name }} with public visibility"
   uri:
     url: "https://quay.io/api/v1/repository"
     method: POST
-    body: '{"repo_kind":"application","namespace":"{{ ptq_namespace }}","repository":"{{ operator_dir_name }}","description":"","visibility":"public"}'
+    body: '{"repo_kind":"application","namespace":"{{ ptq_namespace }}","repository":"{{ ptq_operator_dir_name }}","description":"","visibility":"public"}'
     body_format: json
     force_basic_auth: yes
     headers:
