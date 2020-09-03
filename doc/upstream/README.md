@@ -187,6 +187,27 @@ time ansible-pull -U https://github.com/J0zi/operator-test-playbooks -C upstream
 -e all_operator_find_excludes="planetscale"| tee -a $HOME/test_all_upstream-$(date +%F_%H%M).log 1>&2
 ```
 
+## Release specific operators for Openshift
+```
+ANSIBLE_STDOUT_CALLBACK=yaml ansible-playbook -vv -i operator-ansible, local.yml \
+-e kind_version=v0.8.1 -e kind_kube_ver=v1.18.2 -e olm_ver=0.15.1 \
+-e operator_sdk_version=v0.19.2 -e run_remove_catalog_repo=false \
+-e run_upstream=true --tags deploy_bundles -e operators_config=/tmp/releaseit.yaml \
+-e quay_api_token=$AUTOMATION_TOKEN_RELEASE_COMMUNITY -e quay_user='redhat+iib_community' \
+-e quay_password=$QUAY_RH_INDEX_PW -e  bundle_registry=quay.io \
+-e bundle_image_namespace=openshift-community-operators \
+-e bundle_index_image_namespace=redhat \
+-e bundle_index_image_name='redhat----community-operator-index' \
+-e bundle_index_image_duplicate_namespace=openshift-community-operators \
+-e  bundle_index_image_duplicate_name=catalog
+
+cat /tmp/releaseit.yaml
+
+operator_base_dir: /tmp/community-operators-for-catalog/community-operators
+operators:
+- aqua
+```
+
 ## Generate app registry
 ```
 export ANSIBLE_STDOUT_CALLBACK=yaml
@@ -227,6 +248,8 @@ Usage:
 | bundle_image_namespace | Quay registry url. [string] | test-operator | operator_testing |
 | bundle_index_image_namespace | Quay registry url. [string] | test-operator | operator_testing |
 | bundle_index_image_name | Quay registry url. [string] | index | upstream-community-operators-index |
+| bundle_index_image_duplicate_namespace | Quay registry url. [string] |  |  |
+| bundle_index_image_duplicate_name | Quay registry url. [string] |  |  |
 | opm_container_tool | Container tool to use when using opm tool. [string] | docker  | as default |
 | operator_channel_force | Forcing to adde channel and default channed to current string value. When empty string it is autodetected by playbook. [string] | undefined | undefined |
 | index_force_rebuild | Force to rebuild currently running operators in index. [bool] | false | false |
