@@ -169,6 +169,22 @@
         - run_upstream|bool
         - not operator_removed|bool
 
+    - name: "Mirror index image"
+      include_role:
+        name:
+          mirror_image
+      vars:
+        mirror_input_image: "{{ bundle_index_image }}"
+      tags:
+        - mirror_index
+        - deploy_bundles
+      when:
+        - run_upstream|bool
+        - bundle_index_image is defined
+        - bundle_index_image != ""
+        - mirror_images is defined
+        - mirror_images != ""
+
     - name: "Handle failed operators"
       include_role:
         name:
