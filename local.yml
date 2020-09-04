@@ -84,7 +84,7 @@
     - { role: loop_all_tests, tags: [never,"test_all","pure_test_all"], when: run_upstream|bool }
     - { role: check_prod_bundle, tags: [never,"test_lite","pure_test_lite"], when: run_upstream|bool }
     - { role: build_app_registry, tags: [never,"app_registry"], when: run_upstream|bool }
-    - { role: push_to_quay, tags: ["push_to_quay"], when: run_upstream|bool }
+    - { role: push_to_quay, tags: [never,"push_to_quay"], when: run_upstream|bool }
 
   tasks:
     - name: "Setting input variables for testing"
