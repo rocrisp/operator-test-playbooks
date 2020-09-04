@@ -20,6 +20,8 @@
 
     - name: "Mirroring index image '{{ mirror_input_image }}' to mirror location '{{ ms_info[0] }}'"
       block:
+        - name: "Pulling latest input image '{{ mirror_input_image }}'"
+          shell: "{{ opm_container_tool }} pull {{ mirror_input_image  }}"
         - name: "Doing retag of '{{ mirror_input_image }}' to '{{ ms_info[0] }}'"
           shell: "{{ opm_container_tool }} tag {{ mirror_input_image  }} {{ ms_info[0] }}"
         - name: "Push image '{{ ms_info[0] }}'"
