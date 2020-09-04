@@ -30,9 +30,9 @@
   register: bar_export_rc
 
 - name: "Quay login via auth token"
-  shell: "{{ opm_container_tool }} login -u=\\$oauthtoken -p={{ quay_api_token }} quay.io"
+  shell: "{{ opm_container_tool }} login -u=\\$oauthtoken -p={{ quay_appregistry_api_token }} quay.io"
   no_log: True
-  when: quay_api_token is defined and quay_api_token != ""
+  when: quay_appregistry_api_token is defined and quay_appregistry_api_token != ""
 
 - name: "Check for the existence of earlier releases of the operator on the quay.io app repository"
   shell: "curl -s -H \"Authorization: basic {{ quay_appregistry_api_token }}\" https://quay.io/cnr/api/v1/packages/{{ ptq_namespace }}/{{ ptq_operator_dir_name }} | {{ jq_bin_path }} '.[].release' | sort --version-sort | tail -n 1"
