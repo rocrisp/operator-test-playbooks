@@ -176,3 +176,12 @@
       when:
         - run_upstream|bool
 
+    - name: "Push to Quay (old AppRegistry)"
+      include_role:
+        name:
+          push_to_quay
+      when:
+        - run_upstream|bool
+      tags:
+        - never
+        - push_to_quay
