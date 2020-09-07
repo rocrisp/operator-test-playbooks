@@ -1,9 +1,6 @@
 ---
-
-# TODO: handle openshift only!!!
-
-- block:
-
+- name: "Push to Quay"
+  block:
   - name: "Setting export directory"
     set_fact:
       ptq_operator_package_name: "{{ ptq_operator_dir_name }}"
