@@ -120,7 +120,7 @@ ansible-playbook -vv -i myhost, local.yml \
 -e bundle_image_namespace=operator_testing \
 -e bundle_index_image_namespace=operator_testing \
 -e bundle_index_image_name=upstream-community-operators-index \
--e mirror_images="quay.io/operator_testing/upstream-community-operators-index-mirror|<user>|<password>" \
+-e mirror_index_images="quay.io/operator_testing/upstream-community-operators-index-mirror|<user>|<password>" \
 -e quay_api_token=<quay-api-token>
 ```
 
@@ -199,7 +199,7 @@ ansible-playbook -vv -i myhost, local.yml \
 -e bundle_registry=quay.io \
 -e bundle_index_image_namespace=operator_testing \
 -e bundle_index_image_name=upstream-community-operators-index \
--e mirror_images="quay.io/operator_testing/upstream-community-operators-index-mirror|<user>|<password>,quay.io/operator_testing/upstream-community-operators-index-mirror-second|<user2>|<password2>" \
+-e mirror_index_images="quay.io/operator_testing/upstream-community-operators-index-mirror|<user>|<password>,quay.io/operator_testing/upstream-community-operators-index-mirror-second|<user2>|<password2>" \
 -e quay_api_token=<quay-api-token>
 ```
 
@@ -260,7 +260,7 @@ Usage:
 | permisive | Olm deploy will not fail when this flag is true. [bool] | undefined | undefined |
 | test_all_reset_kind | Force to reset kind cluster before every test (undefined means true). [bool] | undefined | undefined |
 | production_registry_namespace | Check if bundle exists in production registry. Used in local `deploy_bundle` test. (e.g. "quay.io/operatorhubio") [string] | undefined | undefined |
-| mirror_images | List of mirror images for index. (e.g. "kind-registry:5000/test-operator/catalog_mirror_auth|<user>|<password>,kind-registry:5000/test-operator/catalog_mirror_no_auth") [string] | undefined | undefined |
+| mirror_index_images | List of mirror images for index. (e.g. "kind-registry:5000/test-operator/catalog_mirror_auth|<user>|<password>,kind-registry:5000/test-operator/catalog_mirror_no_auth") [string] | undefined | undefined |
 
 
 

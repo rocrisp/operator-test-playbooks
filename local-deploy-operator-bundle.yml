@@ -182,8 +182,8 @@
         - run_upstream|bool
         - bundle_index_image is defined
         - bundle_index_image != ""
-        - mirror_images is defined
-        - mirror_images != ""
+        - mirror_index_images is defined
+        - mirror_index_images != ""
 
     - name: "Handle failed operators"
       include_role:
