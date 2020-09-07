@@ -8,8 +8,6 @@
     - name: "Setting list list of mirrors"
       set_fact:
         mi_mirrors: "{{ mirror_index_images.split(',') }}"
-    - debug:
-        var: mi_mirrors
 
     - name: "Loop over all mirror locations"
       include_tasks: mirror_single.yml
