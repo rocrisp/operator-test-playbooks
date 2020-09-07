@@ -246,7 +246,7 @@ Usage:
 | bundle_index_image_name | Quay registry url. [string] | index | upstream-community-operators-index |
 | opm_container_tool | Container tool to use when using opm tool. [string] | docker  | as default |
 | operator_channel_force | Forcing to adde channel and default channed to current string value. When empty string it is autodetected by playbook. [string] | undefined | undefined |
-| index_force_rebuild | Force to rebuild currently running operators in index. [bool] | false | false |
+| index_force_update | Force to rebuild currently running operators in index. [bool] | false | false |
 | index_skip | Skip building index (it will build bundle only). [bool] | undefined | undefined |
 | package_name_strict | Test if package name is same as operator directory name. [bool] | undefined | undefined |
 | run_bundle_scorecard_test | Runs bundle scorecard test. [bool] | undefined | undefined |
