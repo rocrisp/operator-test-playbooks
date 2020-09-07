@@ -82,7 +82,7 @@ ansible-playbook -vv -i myhost, local.yml \
 ## Deploy operators to index
 Config file:
 ```
-$ cat test/operatos_config.yaml
+$ cat test/operators_config.yaml
 operator_base_dir: /tmp/community-operators-for-catalog/upstream-community-operators
 operators:
 - aqua
@@ -94,7 +94,7 @@ operators:
 ansible-playbook -vv -i myhost, local.yml \
 -e run_upstream=true \
 --tags deploy_bundles \
--e operators_config=test/operatos_config.yaml
+-e operators_config=test/operators_config.yaml
 ```
 
 ### Deploy starting index image
@@ -102,7 +102,7 @@ ansible-playbook -vv -i myhost, local.yml \
 ansible-playbook -vv -i myhost, local.yml \
 -e run_upstream=true \
 --tags deploy_bundles \
--e operators_config=test/operatos_config.yaml
+-e operators_config=test/operators_config.yaml
 -e bundle_registry=quay.io \
 -e bundle_image_namespace=operator_testing \
 -e bundle_index_image_namespace=operator_testing \
@@ -115,7 +115,7 @@ ansible-playbook -vv -i myhost, local.yml \
 ansible-playbook -vv -i myhost, local.yml \
 -e run_upstream=true \
 --tags deploy_bundles \
--e operators_config=test/operatos_config.yaml
+-e operators_config=test/operators_config.yaml
 -e bundle_registry=quay.io \
 -e bundle_image_namespace=operator_testing \
 -e bundle_index_image_namespace=operator_testing \
@@ -129,7 +129,7 @@ ansible-playbook -vv -i myhost, local.yml \
 ansible-playbook -vv -i myhost, local.yml \
 -e run_upstream=true \
 --tags deploy_bundles \
--e operators_config=test/operatos_config.yaml
+-e operators_config=test/operators_config.yaml
 -e operator_channel_force=""
 ```
 
@@ -138,7 +138,7 @@ ansible-playbook -vv -i myhost, local.yml \
 ansible-playbook -vv -i myhost, local.yml \
 -e run_upstream=true \
 --tags deploy_bundles \
--e operators_config=test/operatos_config.yaml
+-e operators_config=test/operators_config.yaml
 -e operator_channel_force=stable
 ```
 
@@ -236,7 +236,7 @@ Usage:
 | run_remove_catalog_repo | Removes existing git repo for comunity-operators. [bool] | true | true |
 | catalog_repo | Community operators repo url. [string] | https://github.com/operator-framework/community-operators.git | as default |
 | catalog_repo_branch | Community operators branch in repo. [string] | master | as default |
-| operators_config | Path to operators config file using when deploying multiple operators. Examle in test/operatos_config.yaml. [string] | undefined  | operatos_config.yaml |
+| operators_config | Path to operators config file using when deploying multiple operators. Examle in test/operators_config.yaml. [string] | undefined  | operators_config.yaml |
 | quay_user | Username in quay registry login. [string] | undefined | undefined |
 | quay_password | Password in quay registry login. [string] | undefined  | undefined |
 | quay_api_token | Quay api token to create project, delete tag. If 'quay_user' or 'quay_password' is undefined. This token is used to push images to quay as '$oauthtoken' user. More info about creating token is [here](https://docs.quay.io/api/).  [string] | undefined | hidden |
