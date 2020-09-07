@@ -13,7 +13,7 @@
 
     - name: "Login to docker registry"
       shell: "{{ opm_container_tool }} login -u={{ ms_info[1]}} -p={{ ms_info[2] }} {{  ms_info[0].split('/')[0] }}"
-      # no_log: True
+      no_log: True
       when:
         - ms_info.1 is defined
         - ms_info.2 is defined
