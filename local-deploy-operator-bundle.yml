@@ -183,4 +183,5 @@
           push_to_quay
       when:
         - run_upstream|bool
-        - app_registry_push|bool
+        - quay_appregistry_courier_token is defined
+        - quay_appregistry_courier_token != ""
