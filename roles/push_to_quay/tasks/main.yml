@@ -76,11 +76,6 @@
   set_fact:
     quay_release: "{{ quay_increment_release_result.stdout | default('0.1.0') }}"
 
-- debug:
-    var:
-      - quay_release
-      - quay_release.stdout
-
 - name: "Push the operator metadata to the quay.io repository"
   shell: "operator-courier push {{ ptq_download_folder }} {{ ptq_namespace }} {{ ptq_download_folder | basename }} {{ quay_release }} \"basic {{ quay_appregistry_courier_token }}\""
   no_log: true
