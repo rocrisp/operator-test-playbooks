@@ -323,3 +323,12 @@ time ansible-pull -U https://github.com/J0zi/operator-test-playbooks -C sprint-8
 -e opm_index_add_mode=semver -e operator_channel_force="" \
 $MY_OPT | tee -a $HOME/test_all_upstream-$(date +%F_%H%M).log 1>&2
 ```
+
+# Check index
+
+```
+ansible-pull -U https://github.com/J0zi/operator-test-playbooks -C upstream-community -vv -i localhost, local.yml \
+-e run_upstream=true --tags index_check \
+-e bundle_index_image=quay.io/operatorhubio/catalog \
+-e operator_base_dir=/tmp/community-operators-for-catalog/upstream-community-operators
+```
