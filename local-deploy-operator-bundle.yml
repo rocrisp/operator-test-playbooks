@@ -202,6 +202,10 @@
       include_role:
         name:
           handle_failed_operators
+      tags:
+        - mirror_index
+        - deploy_bundles
+        - index_check
       when:
         - run_upstream|bool
 
