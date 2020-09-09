@@ -40,8 +40,6 @@
       set_fact:
         chi_index_operators: "{{ chi_index_operators_out.stdout.split(',') }}"
 
-    - pause:
-
     - name: "Set list of all operators in git repo"
       set_fact:
         chi_git_operators: "{{ (chi_git_operators_out.stdout | replace('/',':v') ).split() }}"
