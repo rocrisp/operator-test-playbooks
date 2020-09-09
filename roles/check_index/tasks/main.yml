@@ -1,14 +1,16 @@
 ---
 - name: "Sanity check of index image"
   block:
-    - debug:
-        var: bundle_index_image
 
     - name: "Stop previous index container '{{ sanity_check_container_name }}''"
       shell: "{{ opm_container_tool }} rm -f {{ sanity_check_container_name }}"
       failed_when: false
       changed_when: false
       no_log: true
+
+      ## ckeck if not kind
+    - name: "Pulling index container {{ bundle_index_image }}"
+      shell: "{{ opm_container_tool }} pull {{ bundle_index_image }}"
 
     - name: "Start index container {{ bundle_index_image }}"
       shell: "{{ opm_container_tool }} run -d --name {{ sanity_check_container_name }} {{ bundle_index_image }}"
@@ -70,9 +72,10 @@
         chi_uncomplete_packages: "{{ chi_uncomplete_packages }} + [ '{{ item | dirname }}' ]"
       with_items: "{{ chi_uncomplete_packages_list }}"
   tags:
-    - mirror_index
     - deploy_bundles
     - index_check
   when:
     - bundle_index_image is defined
     - bundle_index_image != ""
+    - bundle_index_image is not search("kind-registry:5000/.*")
+

@@ -14,7 +14,6 @@
       loop: "{{ mi_mirrors }}"
       loop_control:
         loop_var: mi_item
-
   tags:
     - mirror_index
     - deploy_bundles
