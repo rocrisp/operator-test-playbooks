@@ -37,6 +37,7 @@
         opm_bin_path: "{{ testing_bin_path }}/opm"
         operator_sdk_bin_path: "{{ testing_bin_path }}/operator-sdk"
         oc_bin_path: '{{ ''kubectl'' if run_upstream else "{{ testing_bin_path }}/oc" }}'
+        mirror_apply: true
 
     - name: "Quay login"
       shell: "{{ opm_container_tool }} login -u=\"{{ quay_user }}\" -p={{ quay_password }} quay.io"
@@ -169,6 +170,14 @@
         - run_upstream|bool
         - not operator_removed|bool
 
+    - name: "Handling that mirror will not occur when 'operators_for_index' is empty when 'deploy_bundles' is defined"
+      set_fact:
+        mirror_apply: false
+      tags:
+        - deploy_bundles
+      when:
+        - mirror_input_image|bool
+
     - name: "Index sanity check"
       include_role:
         name:
@@ -197,6 +206,7 @@
         - bundle_index_image != ""
         - mirror_index_images is defined
         - mirror_index_images != ""
+        - mirror_apply|bool
 
     - name: "Handle failed operators"
       include_role:
