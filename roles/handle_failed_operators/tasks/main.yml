@@ -45,8 +45,6 @@
 
 - name: "Printing info about index sanity check results"
   block:
-    - debug:
-        var: chi_uncomplete_packages
 
     - name: "Printing list of operators present in index, but not in git"
       debug:
@@ -58,7 +56,7 @@
 
     - name: "Printing operators stat"
       debug:
-        msg: "InGitNotIndex={{ chi_git_not_index_operators | length }} InINdexNotgit={{ chi_index_not_git_operators | length }}"
+        msg: "IsInGitNotIndex={{ chi_git_not_index_operators | length }} IsInIndexNotgit={{ chi_index_not_git_operators | length }}"
 
     - name: "Preparing config file of uncomplete operators"
       block:
