@@ -176,7 +176,7 @@
       tags:
         - deploy_bundles
       when:
-        - mirror_input_image|bool
+        - operators_for_index.0 is undefined
 
     - name: "Index sanity check"
       include_role:
