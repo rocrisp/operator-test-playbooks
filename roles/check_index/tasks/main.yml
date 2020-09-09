@@ -22,7 +22,7 @@
       shell: "{{ opm_container_tool }} cp {{ sanity_check_container_name }}:/database/index.db {{ sqlite_db_file }}"
 
     - name: "Print list of packages"
-      shell: "{{ sqlite_tool }} {{ sqlite_db_file }} 'select bundlepath from operatorbundle' | sed 's/^\ | $//g'| paste -sd, -"
+      shell: "{{ sqlite_tool }} {{ sqlite_db_file }} 'select bundlepath from operatorbundle' | sed 's/^\ | $//g'| cut -sd / -f 3- | paste -sd, -"
       register: chi_index_operators_out
       no_log: true
 
@@ -38,7 +38,9 @@
 
     - name: "Set list of all operators in index"
       set_fact:
-        chi_index_operators: "{{ (chi_index_operators_out.stdout| replace('quay.io/operatorhubio/','')).split(',') }}"
+        chi_index_operators: "{{ chi_index_operators_out.stdout.split(',') }}"
+
+    - pause:
 
     - name: "Set list of all operators in git repo"
       set_fact:
@@ -69,56 +71,6 @@
     - set_fact:
         chi_uncomplete_packages: "{{ chi_uncomplete_packages }} + [ '{{ item | dirname }}' ]"
       with_items: "{{ chi_uncomplete_packages_list }}"
-
-    # - name: "aaaa"
-    #   set_fact:
-    #     chi_uncomplete_packages: "{{ chi_uncomplete_packages_list | map('dirname') | list ​}}"
-
-    #   # no_log: true
-    # - name: "XXX"
-    #   set_fact:
-    #     chi_uncomplete_packages: "{{ item | dirname }}"
-    #   with_item: "{{ chi_uncomplete_packages_list }}"
-
-  #   - debug:
-  #       var: chi_uncomplete_packages
-
-  #   - name: "Printing list of operators present in index, but not in git"
-  #     debug:
-  #       var: chi_index_not_git_operators
-
-  #   - name: "Printing list of operators present in git, but not in index"
-  #     debug:
-  #       var: chi_git_not_index_operators
-
-  #   - name: "Printing operators stat"
-  #     debug:
-  #       msg: "InGitNotIndex={{ chi_git_not_index_operators | length }} InINdexNotgit={{ chi_index_not_git_operators | length }}"
-
-  #   - name: "Preparing config file of uncomplete operators"
-  #     block:
-  #       - name: "Preparing variables for config file"
-  #         set_fact:
-  #           chi_uncomplete_packages_config:
-  #             operator_base_dir: "{{ operator_base_dir }}"
-  #             operators: "{{ chi_uncomplete_packages | unique | sort }}"
-
-  #       - name: "Generate operators config file from failed operators"
-  #         copy: content="{{ chi_uncomplete_packages_config | to_nice_yaml }}" dest=/tmp/operators_uncomplete.yaml
-
-  #       - name: "Fetch failed operators file to controller machine to path '/tmp/operators_uncomplete-{{ inventory_hostname }}.yaml'"
-  #         fetch: src=/tmp/operators_uncomplete.yaml dest=/tmp/operators_uncomplete-{{ inventory_hostname }}.yaml flat=yes
-
-  #       - name: "Printing of content config file of uncomplete operators"
-  #         debug:
-  #           var: chi_uncomplete_packages_config
-
-  #       - name: "Printing helper command to repair uncomplete operators"
-  #         debug:
-  #           msg: "--tags deploy_bundles -e operators_config=/tmp/operators_uncomplete-{{ inventory_hostname }}.yaml -e index_force_update=true"
-
-  #     when: chi_uncomplete_packages is defined
-
   tags:
     - mirror_index
     - deploy_bundles
