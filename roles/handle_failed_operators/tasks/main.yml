@@ -79,7 +79,13 @@
         - name: "Printing helper command to repair uncomplete operators"
           debug:
             msg: "--tags deploy_bundles -e operators_config=/tmp/operators_uncomplete-{{ inventory_hostname }}.yaml -e index_force_update=true"
-      when: chi_uncomplete_packages is defined
+
+      when: chi_uncomplete_packages.0 is defined
+
+    - name: "Printing Successfull message"
+      debug:
+        msg: "Everything is OK"
+      when: chi_uncomplete_packages.0 is undefined
 
   tags:
     - mirror_index
