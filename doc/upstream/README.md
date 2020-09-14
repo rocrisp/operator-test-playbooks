@@ -264,7 +264,6 @@ Usage:
 | index_mode_from_ci | Enable autodetect index add mode from <operator>/ci.yaml file [bool] | undefined | undefined |
 
 
-
 ## Tags to use
 
 Usage:
