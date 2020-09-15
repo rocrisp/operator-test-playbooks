@@ -5,6 +5,7 @@
     #     var: mirror_input_image
     - debug:
         var: mirror_index_images
+
     - name: "Setting list list of mirrors"
       set_fact:
         mi_mirrors: "{{ mirror_index_images.split(',') }}"

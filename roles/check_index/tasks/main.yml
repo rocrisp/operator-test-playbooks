@@ -1,35 +1,9 @@
 ---
 - name: "Sanity check of index image"
   block:
-
-    - name: "Stop previous index container '{{ sanity_check_container_name }}''"
-      shell: "{{ opm_container_tool }} rm -f {{ sanity_check_container_name }}"
-      failed_when: false
-      changed_when: false
-      no_log: true
-
-      ## ckeck if not kind
-    - name: "Pulling index container {{ bundle_index_image }}"
-      shell: "{{ opm_container_tool }} pull {{ bundle_index_image }}"
-
-    - name: "Start index container {{ bundle_index_image }}"
-      shell: "{{ opm_container_tool }} run -d --name {{ sanity_check_container_name }} {{ bundle_index_image }}"
-
-    - name: "Remove db filename '{{ sqlite_db_file }}'"
-      file:
-        path: "{{ sqlite_db_file }}"
-        state: absent
-
-    - name: "Extract db file to '{{ sqlite_db_file }}'"
-      shell: "{{ opm_container_tool }} cp {{ sanity_check_container_name }}:/database/index.db {{ sqlite_db_file }}"
-
-    - name: "Print list of packages"
-      shell: "{{ sqlite_tool }} {{ sqlite_db_file }} 'select bundlepath from operatorbundle' | sed 's/^\ | $//g'| cut -sd / -f 3- | paste -sd, -"
-      register: chi_index_operators_out
-      no_log: true
-
-    - name: "Stop index container '{{ sanity_check_container_name }}'"
-      shell: "{{ opm_container_tool }} rm -f {{ sanity_check_container_name }}"
+    - name: "Exporting information from index image '{{ bundle_index_image }}'"
+      include_role:
+        name: export_list_of_packages_from_index
 
     - name: "Find all directories in git repo"
       shell:
@@ -40,7 +14,7 @@
 
     - name: "Set list of all operators in index"
       set_fact:
-        chi_index_operators: "{{ chi_index_operators_out.stdout.split(',') }}"
+        chi_index_operators: "{{ elopfi_index_operators }}"
 
     - name: "Set list of all operators in git repo"
       set_fact:

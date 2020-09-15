@@ -213,13 +213,40 @@ time ansible-pull -U https://github.com/J0zi/operator-test-playbooks -C upstream
 -e all_operator_find_excludes="planetscale"| tee -a $HOME/test_all_upstream-$(date +%F_%H%M).log 1>&2
 ```
 
-## Generate app registry
+## Generate app registry (List of operators from index image)
+```
+export ANSIBLE_STDOUT_CALLBACK=yaml
+time ansible-playbook -vv -i localhost, local.yml \
+-e run_upstream=true --tags app_registry \
+-e bundle_index_image=quay.io/operatorhubio/catalog:latest
+```
+
+## Generate app registry in parallel (List of operators from index image)
+```
+export ANSIBLE_STDOUT_CALLBACK=yaml
+time ansible-playbook -vv -i localhost, local.yml \
+-e run_upstream=true --tags app_registry \
+-e bundle_index_image=quay.io/operatorhubio/catalog:latest \
+-e index_export_parallel=true
+```
+
+## Generate app registry (List of operators from git)
 ```
 export ANSIBLE_STDOUT_CALLBACK=yaml
 time ansible-playbook -vv -i localhost, local.yml \
 -e run_upstream=true --tags app_registry \
 -e operator_base_dir=/tmp/community-operators-for-catalog/upstream-community-operators \
 -e bundle_index_image=quay.io/operatorhubio/catalog:latest
+```
+
+## Generate app registry in parallel (List of operators from git)
+```
+export ANSIBLE_STDOUT_CALLBACK=yaml
+time ansible-playbook -vv -i localhost, local.yml \
+-e run_upstream=true --tags app_registry \
+-e operator_base_dir=/tmp/community-operators-for-catalog/upstream-community-operators \
+-e bundle_index_image=quay.io/operatorhubio/catalog:latest \
+-e index_export_parallel=true
 ```
 
 ## Misc options to use
