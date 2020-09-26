@@ -368,4 +368,4 @@ ansible-pull -U https://github.com/J0zi/operator-test-playbooks -C upstream-comm
 | name  | value |
 |---|---|
 |ANSIBLE_STDOUT_CALLBACK| yaml|
-|ANSIBLE_PLAYBOOK_CMD|ansible-playbook -vv -i localhost, local.yml -e ansible_connection=local -e run_upstream=true -e run_remove_catalog_repo=false|
+|ANSIBLE_PLAYBOOK_CMD|"ansible-playbook -vv -i localhost, local.yml -e ansible_connection=local -e run_upstream=true -e run_remove_catalog_repo=false"|

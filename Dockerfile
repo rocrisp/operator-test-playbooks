@@ -4,6 +4,7 @@ RUN yum update -y
 RUN yum install -y ansible git podman
 RUN mkdir /playbooks
 COPY roles/ /playbooks/roles/
+COPY filter_plugins/ /playbooks/filter_plugins/
 COPY test/ /playbooks/test/
 COPY *.yml /playbooks/
 RUN echo "localhost ansible_connection=local" >> /etc/ansible/hosts
