@@ -204,6 +204,8 @@
         - skopeo_help_result.rc is defined
         - skopeo_help_result.rc != 0
       tags:
+        - host_build
+        - image_build
         - install
         - uninstall
         - reset_tools
@@ -218,7 +220,6 @@
 
     - name: "Handling umoci binary"
       block:
-
 
         - name: "Check if umoci is installed"
           shell: "{{ umoci_bin_path }} -h"
