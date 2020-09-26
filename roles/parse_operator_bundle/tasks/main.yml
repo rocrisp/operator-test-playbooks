@@ -107,7 +107,7 @@
   - name: "List of operator variables"
     debug:
       var: operator_vars
-    verbosity: 2
+      verbosity: 2
 
   - name: "Determine and set fact for operator specific information - name, pod name, container name and capabilities"
     set_fact:
