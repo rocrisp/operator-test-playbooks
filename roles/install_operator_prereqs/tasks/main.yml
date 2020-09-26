@@ -178,12 +178,14 @@
 
 - name: "Install prerequisites specific to operator bundle image testing"
   block:
+
+    - name: "Check if skopeo is installed"
+      shell: "skopeo -h"
+      register: skopeo_help_result
+      failed_when: false
+
     - name: "Install skopeo"
       block:
-        - name: "Check if skopeo is installed"
-          shell: "skopeo -h"
-          register: skopeo_help_result
-          failed_when: false
 
         - name: "Generating file for install_skopeo.sh"
           template:
