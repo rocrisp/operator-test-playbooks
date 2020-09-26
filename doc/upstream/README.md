@@ -367,6 +367,7 @@ ansible-pull -U https://github.com/J0zi/operator-test-playbooks -C upstream-comm
 ### ENV
 | name  | value |
 |---|---|
+|ANSIBLE_CONFIG| $PWD/ansible.cfg|
 |ANSIBLE_BASE_ARGS|"-vv -i localhost, local.yml -e ansible_connection=local -e run_upstream=true -e run_remove_catalog_repo=false"|
 
 
