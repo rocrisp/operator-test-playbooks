@@ -148,7 +148,7 @@
     - name: "Ensure that the operator bundle for courier directory exists and is empty"
       file:
         state: "{{ item }}"
-        path: "{{ operator_bundle_dir_for_courier }}"
+        path: "{{ operator_bundle_dir_for_courier }}/{{ ba_name }}"
       with_items:
         - absent
         - directory
@@ -157,10 +157,14 @@
       shell: "{{ opm_bin_path }} index export -c {{ opm_container_tool }} --package {{ ba_name }} --index {{ bundle_index_image }} --download-folder {{ operator_bundle_dir_for_courier }}"
       register: rob_export_rc
 
+    - name: "Failing when export of operator '{{ ba_name }}' fails"
+      fail:
+        msg: "Exporting of operator '{{ ba_name }}' from index '{{ bundle_index_image }}' failed !!!"
+
     - name: "Run linting tests with operator-courier verify on the deployed operator"
       include_role:
         name: operator_courier_verify
       vars:
-        operator_work_dir: "{{ operator_bundle_dir_for_courier }}"
+        operator_work_dir: "{{ operator_bundle_dir_for_courier }}/{{ ba_name }}"
       when: run_lint|bool
   when: boi_ia_rc.rc == 0
