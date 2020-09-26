@@ -21,10 +21,12 @@
         name: export_manifest_package_info
       vars:
         op_dir: "{{ operator_dir }}"
+
     - name: "Sets previous package from package file with value '{{ operator_package_name }}'"
       set_fact:
         previous_package: "{{ operator_package_name }}"
       when: operator_package_name is defined
+
   when: operator_dir is defined
 
 - name: "Loop, load and compare package name"
