@@ -1,6 +1,8 @@
 ---
 - name: "Remove any previous courier results"
-  shell: "rm -f {{ work_dir }}/linting-results.json"
+  file:
+    path: "{{ work_dir }}/linting-results.json"
+    state: absent
 
 - name: "Output the operator-courier version"
   shell: "operator-courier -v"
