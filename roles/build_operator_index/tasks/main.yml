@@ -61,7 +61,7 @@
   set_fact:
     bundles_arr: []
 
-- name: "Filling bundle versions array from prod"
+- name: "Filling bundle versions from prod for operator '{{ ba_name }}'"
   set_fact:
     bundles_arr: "{{ bundles_arr | default([]) }} + [ '{{ production_registry_namespace }}/{{ ba_name }}:v{{ item }}' ]"
   with_items: "{{ ba_versions_prod }}"
@@ -69,7 +69,7 @@
     - production_registry_namespace is defined
     - production_registry_namespace != ""
 
-- name: "Filling bundle versions array"
+- name: "Filling bundle versions for operator '{{ ba_name }}'"
   set_fact:
     bundles_arr: "{{ bundles_arr | default([]) }} + [ '{{ bundle_registry }}/{{ bundle_image_namespace }}/{{ ba_name }}:v{{ item }}' ]"
   with_items: "{{ ba_versions_tmp }}"
