@@ -118,6 +118,17 @@
         - test
         - pure_test
 
+    - name: "Check operator format consistency"
+      include_role:
+        name: check_operator_format_consistency
+      when:
+        - operator_dir is defined
+        - operator_dir != ""
+      tags:
+        - always
+        - test
+        - pure_test
+
 - name: "Running operator manifest test"
   import_playbook: local-test-operator.yml
   when:

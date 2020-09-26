@@ -178,15 +178,14 @@
 
 - name: "Install prerequisites specific to operator bundle image testing"
   block:
-
-    - name: "Check if skopeo is installed"
-      shell: "skopeo -h"
-      register: skopeo_help_result
-      failed_when: false
-
     - name: "Install skopeo"
       block:
-        - name: Generating file for install_skopeo.sh
+        - name: "Check if skopeo is installed"
+          shell: "skopeo -h"
+          register: skopeo_help_result
+          failed_when: false
+
+        - name: "Generating file for install_skopeo.sh"
           template:
             src: install_skopeo.sh.j2
             dest: "/tmp/install_skopeo.sh"
@@ -196,6 +195,7 @@
         - name: "Installing skopeo for ubuntu"
           shell: "/tmp/install_skopeo.sh"
           when: ansible_distribution == 'Debian' or ansible_distribution == 'Ubuntu'
+
         - package:
             name: skopeo
             state: present
@@ -203,41 +203,48 @@
       when:
         - skopeo_help_result.rc is defined
         - skopeo_help_result.rc != 0
+      tags:
+        - install
+        - uninstall
+        - reset_tools
 
     - name: "Remove '{{ umoci_bin_path }}' binary"
       file:
         path: "{{ umoci_bin_path }}"
         state: absent
       tags:
-        - install
         - uninstall
         - reset_tools
 
-    - name: "Check if umoci is installed"
-      shell: "{{ umoci_bin_path }} -h"
-      register: umoci_help_result
-      failed_when: false
+    - name: "Handling umoci binary"
+      block:
 
-    - name: "Install umoci ({{ umoci_version }})"
-      get_url:
-        url: "https://github.com/opencontainers/umoci/releases/download/{{ umoci_version }}/umoci.amd64"
-        dest: "{{ umoci_bin_path }}"
-        mode: "0755"
-      register: umoci_install_result
-      until: umoci_install_result.status_code is undefined or umoci_install_result.status_code == 200
-      retries: 10
-      delay: 15
-      failed_when: umoci_install_result is failure
-      when:
-        - umoci_help_result.rc is defined
-        - umoci_help_result.rc != 0
+
+        - name: "Check if umoci is installed"
+          shell: "{{ umoci_bin_path }} -h"
+          register: umoci_help_result
+          failed_when: false
+
+        - name: "Install umoci ({{ umoci_version }})"
+          get_url:
+            url: "https://github.com/opencontainers/umoci/releases/download/{{ umoci_version }}/umoci.amd64"
+            dest: "{{ umoci_bin_path }}"
+            mode: "0755"
+          register: umoci_install_result
+          until: umoci_install_result.status_code is undefined or umoci_install_result.status_code == 200
+          retries: 10
+          delay: 15
+          failed_when: umoci_install_result is failure
+          when:
+            - umoci_help_result.rc is defined
+            - umoci_help_result.rc != 0
       tags:
         - install
         - uninstall
         - reset_tools
-  when:
-    - bundle_image is defined
-    - bundle_image != ""
+  # when:
+  #   - bundle_image is defined
+  #   - bundle_image != ""
   tags:
     - install
     - image_build
