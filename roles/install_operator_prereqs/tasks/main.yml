@@ -47,7 +47,7 @@
     - uninstall
     - reset_tools
 
-- name: "Install operator-sdk"
+- name: "Install operator-sdk ({{ operator_sdk_version }})"
   get_url:
     url: https://github.com/operator-framework/operator-sdk/releases/download/{{ operator_sdk_version }}/operator-sdk-{{ operator_sdk_version }}-x86_64-linux-gnu
     dest: "{{ operator_sdk_bin_path }}"
@@ -71,7 +71,7 @@
     - uninstall
     - reset_tools
 
-- name: "Install opm"
+- name: "Install opm ({{ opm_version }})"
   get_url:
     url: https://github.com/operator-framework/operator-registry/releases/download/{{ opm_version }}/linux-amd64-opm
     dest: "{{ opm_bin_path }}"
@@ -95,7 +95,7 @@
     - uninstall
     - reset_tools
 
-- name: "Download jq {{ jq_version }}"
+- name: "Download jq ({{ jq_version }})"
   get_url:
     url: "https://github.com/stedolan/jq/releases/download/jq-{{ jq_version }}/jq-linux64"
     dest: "{{ jq_bin_path }}"
@@ -119,7 +119,7 @@
     - uninstall
     - reset_tools
 
-- name: "Download yq {{ yq_version }}"
+- name: "Download yq ({{ yq_version }})"
   get_url:
     url: "https://github.com/mikefarah/yq/releases/download/{{ yq_version }}/yq_linux_amd64"
     dest: "{{ yq_bin_path }}"
@@ -143,7 +143,7 @@
       register: operator_courier_version_result
       failed_when: false
 
-    - name: "Install operator-courier if not already installed"
+    - name: "Install operator-courier ({{ operator_courier_version }}) if not already installed"
       shell: "pip3 install --upgrade operator-courier=={{ operator_courier_version }}"
       when:
         - operator_courier_version_result.rc is defined
@@ -219,7 +219,7 @@
       register: umoci_help_result
       failed_when: false
 
-    - name: "Install umoci if not installed"
+    - name: "Install umoci ({{ umoci_version }})"
       get_url:
         url: "https://github.com/opencontainers/umoci/releases/download/{{ umoci_version }}/umoci.amd64"
         dest: "{{ umoci_bin_path }}"
