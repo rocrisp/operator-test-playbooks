@@ -69,7 +69,7 @@
           when: cofc_annotation_bundle_files_find.files|length != cofc_versions_find.files|length
       when: cofc_package_file_find.files|length == 0
 
-    - name: "Format is ok"
+    - name: "Printing msg that format consistency is ok"
       debug:
         msg: "Operator format consistency for operator '{{ cofc_operator_dir | basename }}' is OK"
 
