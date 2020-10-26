@@ -90,9 +90,6 @@
   set_fact:
     current_channel_set: "{{ (current_channel_labels |  selectattr('key', 'search', 'operators.operatorframework.io.bundle.channels.v1') | list | first).value }}"
 
-- debug:
-    var: current_channel_set
-
 - name: "Ensure that channel is just one for a subscription"
   shell: "echo {{ current_channel_set }} | awk -F ',' '{print $1}'"
   register: current_channel_raw
@@ -167,8 +164,6 @@
 
 - name: "debug cat"
   shell: "cat {{ olm_operator_files_path }}/*"
-
-- pause:
 
 - name: "Create the namespace"
   shell: "{{ oc_bin_path }} apply -f {{ olm_operator_files_path }}/namespace.yml"
