@@ -88,7 +88,18 @@
 
 - name: "Setting channel 2"
   set_fact:
-    current_channel: "{{ (current_channel_labels |  selectattr('key', 'search', 'operators.operatorframework.io.bundle.channels.v1') | list | first).value }}"
+    current_channel_set: "{{ (current_channel_labels |  selectattr('key', 'search', 'operators.operatorframework.io.bundle.channels.v1') | list | first).value }}"
+
+- debug:
+    var: current_channel_set
+
+- name: "Ensure that channel is just one for a subscription"
+  shell: "echo {{ current_channel_set }} | awk -F ',' '{print $1}'"
+  register: current_channel_raw
+
+- name: "Channel defined"
+  set_fact:
+    current_channel: "{{ current_channel_raw.stdout }}"
 
 - name: "Determine and set fact for operator specific information - name, pod name, container name and capabilities"
   set_fact:
@@ -156,6 +167,8 @@
 
 - name: "debug cat"
   shell: "cat {{ olm_operator_files_path }}/*"
+
+- pause:
 
 - name: "Create the namespace"
   shell: "{{ oc_bin_path }} apply -f {{ olm_operator_files_path }}/namespace.yml"
