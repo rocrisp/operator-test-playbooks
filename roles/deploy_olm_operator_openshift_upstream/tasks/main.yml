@@ -23,10 +23,22 @@
     - dir_suffix_part is defined
     - dir_suffix_part != ""
 
-- name: "Get OLM"
-  shell: "{{ oc_bin_path }} get pods --all-namespaces|grep -i olm"
+- name: "Get pod name"
+  shell: "{{ oc_bin_path }} get pods --all-namespaces --no-headers -o custom-columns=\":metadata.name\"|grep -i olm-operator"
   environment:
     KUBECONFIG: "{{ kubeconfig_path }}"
+  register: olm_pod_name
+
+- name: "Get OLM"
+  shell: "{{ oc_bin_path }} exec -n openshift-operator-lifecycle-manager {{ olm_pod_name.stdout }} -- olm --version"
+  environment:
+    KUBECONFIG: "{{ kubeconfig_path }}"
+  register: olm_version_output
+
+- debug:
+    var: olm_version_output
+
+- pause:
 
 - name: "Download yq ({{ yq_version }})"
   get_url:
