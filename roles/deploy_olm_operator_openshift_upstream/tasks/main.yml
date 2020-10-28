@@ -23,6 +23,11 @@
     - dir_suffix_part is defined
     - dir_suffix_part != ""
 
+- name: "Get OLM"
+  shell: "{{ oc_bin_path }} get pods --all-namespaces|grep -i olm"
+  environment:
+    KUBECONFIG: "{{ kubeconfig_path }}"
+
 - name: "Download yq ({{ yq_version }})"
   get_url:
     url: "https://github.com/mikefarah/yq/releases/download/{{ yq_version }}/yq_linux_amd64"
