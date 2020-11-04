@@ -1,0 +1,7 @@
+---
+#generate final list
+
+- set_fact:
+#    final_list: "{{ final_list | default([]) + '11' }}"
+    final_list: "{{ final_list | default([]) + ['11'] }}"
+

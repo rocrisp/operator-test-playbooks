@@ -1,0 +1,33 @@
+---
+- set_fact:
+    versions:
+    - 1.0.5
+    - 1.0.6
+
+
+#- name: "Add several users"
+#  ansible.builtin.debug:
+#    msg: "checking version {{ item }}"
+#  loop: "{{ versions }}"
+
+- name: "Loop over all operators and export them"
+  include_tasks: op_ver.yml
+#  vars:
+#    app_registry_base_dir: "{{ bundle_export_dir_app_registry }}"
+#    app_registry_parallel: false
+  loop: "{{ versions }}"
+#  loop_control:
+#    loop_var: bar_op
+#  when: not index_export_parallel|bool
+
+- name: "test"
+  set_fact:
+    dov_op_name: "aqua"
+#    dov_versions: dov_versions[0]
+
+- name: "Adding version"
+  set_fact:
+   dov_operators_op_ver: "{{ dov_operators_op_ver | default([]) | union( [{'name': dov_op_name, 'versions': final_list }]) }}"
+
+- debug:
+    var: dov_operators_op_ver
