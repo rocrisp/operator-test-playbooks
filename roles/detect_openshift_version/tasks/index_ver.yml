@@ -1,1 +1,13 @@
 ---
+#- set_fact:
+#    operator_processing: "{{ operators_in[0] }}"
+
+- name: "Loop over all operators and export them"
+  include_tasks: op_name.yml
+  loop: "{{ operators_in }}"
+
+- name: "Adding version"
+  set_fact:
+   full_list: "{{ full_list | default([]) | union( [{'name': item, 'operators': dov_operators_op_ver }]) }}"
+#   full_list: "{{ full_list | default([]) | union(dov_operators_op_ver) }}"
+#   dov_operators_op_ver: "{{ dov_operators_op_ver | default([]) | union( [{'name': dov_op_name, 'versions': final_list }]) }}"

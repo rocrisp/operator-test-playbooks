@@ -1,7 +1,24 @@
 ---
+- name: "Convert allowed input versions to list"
+  set_fact:
+   ocs_allowed_versions: "{{ ocs_allowed_versions_in.split(',')}}"
+
+- debug:
+    var: ocs_allowed_versions
 
 - name: "Loop over all operators and export them"
-  include_tasks: op_name.yml
+  include_tasks: index_ver.yml
+  loop: "{{ ocs_allowed_versions }}"
+
+- debug:
+    var: full_list
+
+
+
+
+
+#- name: "Loop over all operators and export them"
+#  include_tasks: index_ver.yml
 #  vars:
 #    app_registry_base_dir: "{{ bundle_export_dir_app_registry }}"
 #    app_registry_parallel: false
@@ -10,12 +27,7 @@
 #    loop_var: bar_op
 #  when: not index_export_parallel|bool
 
-#- name: "Convert allowed input versions to list"
-#  set_fact:
-#   ocs_allowed_versions: "{{ ocs_allowed_versions_in.split(',') }}"
-#
-#- debug:
-#    var: ocs_allowed_versions
+
 #
 #- name: "Get version information from Dockerfile"
 #  shell: "grep 'com.redhat.openshift.versions=' {{ labels_file_path }}|head -n 1|awk -F'redhat.openshift.versions=\"' '{print $2}'|awk -F'\"' '{print $1}'"

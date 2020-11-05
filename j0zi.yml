@@ -1,0 +1,11 @@
+---
+- name: "Test operator main playbook"
+  hosts: all
+
+  tasks:
+    - name: "test"
+      include_role:
+        name: detect_openshift_version
+    - debug:
+        var: full_list[0].name
+      when: full_list.0.name == "4.6"

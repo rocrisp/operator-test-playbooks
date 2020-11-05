@@ -1,4 +1,4 @@
-ocs_allowed_versions_in: '4.5,4.6,4.7,4.8'
+ocs_allowed_versions_in: "4.6,4.7"
 #ocs_allowed_versions_in: "latest"
 operators_in:
   - name: prometheus
