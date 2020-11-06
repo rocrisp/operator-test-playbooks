@@ -1,5 +1,5 @@
 ---
-- name: "Set path to the file containing labels"
+- name: "Set path to the file containing labels for version {{ item }}"
   set_fact:
     labels_file_path: "{{ stream_path }}/{{ dov_op_name }}/{{ item }}/Dockerfile"
 

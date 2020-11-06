@@ -1,32 +1,33 @@
 stream_path: "~/projects/RH/sample-operators/community-operators/community-operators"
 #ocs_allowed_versions_in: "4.4,4.5,4.6,4.7,4.8"
-ocs_allowed_versions_in: "4.3,4.4,4.5,4.6,4.7,4.8"
+ocs_allowed_versions_in: "4.2,4.3,4.4,4.5,4.6,4.7,4.8"
 #ocs_allowed_versions_in: "latest"
+#operators_in:
+#  - name: jenkins-operator
+#    versions:
+#      - 0.2.2 #=v4.6
+#      - 0.4.1-rc1 #=v4.4
+#  - name: keda
+#    versions:
+#      - 1.5.0 #=v4.3
+#      - 1.4.1 #v4.7
+#      - 2.0.0 #v4.6-v4.7
 operators_in:
   - name: jenkins-operator
     versions:
       - 0.2.2 #=v4.6
+      - 0.3.31 #v4.6-v4.7
+      - 0.4.0 #=v4.6
       - 0.4.1-rc1 #=v4.4
-#  - name: keda
-#    versions:
-#      - 1.4.1 #v4.7
-#      - 2.0.0 #v4.6-v4.7
-#operators_in:
-#  - name: jenkins-operator
-#    versions:
-#      - 0.2.2
-#      - 0.3.31
-#      - 0.4.0
-#      - 0.4.1-rc1
-#      - 0.4.1-rc2
-#      - 0.4.1-rc3
-#      - 0.5.0
-#      - 0.6.0
-#  - name: keda
-#    versions:
-#      - 1.4.1
-#      - 1.5.0
-#      - 2.0.0
+      - 0.4.1-rc2 #=v4.4
+      - 0.4.1-rc3 #=v4.4
+      - 0.5.0 #=v4.6
+      - 0.6.0 #=v4.6
+  - name: keda
+    versions:
+      - 1.5.0 #=v4.3
+      - 1.4.1 #v4.7
+      - 2.0.0 #v4.6-v4.7
 work_dir: "/tmp/operator-test"
 testing_bin_path: "{{ work_dir }}/bin"
 opm_bin_path: "{{ testing_bin_path }}/opm"
