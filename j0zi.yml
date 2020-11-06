@@ -6,6 +6,6 @@
     - name: "Detect operator version in relation with cluster version"
       include_role:
         name: detect_openshift_version
-    - debug:
-        var: full_list[0].name
-      when: full_list.0.name == "4.6"
+#    - debug:
+#        var: full_list[0].name
+#      when: full_list.0.name == "4.6"

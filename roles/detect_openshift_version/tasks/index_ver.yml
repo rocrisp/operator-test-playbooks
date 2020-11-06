@@ -1,17 +1,19 @@
 ---
-#- set_fact:
-#    operator_processing: "{{ operators_in[0] }}"
-
 - name: "Set cluster version - checking {{ item }}"
   set_fact:
     dov_cluster_ver: "{{ item }}"
+    dov_operators_op_ver: []
 
 - name: "Loop over provided operators"
   include_tasks: op_name.yml
   loop: "{{ operators_in }}"
 
-- name: "Add versions"
+- debug:
+    var: full_list
+
+- name: "Add operator and supported versions to specific cluster config"
   set_fact:
    full_list: "{{ full_list | default([]) | union( [{'name': item, 'operators': dov_operators_op_ver }]) }}"
-#   full_list: "{{ full_list | default([]) | union(dov_operators_op_ver) }}"
-#   dov_operators_op_ver: "{{ dov_operators_op_ver | default([]) | union( [{'name': dov_op_name, 'versions': final_list }]) }}"
+  when:
+    - dov_operators_op_ver is defined
+    - (final_list|length>0)

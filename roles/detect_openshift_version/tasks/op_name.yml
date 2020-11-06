@@ -10,13 +10,24 @@
   set_fact:
     versions_processing: "{{ item.versions }}"
 
+- fail:
+    msg: "Versions for {{ dov_op_name }} not defined"
+  when: versions_processing == ""
+
 - name: "Loop over all operator versions"
   include_tasks: op_ver.yml
   loop: "{{ versions_processing }}"
 
-- name: "Adding version"
-  set_fact:
-   dov_operators_op_ver: "{{ dov_operators_op_ver | default([]) | union( [{'name': dov_op_name, 'versions': final_list }]) }}"
+- debug:
+    var:
+      - final_list
 
 - debug:
-    var: dov_operators_op_ver
+    var:
+      - full_list
+
+- name: "{{ dov_cluster_ver }} {{ dov_op_name }}: Adding versions"
+  set_fact:
+   dov_operators_op_ver: "{{ dov_operators_op_ver | default([]) | union( [{'name': dov_op_name, 'versions': final_list }]) }}"
+  when: (final_list|length>0)
+

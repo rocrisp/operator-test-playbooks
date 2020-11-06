@@ -4,7 +4,7 @@
     labels_file_path: "{{ stream_path }}/{{ dov_op_name }}/{{ item }}/Dockerfile"
 
 
-- name: "Get info about supported cluster"
+- name: "Get info about supported cluster for {{ dov_op_name }} {{ item }}"
   shell: "grep 'com.redhat.openshift.versions=' {{ labels_file_path }}|head -n 1|awk -F'redhat.openshift.versions=\"' '{print $2}'|awk -F'\"' '{print $1}'"
   register: ocp_version_annotation
 
@@ -17,14 +17,21 @@
 - name: "Comparing current {{ ocp_versions }} to target {{ dov_cluster_ver }}"
   set_fact:
     final_list: "{{ final_list | default([]) + [item] }}"
-    when:
-      - ocp_versions is version(dov_cluster_ver, '=')
+  when:
+      - ocp_version_annotation.stdout.find("=") != -1
       - ocp_versions is defined
+      - ocp_versions is version(dov_cluster_ver, '=')
+      - "(dov_cluster_ver is version(ocp_versions, '='))"
+
+#- name: "Detect open version range by missing '-'"
+#  when: ocp_version_annotation.stdout.find("-") == -1
+#  set_fact:
+#    ocp_open_range: true
 
 - name: "Set specific versions if \"-\" detected"
   block:
 
-  - name: "Set start when \"-\" detected"
+  - name: "Set start if range or from some version defined"
     shell: "echo \"{{ ocp_version_annotation.stdout }}\"| awk -F'-' '{print $1}'|awk -F'v' '{print $2}'"
     register: ocp_range_start
 
@@ -32,20 +39,41 @@
     shell: "echo \"{{ ocp_version_annotation.stdout }}\"| awk -F'-' '{print $2}'|awk -F'v' '{print $2}'"
     register: ocp_range_end
 
-#  - name: "Intialize ocp_versions"
-#    set_fact:
-#      ocp_versions: []
-
-# add condition reflecting start/end version
-  - name: "Add to list if cluster in supported range"
+  - name: "Add to {{ dov_cluster_ver }} list if cluster in supported range"
     set_fact:
       final_list: "{{ final_list | default([]) + [item] }}"
-#    with_items: "{{ ocs_allowed_versions }}"
     when: "(dov_cluster_ver is version(ocp_range_start.stdout, '>='))  and (dov_cluster_ver is version(ocp_range_end.stdout, '<='))"
 
   when:
     - ocp_version_annotation.stdout.find("-") != -1
-    - ocp_versions is not defined
+    - ocp_version_annotation.stdout.find("=") == -1
+
+- name: "Set open range start, no end needed"
+  set_fact:
+    ocp_range_start: "{{ ( ocp_version_annotation.stdout ) | replace('v','') }}"
+  when:
+    - ocp_version_annotation.stdout.find("-") == -1 # '-' not found
+    - ocp_version_annotation.stdout.find("=") == -1
+
+#- name: "Debug dov_cluster_ver and ocp_range_start"
+#  debug:
+#    var:
+#      - dov_cluster_ver
+#      - ocp_range_start
+
+- name: "Add to {{ dov_cluster_ver }} list if operator version {{ item }} is in cluster open range starting at {{ ocp_range_start }}"
+  set_fact:
+    final_list: "{{ final_list | default([]) + [item] }}"
+  when:
+   - ocp_version_annotation.stdout.find("=") == -1
+   - ocp_version_annotation.stdout.find("-") == -1 # '-' not found
+   - dov_cluster_ver is version(ocp_range_start, '>=')
+
+
+
+- name: "Unset 'ocp_versions' "
+  set_fact:
+    ocp_versions:
 
 #TODO: add "4.6" - beginning from specific version
 #TODO: Dockerfile supports version not supported by pipeline

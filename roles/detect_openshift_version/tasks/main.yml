@@ -1,4 +1,7 @@
 ---
+- set_fact:
+    full_list: []
+
 - name: "Convert allowed input versions to list"
   set_fact:
    ocs_allowed_versions: "{{ ocs_allowed_versions_in.split(',')}}"
