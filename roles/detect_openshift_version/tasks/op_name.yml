@@ -2,14 +2,15 @@
 - set_fact:
     final_list: []
 
-- name: "test"
+- name: "Set operator name - checking {{ item.name }}"
   set_fact:
     dov_op_name: "{{ item.name }}"
 
-- set_fact:
+- name: "Pass operator versions to loop"
+  set_fact:
     versions_processing: "{{ item.versions }}"
 
-- name: "Loop over all operators and export them"
+- name: "Loop over all operator versions"
   include_tasks: op_ver.yml
   loop: "{{ versions_processing }}"
 

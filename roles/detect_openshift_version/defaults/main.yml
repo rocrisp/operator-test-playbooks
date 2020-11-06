@@ -1,14 +1,32 @@
-ocs_allowed_versions_in: "4.6,4.7"
+stream_path: "~/projects/RH/sample-operators/community-operators/community-operators"
+#ocs_allowed_versions_in: "4.4,4.5,4.6,4.7,4.8"
+ocs_allowed_versions_in: "4.5,4.6"
 #ocs_allowed_versions_in: "latest"
 operators_in:
-  - name: prometheus
+  - name: jenkins-operator
     versions:
-      - 1.0.2
-      - 1.0.3
-  - name: aqua
-    versions:
-      - 1.0.5
-      - 1.0.6
+      - 0.2.2
+#      - 0.4.1-rc1
+#  - name: keda
+#    versions:
+#      - 1.4.1
+#      - 2.0.0
+#operators_in:
+#  - name: jenkins-operator
+#    versions:
+#      - 0.2.2
+#      - 0.3.31
+#      - 0.4.0
+#      - 0.4.1-rc1
+#      - 0.4.1-rc2
+#      - 0.4.1-rc3
+#      - 0.5.0
+#      - 0.6.0
+#  - name: keda
+#    versions:
+#      - 1.4.1
+#      - 1.5.0
+#      - 2.0.0
 work_dir: "/tmp/operator-test"
 testing_bin_path: "{{ work_dir }}/bin"
 opm_bin_path: "{{ testing_bin_path }}/opm"

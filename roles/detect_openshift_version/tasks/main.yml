@@ -3,84 +3,18 @@
   set_fact:
    ocs_allowed_versions: "{{ ocs_allowed_versions_in.split(',')}}"
 
-- debug:
-    var: ocs_allowed_versions
+#- debug:
+#    var: ocs_allowed_versions
 
-- name: "Loop over all operators and export them"
+- name: "Loop over all cluster versions"
   include_tasks: index_ver.yml
   loop: "{{ ocs_allowed_versions }}"
 
-- debug:
+- name: "Get full list for index setup"
+  debug:
     var: full_list
 
 
 
 
 
-#- name: "Loop over all operators and export them"
-#  include_tasks: index_ver.yml
-#  vars:
-#    app_registry_base_dir: "{{ bundle_export_dir_app_registry }}"
-#    app_registry_parallel: false
-#  loop: "{{ gaotd_operator_packages }}"
-#  loop_control:
-#    loop_var: bar_op
-#  when: not index_export_parallel|bool
-
-
-#
-#- name: "Get version information from Dockerfile"
-#  shell: "grep 'com.redhat.openshift.versions=' {{ labels_file_path }}|head -n 1|awk -F'redhat.openshift.versions=\"' '{print $2}'|awk -F'\"' '{print $1}'"
-#  register: ocp_version_annotation
-#
-#- debug:
-#    var: ocp_version_annotation
-#
-#- name: "Set specific version if \"=\" detected"
-#  when: ocp_version_annotation.stdout.find("=") != -1
-#  set_fact:
-#    ocp_versions: "{{ ( ocp_version_annotation ) | replace('=','') }}"
-#
-#- name: "Set specific versions if \"-\" detected"
-#  block:
-#
-#  - name: "Set start when \"-\" detected"
-#    shell: "echo \"{{ ocp_version_annotation.stdout }}\"| awk -F'-' '{print $1}'|awk -F'v' '{print $2}'"
-#    register: ocp_range_start
-#
-#  - name: "Set end when \"-\" detected"
-#    shell: "echo \"{{ ocp_version_annotation.stdout }}\"| awk -F'-' '{print $2}'|awk -F'v' '{print $2}'"
-#    register: ocp_range_end
-#
-#  - name: "Intialize ocp_versions"
-#    set_fact:
-#      ocp_versions: []
-#
-## add condition reflecting start/end version
-#  - name: "Fill ocp_versions"
-#    set_fact:
-#      ocp_versions: '{{ ocp_versions + [ item ] }}'
-#    with_items: "{{ ocs_allowed_versions }}"
-#    when:  "(item is version(ocp_range_start.stdout, '>='))  and (item is version(ocp_range_end.stdout, '<='))"
-#
-#
-#
-#  when: ocp_version_annotation.stdout.find("-") != -1
-#
-#- debug:
-#   var: ocp_range_start.stdout
-#
-#- debug:
-#   var: ocp_range_end.stdout
-#
-#- debug:
-#    var: ocp_versions
-##
-#
-##- debug:
-##    var: ocp_versions[0]
-#
-##- name: "Inform about failed detection"
-##  fail:
-##    msg: "Unable to detect Openshift version from - {{ ocp_version_annotation }}"
-##  when: ocp_versions not defined

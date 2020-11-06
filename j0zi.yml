@@ -1,9 +1,9 @@
 ---
-- name: "Test operator main playbook"
+- name: "Parse cluster version and export setup for index"
   hosts: all
 
   tasks:
-    - name: "test"
+    - name: "Detect operator version in relation with cluster version"
       include_role:
         name: detect_openshift_version
     - debug:
