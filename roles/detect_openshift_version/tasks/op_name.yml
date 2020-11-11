@@ -1,0 +1,33 @@
+---
+- set_fact:
+    final_list: []
+
+- name: "Set operator name - checking {{ item.name }}"
+  set_fact:
+    dov_op_name: "{{ item.name }}"
+
+- name: "Pass operator versions to loop"
+  set_fact:
+    versions_processing: "{{ item.versions }}"
+
+- fail:
+    msg: "Versions for {{ dov_op_name }} not defined"
+  when: versions_processing == ""
+
+- name: "Loop over all operator versions"
+  include_tasks: op_ver.yml
+  loop: "{{ versions_processing }}"
+
+- debug:
+    var:
+      - final_list
+
+- debug:
+    var:
+      - full_list
+
+- name: "{{ dov_cluster_ver }} {{ dov_op_name }}: Adding versions"
+  set_fact:
+   dov_operators_op_ver: "{{ dov_operators_op_ver | default([]) | union( [{'name': dov_op_name, 'versions': final_list }]) }}"
+  when: (final_list|length>0)
+

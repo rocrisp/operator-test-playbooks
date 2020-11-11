@@ -47,6 +47,8 @@
   set_fact:
     boi_cluster_versions: []
 
+
+
 - name: "List of operators for each cluster version"
   set_fact:
     boi_cluster_versions: "{{ boi_cluster_versions | union( [{'name': item, 'operators': operators_for_index }]) }}"
