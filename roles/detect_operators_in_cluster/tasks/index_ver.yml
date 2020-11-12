@@ -6,16 +6,15 @@
 
 - name: "Loop over provided operators"
   include_tasks: op_name.yml
-  loop: "{{ operators_in }}"
-
-
+#  loop: "{{ operators_in }}"
+  loop: "{{ operators_for_index }}"
 
 - name: "Add operator and supported versions to specific cluster config"
   set_fact:
-   full_list: "{{ full_list | default([]) | union( [{'name': item, 'operators': dov_operators_op_ver }]) }}"
+   doic_full_list: "{{ doic_full_list | default([]) | union( [{'name': item, 'operators': dov_operators_op_ver }]) }}"
   when:
     - dov_operators_op_ver.0 is defined
 
 - name: "PARTIAL FULL LIST //////// {{ dov_cluster_ver }}"
   debug:
-    var: full_list
+    var: doic_full_list
