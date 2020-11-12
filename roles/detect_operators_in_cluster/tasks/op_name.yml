@@ -1,6 +1,6 @@
 ---
 - set_fact:
-    final_list: []
+    doic_final_list: []
 
 - name: "Set operator name - checking {{ item.name }}"
   set_fact:
@@ -20,14 +20,14 @@
 
 - debug:
     var:
-      - final_list
+      - doic_final_list
 
 - debug:
     var:
-      - full_list
+      - doic_full_list
 
 - name: "{{ dov_cluster_ver }} {{ dov_op_name }}: Adding versions"
   set_fact:
-   dov_operators_op_ver: "{{ dov_operators_op_ver | default([]) | union( [{'name': dov_op_name, 'versions': final_list }]) }}"
-  when: (final_list|length>0)
+   dov_operators_op_ver: "{{ dov_operators_op_ver | default([]) | union( [{'name': dov_op_name, 'versions': doic_final_list }]) }}"
+  when: (doic_final_list|length>0)
 

@@ -1,4 +1,4 @@
-stream_path: "~/projects/RH/sample-operators/community-operators/community-operators"
+stream_path: "/tmp/community-operators-for-catalog/community-operators"
 #ocs_allowed_versions_in: "4.4,4.5,4.6,4.7,4.8"
 ocs_allowed_versions_in: "4.2,4.3,4.4,4.5,4.6,4.7,4.8"
 #ocs_allowed_versions_in: "latest"
