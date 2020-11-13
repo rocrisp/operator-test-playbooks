@@ -7,3 +7,4 @@ opm_bin_path: "{{ testing_bin_path }}/opm"
 container_tool: "docker"
 opm_container_tool: "docker"
 opm_container_tool_index: "docker"
+use_cluster_filter: false
