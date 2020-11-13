@@ -1,5 +1,5 @@
 ---
-- name: Test the operator on a kind/OCP 4.0 cluster with OLM
+- name: Test the operator on a kind/OCP cluster with OLM
   hosts: all
   become: false
   gather_facts: false
@@ -35,6 +35,4 @@
       when: run_upstream|bool
   tasks:
 
-    - name: "Running manifest test for operator"
-      include_role:
-        name: test_opertator_manifest
+

@@ -2,13 +2,13 @@
 - set_fact:
     doic_final_list: []
 
-- name: "Set operator name - checking {{ item.name }}"
+- name: "Set operator name - checking {{ doic_operators_for_index.name }}"
   set_fact:
-    dov_op_name: "{{ item.name }}"
+    dov_op_name: "{{ doic_operators_for_index.name }}"
 
 - name: "Pass operator versions to loop"
   set_fact:
-    versions_processing: "{{ item.versions }}"
+    versions_processing: "{{ doic_operators_for_index.versions }}"
 
 - fail:
     msg: "Versions for {{ dov_op_name }} not defined"
@@ -17,6 +17,8 @@
 - name: "Loop over all operator versions"
   include_tasks: op_ver.yml
   loop: "{{ versions_processing }}"
+  loop_control:
+    loop_var: doic_versions_processing
 
 - debug:
     var:

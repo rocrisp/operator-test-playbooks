@@ -12,6 +12,8 @@
 - name: "Loop over all cluster versions"
   include_tasks: index_ver.yml
   loop: "{{ ocs_allowed_versions }}"
+  loop_control:
+    loop_var: doic_allowed_versions
 
 - name: "Convert allowed input versions to list"
   set_fact:

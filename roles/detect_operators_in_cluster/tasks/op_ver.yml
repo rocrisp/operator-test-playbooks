@@ -3,9 +3,9 @@
   set_fact:
     ocp_range_start_old: "0"
 
-- name: "Set path to the file containing labels for version {{ item }}"
+- name: "Set path to the file containing labels for version {{ doic_versions_processing }}"
   set_fact:
-    labels_file_path: "{{ stream_path }}/{{ dov_op_name }}/{{ item }}/Dockerfile"
+    labels_file_path: "{{ stream_path }}/{{ dov_op_name }}/{{ doic_versions_processing }}/{{ labels_annotations }}"
 
 #- name: "Getting content of package file '{{ pkg_file_path }}'"
 #  shell: "cat {{ pkg_file_path }}"
@@ -19,37 +19,49 @@
 #  set_fact:
 #    operator_package_name: "{{ op_manifest_pkg_vars.packageName }}"
 
-- name: "Get info about supported cluster for {{ dov_op_name }} {{ item }}"
-  shell: "grep 'com.redhat.openshift.versions=' {{ labels_file_path }}|head -n 1|awk -F'redhat.openshift.versions=\"' '{print $2}'|awk -F'\"' '{print $1}'"
-  register: ocp_version_annotation
+#- name: "Get info about supported cluster for {{ dov_op_name }} {{ doic_versions_processing }}"
+#  shell: "grep 'com.redhat.openshift.versions=' {{ labels_file_path }}|head -n 1|awk -F'redhat.openshift.versions=\"' '{print $2}'|awk -F'\"' '{print $1}'"
+#  register: ocp_version_annotation
+#  ignore_errors: true
 
-- name: "Set parsed versions"
-  when: ocp_version_annotation.stdout is defined
+- name: "Get info from {{ labels_file_path }}"
+  include_tasks: get_info.yml
+
+- name: "Check in another file for labels if not found in {{ labels_file_path }}"
+  include_tasks: get_info.yml
+  vars:
+    labels_file_path: "{{ stream_path }}/{{ dov_op_name }}/{{ doic_versions_processing }}/{{ labels_dockerfile }}"
+  when: ocp_version_annotation_stdout == ""
+
+- name: "If cluster limitation (like com.redhat.openshift.versions) not found, means {{ dov_op_name }} {{ doic_versions_processing }} supports all clusters"
   set_fact:
-    ocp_version_annotation_stdout: "{{ ocp_version_annotation.stdout }}"
+    ocp_version_annotation_stdout: v0.0.1
+#  fail:
+#    msg: "Cluster info (like com.redhat.openshift.versions) was not found in {{ labels_dockerfile }} nor {{ labels_annotations }} for {{ dov_op_name }} {{ doic_versions_processing }}"
+  when: ocp_version_annotation_stdout == ""
 
 - name: "Backward compatibility, searching (v4.5,v4.6). Please note v4.6,v4.7 will not work."
-  when: ocp_version_annotation.stdout.find("v4.5,v4.6") != -1 #found
+  when: ocp_version_annotation_stdout.find("v4.5,v4.6") != -1 #found
   set_fact:
     ocp_range_start_old: "4.5"
 
 - name: "Recognize specific version if \"=\" detected"
   set_fact:
-    ocp_versions: "{{ ( ocp_version_annotation.stdout ) | replace('=v','') }}"
-  when: ocp_version_annotation.stdout.find("=") != -1
+    ocp_versions: "{{ ( ocp_version_annotation_stdout ) | replace('=v','') }}"
+  when: ocp_version_annotation_stdout.find("=") != -1
 
 - name: "Comparing current {{ ocp_versions }} to target {{ dov_cluster_ver }}"
   set_fact:
-    doic_final_list: "{{ doic_final_list | default([]) + [item] }}"
+    doic_final_list: "{{ doic_final_list | default([]) + [doic_versions_processing] }}"
   when:
-      - ocp_version_annotation.stdout.find("=") != -1
+      - ocp_version_annotation_stdout.find("=") != -1
       - ocp_versions is defined #TODO
       - ocp_versions is version(dov_cluster_ver, '=')
       - "(dov_cluster_ver is version(ocp_versions, '='))" #TODO
-      - ocp_version_annotation.stdout.find("v4.5,v4.6") == -1
+      - ocp_version_annotation_stdout.find("v4.5,v4.6") == -1
 
 #- name: "Detect open version range by missing '-'"
-#  when: ocp_version_annotation.stdout.find("-") == -1
+#  when: ocp_version_annotation_stdout.find("-") == -1
 #  set_fact:
 #    ocp_open_range: true
 
@@ -57,45 +69,45 @@
   block:
 
   - name: "Set start if range or from some version defined"
-    shell: "echo \"{{ ocp_version_annotation.stdout }}\"| awk -F'-' '{print $1}'|awk -F'v' '{print $2}'"
+    shell: "echo \"{{ ocp_version_annotation_stdout }}\"| awk -F'-' '{print $1}'|awk -F'v' '{print $2}'"
     register: ocp_range_start
 
   - name: "Set end when \"-\" detected"
-    shell: "echo \"{{ ocp_version_annotation.stdout }}\"| awk -F'-' '{print $2}'|awk -F'v' '{print $2}'"
+    shell: "echo \"{{ ocp_version_annotation_stdout }}\"| awk -F'-' '{print $2}'|awk -F'v' '{print $2}'"
     register: ocp_range_end
 
   - name: "Add to {{ dov_cluster_ver }} list if cluster in supported range"
     set_fact:
-      doic_final_list: "{{ doic_final_list | default([]) + [item] }}"
+      doic_final_list: "{{ doic_final_list | default([]) + [doic_versions_processing] }}"
     when: "(dov_cluster_ver is version(ocp_range_start.stdout, '>='))  and (dov_cluster_ver is version(ocp_range_end.stdout, '<='))"
 
   when:
-    - ocp_version_annotation.stdout.find("-") != -1
-    - ocp_version_annotation.stdout.find("=") == -1
-    - ocp_version_annotation.stdout.find("v4.5,v4.6") == -1
+    - ocp_version_annotation_stdout.find("-") != -1
+    - ocp_version_annotation_stdout.find("=") == -1
+    - ocp_version_annotation_stdout.find("v4.5,v4.6") == -1
 
 - name: "Set open range start temp, no end needed"
   set_fact:
-    ocp_range_start_actual: "{{ ( ocp_version_annotation.stdout ) | replace('v','') }}"
+    ocp_range_start_actual: "{{ ( ocp_version_annotation_stdout ) | replace('v','') }}"
   when:
-    - ocp_version_annotation.stdout.find("-") == -1 # '-' not found
-    - ocp_version_annotation.stdout.find("=") == -1
-    - ocp_version_annotation.stdout.find("v4.5,v4.6") == -1
+    - ocp_version_annotation_stdout.find("-") == -1 # '-' not found
+    - ocp_version_annotation_stdout.find("=") == -1
+    - ocp_version_annotation_stdout.find("v4.5,v4.6") == -1
 
 - name: "Set open range start, no end needed. For old compatibility and open range also."
   set_fact:
     ocp_range_start: "{{ ocp_range_start_old if (ocp_range_start_old == '4.5') else ocp_range_start_actual }}"
   when:
-    - ocp_version_annotation.stdout.find("-") == -1 # '-' not found
-    - ocp_version_annotation.stdout.find("=") == -1
-#    - ocp_version_annotation.stdout.find("v4.5,v4.6") != -1
+    - ocp_version_annotation_stdout.find("-") == -1 # '-' not found
+    - ocp_version_annotation_stdout.find("=") == -1
+#    - ocp_version_annotation_stdout.find("v4.5,v4.6") != -1
 
-- name: "Add to {{ dov_cluster_ver }} list if operator version {{ item }} is in cluster open range starting at {{ ocp_range_start }}"
+- name: "Add to {{ dov_cluster_ver }} list if operator version {{ doic_versions_processing }} is in cluster open range starting at {{ ocp_range_start }}"
   set_fact:
-    doic_final_list: "{{ doic_final_list | default([]) + [item] }}"
+    doic_final_list: "{{ doic_final_list | default([]) + [doic_versions_processing] }}"
   when:
-   - ocp_version_annotation.stdout.find("=") == -1
-   - ocp_version_annotation.stdout.find("-") == -1 # '-' not found
+   - ocp_version_annotation_stdout.find("=") == -1
+   - ocp_version_annotation_stdout.find("-") == -1 # '-' not found
    - dov_cluster_ver is version(ocp_range_start, '>=')
 
 - name: "Unset 'ocp_versions' "
