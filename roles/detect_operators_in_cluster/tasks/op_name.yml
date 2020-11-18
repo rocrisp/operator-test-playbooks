@@ -8,7 +8,7 @@
 - name: "Set operator name - checking {{ doic_operators_for_index.name }}"
   set_fact:
     dov_op_name: "{{ doic_operators_for_index.name }}"
-#TODO: remove
+
 - name: "Pass operator versions to loop"
   set_fact:
 #    versions_processing: "{{ doic_operators_for_index.versions }}"
