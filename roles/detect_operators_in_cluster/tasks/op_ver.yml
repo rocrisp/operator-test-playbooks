@@ -19,7 +19,7 @@
 #lc_doic_bundles_processing
 
 - name: "Disable annotation check during the next parse"
-  set fact:
+  set_fact:
      doic_skip_file_check: True
      bundle_sanity_checks: True
      doic_versions_from_bundle: "{{ lc_doic_bundles_processing.split(':v')[1] }}"
@@ -27,21 +27,26 @@
 - name: "Parse the operator bundle image, manifest and metadata"
   include_role:
     name: parse_operator_bundle
-    vars:
-      bundle_image: "{{ lc_doic_bundles_processing }}"
+  vars:
+    bundle_image: "{{ lc_doic_bundles_processing }}"
 
 - name: "Set check back, unset variable"
-  set fact:
+  set_fact:
      doic_skip_file_check:
-     ocp_version_annotation_stdout: "{{ skopeo_inspect_json.Labels['com.redhat.openshift.versions'] }}"
 
+- name: "Set cluster version from bundle label"
+  set_fact:
+     ocp_version_annotation_stdout: "{{ skopeo_inspect_json.Labels['com.redhat.openshift.versions'] }}"
+  when:
+    - skopeo_inspect_json.Labels['com.redhat.openshift.versions'] is defined
+    - skopeo_inspect_json.Labels['com.redhat.openshift.versions']!= ""
 
 - name: "If cluster limitation (like com.redhat.openshift.versions) not found, means {{ dov_op_name }} {{ doic_versions_from_bundle }} supports all clusters"
   set_fact:
     ocp_version_annotation_stdout: v0.0.1
 #  fail:
 #    msg: "Cluster info (like com.redhat.openshift.versions) was not found in {{ labels_dockerfile }} nor {{ labels_annotations }} for {{ dov_op_name }} {{ doic_versions_processing }}"
-  when: ocp_version_annotation_stdout == ""
+  when: (ocp_version_annotation_stdout is not defined) or (ocp_version_annotation_stdout == "")
 
 - name: "Backward compatibility, searching (v4.5,v4.6). Please note v4.6,v4.7 will not work."
   when: ocp_version_annotation_stdout.find("v4.5,v4.6") != -1 #found
@@ -54,7 +59,8 @@
   when: ocp_version_annotation_stdout.find("=") != -1
 
 - name: "Comparing current {{ ocp_versions }} to target {{ dov_cluster_ver }}"
-  include_role: version_found.yml xxxxxx do kazdeho + reset na uvod
+  include_role:
+    name: version_found.yml
   when:
       - ocp_version_annotation_stdout.find("=") != -1
       - ocp_versions is defined
@@ -73,7 +79,8 @@
     register: ocp_range_end
 
   - name: "Add to {{ dov_cluster_ver }} list if cluster in supported range"
-    include_role: version_found.yml
+    include_role:
+      name: version_found.yml
     when: "(dov_cluster_ver is version(ocp_range_start.stdout, '>='))  and (dov_cluster_ver is version(ocp_range_end.stdout, '<='))"
 
   when:
@@ -98,7 +105,7 @@
 #    - ocp_version_annotation_stdout.find("v4.5,v4.6") != -1
 
 - name: "Add to {{ dov_cluster_ver }} list if operator version {{ doic_versions_from_bundle }} is in cluster open range starting at {{ ocp_range_start }}"
-  include_role: version_found.yml
+  include_tasks: version_found.yml
   when:
    - ocp_version_annotation_stdout.find("=") == -1
    - ocp_version_annotation_stdout.find("-") == -1 # '-' not found

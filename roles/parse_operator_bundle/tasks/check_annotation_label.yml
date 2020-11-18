@@ -8,5 +8,3 @@
     msg: "The {{ item }} value '{{ cal_annotation_value }}' in the annotations yaml doesn't match the corresponding bundle image label '{{ cal_label_value }}' !"
   when:
     - cal_annotation_value != cal_label_value
-    - doic_skip_file_check is not defined
-    - not doic_skip_file_check|bool
