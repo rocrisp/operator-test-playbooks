@@ -4,6 +4,15 @@
     dov_cluster_ver: "{{ doic_allowed_versions }}"
     dov_operators_op_ver: []
 
+
+- name: "Loop and collect all bundles"
+  bundles_to_check: "{{ bundles_to_check | default([]) + [doic_operators_for_index.bundles] }}"
+  loop: "{{ operators_for_index }}"
+  loop_control:
+    loop_var: doic_operators_for_index
+
+
+#TODO: remove
 - name: "Loop over provided operators"
   include_tasks: op_name.yml
 #  loop: "{{ operators_in }}"

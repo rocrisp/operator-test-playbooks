@@ -59,6 +59,9 @@
    - use_cluster_filter is defined
    - use_cluster_filter|bool
 
+- debug:
+    var: boi_cluster_versions
+
 - name: "Build index image for all cluster versions"
   include_tasks: single_cluster_version.yml
   loop: "{{ boi_cluster_versions }}"
