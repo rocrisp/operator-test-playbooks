@@ -1,3 +1,7 @@
+# - name: "Setting 'bundle_index_image' variable"
+#   set_fact:
+#     bundle_index_image: "{{ bundle_registry }}/{{ bundle_index_image_namespace }}/{{ bundle_index_image_name }}:{{ bundle_index_image_version }}"
+
 - name: "Setting 'bundle_index_image' to '{{ bundle_registry }}/{{ bundle_index_image_namespace }}/{{ bundle_index_image_name }}:{{ bundle_index_image_version }}'"
   set_fact:
     bundle_index_image: "{{ bundle_registry }}/{{ bundle_index_image_namespace }}/{{ bundle_index_image_name }}:{{ bundle_index_image_version }}"
@@ -8,6 +12,10 @@
   when:
     - openshift_robot_hash_array.2 is defined
     - openshift_robot_hash_array.2 != ""
+
+# - name: "Remove index image '{{ bundle_index_image }}'"
+#   shell: "{{ container_tool }} rmi -f {{ bundle_index_image }}"
+#   failed_when: false
 
 - name: "Reseting 'operators_for_index' variable when 'index_skip' is true"
   set_fact:
@@ -26,7 +34,6 @@
           All operator versions are already in catalog !!!
           Note: This might also happen when user is changing already published version.
                 In this case one can request for operator to be rewriten by asking this in PR.
-
     - name: "Printing message when 'operators_for_index' is empty and it is forced to stop"
       fail:
         msg: "{{ boi_msg.split('\n') }}"
@@ -35,32 +42,14 @@
     - fail_on_no_index_change|bool
     - operators_for_index.0 is undefined
 
-- name: "Reset list of operators for each cluster version and parse supported_cluster_versions"
+- name: "Reset list of operators for each cluster version"
   set_fact:
     boi_cluster_versions: []
-    ocs_allowed_versions: "{{ supported_cluster_versions.split(',') }}"
-
-- debug:
-    var: ocs_allowed_versions
 
 - name: "List of operators for each cluster version"
   set_fact:
     boi_cluster_versions: "{{ boi_cluster_versions | union( [{'name': item, 'operators': operators_for_index }]) }}"
-  with_items: "{{ ocs_allowed_versions }}"
-  when:
-    # - ocs_allowed_versions.0 is not defined
-    - (use_cluster_filter is undefined or not use_cluster_filter|bool)
-
-- name: "Detect operator version in relation with cluster version"
-  include_role:
-    name: detect_operators_in_cluster
-  when:
-   - ocs_allowed_versions.0 is defined
-   - use_cluster_filter is defined
-   - use_cluster_filter|bool
-
-- debug:
-    var: boi_cluster_versions
+  with_items: "{{ supported_cluster_versions.split(',') }}"
 
 - name: "Build index image for all cluster versions"
   include_tasks: single_cluster_version.yml
