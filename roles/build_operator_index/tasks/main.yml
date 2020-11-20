@@ -139,6 +139,46 @@
     - boi_iap_rc.rc is defined
     - boi_iap_rc.rc == 0
 
+- name: "Unset 'boi_latest_index_found'"
+  set_fact:
+    boi_latest_index_found:
+
+- name: "Unset 'bundle_latest_index_image' variable"
+  set_fact:
+    bundle_latest_index_image:
+
+- name: "Handle 'latest' index"
+  block:
+    - name: "Check if actual {{ ba_index_tag }} equals to {{ copy_as_latest_index }} (marked as latest)"
+      set_fact:
+        boi_latest_index_found: True
+      when: ba_index_tag == copy_as_latest_index
+
+    - name: "'Latest' identified"
+      block:
+        - name: "Setting 'bundle_latest_index_image' variable"
+          set_fact:
+            boi_bundle_latest_index_image: "{{ bundle_registry }}/{{ bundle_index_image_namespace }}/{{ bundle_index_image_name }}:latest"
+
+        - name: "Retag index to latest "
+          block:
+            - name: "Retag image {{ bundle_index_image }}"
+              shell: "{{ container_tool }} tag {{ bundle_index_image }} {{ bundle_latest_index_image }}"
+            - name: "Push image {{ bundle_latest_index_image }}"
+              shell: "{{ container_tool }} push {{ bundle_latest_index_image }}"
+          when:
+            - copy_as_latest_index is defined
+            - copy_as_latest_index != ""
+            - bundle_latest_index_image is defined
+            - bundle_latest_index_image != ""
+      when:
+        - boi_latest_index_found is defined
+        - boi_latest_index_found|bool
+
+  when:
+    - copy_as_latest_index is defined
+    - copy_as_latest_index != ""
+
 - name: "Add failed operators when creating index from bundle"
   set_fact:
     bundle_index_add_failed: "{{ bundle_index_add_failed | default([]) }} + [ '{{ ba_name }}' ]"
