@@ -145,7 +145,7 @@
 
 - name: "Unset 'bundle_latest_index_image' variable"
   set_fact:
-    bundle_latest_index_image:
+    boi_bundle_latest_index_image:
 
 - name: "Handle 'latest' index"
   block:
@@ -163,14 +163,14 @@
         - name: "Retag index to latest "
           block:
             - name: "Retag image {{ bundle_index_image }}"
-              shell: "{{ container_tool }} tag {{ bundle_index_image }} {{ bundle_latest_index_image }}"
-            - name: "Push image {{ bundle_latest_index_image }}"
-              shell: "{{ container_tool }} push {{ bundle_latest_index_image }}"
+              shell: "{{ container_tool }} tag {{ bundle_index_image }} {{ boi_bundle_latest_index_image }}"
+            - name: "Push image {{ boi_bundle_latest_index_image }}"
+              shell: "{{ container_tool }} push {{ boi_bundle_latest_index_image }}"
           when:
             - copy_as_latest_index is defined
             - copy_as_latest_index != ""
-            - bundle_latest_index_image is defined
-            - bundle_latest_index_image != ""
+            - boi_bundle_latest_index_image is defined
+            - boi_bundle_latest_index_image != ""
       when:
         - boi_latest_index_found is defined
         - boi_latest_index_found|bool
