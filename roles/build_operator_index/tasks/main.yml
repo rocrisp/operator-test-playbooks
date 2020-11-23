@@ -212,7 +212,6 @@
   when:
     - copy_as_latest_index is defined
     - copy_as_latest_index != ""
-    - copy_as_latest_index != "latest"
 
 - name: "Add failed operators when creating index from bundle"
   set_fact:
