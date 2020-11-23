@@ -212,6 +212,8 @@
   when:
     - copy_as_latest_index is defined
     - copy_as_latest_index != ""
+    - use_cluster_filter is defined
+    - use_cluster_filter|bool
 
 - name: "Add failed operators when creating index from bundle"
   set_fact:
