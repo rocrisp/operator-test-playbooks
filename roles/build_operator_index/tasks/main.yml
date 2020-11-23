@@ -101,6 +101,7 @@
     - bundle_index_image_from is defined
     - bundle_index_image_from != ""
 
+<<<<<<< HEAD
 - name: "Setting tmp versions"
   set_fact:
     ba_versions_tmp: "{{ ba_versions | difference(ba_versions_prod) }}"
@@ -134,9 +135,11 @@
     - openshift_robot_hash_array.2 is defined
     - openshift_robot_hash_array.2 != ""
 
+=======
+>>>>>>> Added bundles to opearots_for_index
 - name: "Setting bundle image names"
   set_fact:
-    bundle_images: "{{ bundles_arr | join(',') }}"
+    bundle_images: "{{ ba_bundles | join(',') }}"
 
 - name: "Retag bundle input image"
   block:
