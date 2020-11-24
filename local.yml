@@ -35,13 +35,15 @@
     kind_version: v0.9.0
     kind_kube_version: v1.19.1
     operator_sdk_version: v0.18.2
-    operator_courier_version: 2.1.10
+    operator_courier_version: 2.1.11
     olm_version: 0.16.1
     opm_version: v1.15.1
+    proxy_env:
+      GODEBUG: "x509ignoreCN=0"
 
   environment:
     PATH: "{{ ansible_env.PATH }}:{{ ansible_env.HOME }}/.local/bin"
-    when: run_upstream|bool
+    # GODEBUG: "x509ignoreCN=0"
 
   pre_tasks:
     - setup:
@@ -51,6 +53,9 @@
 
     - name: "Setting basic task variables"
       set_fact:
+        supported_cluster_versions_in: "4.6,4.7"
+        copy_as_latest_index: '4.6'
+        use_cluster_filter: false
         work_dir: "{{ work_dir | default('/tmp/operator-test') }}"
         operator_dir: "{{ operator_dir | default('dummy') }}"
         operator_input_image: "{{ operator_input_image | default('') }}"

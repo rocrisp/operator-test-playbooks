@@ -101,6 +101,39 @@
     - bundle_index_image_from is defined
     - bundle_index_image_from != ""
 
+- name: "Setting tmp versions"
+  set_fact:
+    ba_versions_tmp: "{{ ba_versions | difference(ba_versions_prod) }}"
+
+- name: "Setting empty bundles array"
+  set_fact:
+    bundles_arr: []
+
+- name: "Filling bundle versions from prod for operator '{{ ba_name }}'"
+  set_fact:
+    bundles_arr: "{{ bundles_arr | default([]) }} + [ '{{ production_registry_namespace }}/{{ ba_name }}:v{{ item }}' ]"
+  with_items: "{{ ba_versions_prod }}"
+  when:
+    - production_registry_namespace is defined
+    - production_registry_namespace != ""
+    - ba_versions_prod.0 is defined
+    - ba_versions_prod.0 != ""
+
+- name: "Filling bundle versions for operator '{{ ba_name }}'"
+  set_fact:
+    bundles_arr: "{{ bundles_arr | default([]) }} + [ '{{ bundle_registry }}/{{ bundle_image_namespace }}/{{ ba_name }}:v{{ item }}' ]"
+  with_items: "{{ ba_versions_tmp }}"
+  when:
+    - ba_versions_tmp.0 is defined
+    - ba_versions_tmp.0 != ""
+
+- name: "Filling bundle versions for operator '{{ ba_name }}' for openshift robot case"
+  set_fact:
+    bundles_arr: "[ '{{ openshift_robot_hash_array[0] }}/{{ operator_package_name }}:{{ openshift_robot_hash_array[2] }}' ]"
+  when:
+    - openshift_robot_hash_array.2 is defined
+    - openshift_robot_hash_array.2 != ""
+
 - name: "Setting bundle image names"
   set_fact:
     bundle_images: "{{ ba_bundles | join(',') }}"
@@ -123,6 +156,7 @@
 - name: "Add operator '{{ ba_name }}' to index image {{ bundle_index_image }}"
   shell: "{{ opm_bin_path }} index add -u {{ opm_container_tool }} --bundles {{ bundle_images }} --tag {{ bundle_index_image }} --mode {{ opm_index_add_mode }} {{ opm_index_add_extra_args }}"
   ignore_errors: yes
+  environment: "{{ proxy_env }}"
   register: boi_ia_rc
 
 - name: "Push bundle image '{{ bundle_index_image }}'"
@@ -178,6 +212,8 @@
   when:
     - copy_as_latest_index is defined
     - copy_as_latest_index != ""
+    - use_cluster_filter is defined
+    - use_cluster_filter|bool
 
 - name: "Add failed operators when creating index from bundle"
   set_fact:
