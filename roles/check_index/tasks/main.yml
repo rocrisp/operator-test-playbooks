@@ -10,7 +10,7 @@
         cmd: "find . -type d -mindepth 2 -maxdepth 2 | cut -sd / -f 2- | sort"
         chdir: "{{ operator_base_dir }}"
       register: chi_git_operators_out
-      no_log: true
+#      no_log: true
 
     - name: "Set list of all operators in index"
       set_fact:
