@@ -35,7 +35,7 @@
 - name: "Handle manifest and metadata validation for Openshift"
   block:
     - name: "Validate the operator bundle manifest and metadata with operator-sdk bundle validate"
-      shell: "OPERATOR_BUNDLE_CATEGORIES={{ catalog_repo_dir }}/categories.json {{ operator_sdk_bin_path }} bundle validate --verbose {{ bundle_validate }}"
+      shell: "OPERATOR_BUNDLE_CATEGORIES={{ catalog_repo_dir }}/categories.json {{ operator_sdk_bin_path }} bundle validate --verbose {{ bundle_validate }} --select-optional suite=operatorframework"
       register: sdk_validation_result
       ignore_errors: true
 
