@@ -16,7 +16,7 @@
   shell: "{{ operator_sdk_bin_path }} version"
   register: sdk_version_result
 
-- name: "Output the operator-sdk version to a debug file"
+- name: "Output the operator-sdk version {{ sdk_version_result.stdout }} to a debug file"
   copy:
     content: "{{ sdk_version_result.stdout }}"
     dest: "{{ work_dir }}/validation-version.txt"
