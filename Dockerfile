@@ -22,4 +22,10 @@ RUN mkdir -p /etc/containers/certs.d/kind-registry:5000
 RUN ln -sfn /usr/share/pki/ca-trust-source/anchors/ca.crt /etc/containers/certs.d/kind-registry:5000/ca.crt
 WORKDIR /playbooks
 RUN ansible-playbook upstream/local.yml --tags reset_tools,image_build -e run_upstream=true -e operator_dir=/tmp/operator-dir-dummy -e run_prepare_catalog_repo_upstream=false -e save_operator_tools_info=true
+RUN dnf install -y golang make
+RUN git clone https://github.com/operator-framework/operator-sdk.git /tmp/operator-sdk-source
+RUN make -C /tmp/operator-sdk-source build
+RUN ls /tmp/operator-sdk-source
+RUN ls /tmp/operator-sdk-source/build
+RUN \cp /tmp/operator-sdk-source/build/operator-sdk /tmp/operator-test/bin/
 CMD ["/bin/bash"]
