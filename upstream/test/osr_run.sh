@@ -23,7 +23,7 @@ function DetectFromGit() {
   echo $sf
   if [ $(echo $sf| awk -F'/' '{print NF}') -ge 2 ]; then  #workaround for https://github.com/operator-framework/community-operators/runs/1654549047?check_suite_focus=true
     OP_NAME="$(echo "$sf" | awk -F'/' '{ print $2 }')"
-  fi
+  fi #workaround end
   if [ $(echo $sf| awk -F'/' '{print NF}') -ge 4 ]; then
     OP_NAME="$(echo "$sf" | awk -F'/' '{ print $2 }')"
     OP_VER="$(echo "$sf" | awk -F'/' '{ print $3 }')"
