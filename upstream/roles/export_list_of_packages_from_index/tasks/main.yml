@@ -43,6 +43,14 @@
         elopfi_index_operators: "{{ elopfi_index_operators_out.stdout.split(',') }}"
         elopfi_index_packages: "{{ elopfi_index_packages_out.stdout.split(',') }}"
 
+    - name: "Check if index has critical amount of operators, less than {{ min_operators_in_index_allowed }}"
+      fail:
+        msg: "Looks like index is too empty, less operators than {{ min_operators_in_index_allowed }} operators in the index - manual check is needed. Index overwrite safety check #1."
+      when:
+        - min_operators_in_index_allowed is defined
+        - min_operators_in_index_allowed != ""
+        - elopfi_index_operators|length<min_operators_in_index_allowed
+
   tags:
     - deploy_bundles
     - index_check
