@@ -11,6 +11,7 @@
       ## ckeck if not kind
     - name: "Pulling index container {{ bundle_index_image }}"
       shell: "{{ container_tool }} pull {{ bundle_index_image }}"
+      when: not index_pull_skip
 
     - name: "Start index container {{ bundle_index_image }}"
       # shell: "{{ container_tool }} run -d --name {{ sanity_check_container_name }} {{ bundle_index_image }}"

@@ -113,7 +113,9 @@
       set_fact:
         min_operators_in_index_allowed: 30
         max_missing_operators_allowed: 20
-      when: enable_production is defined
+      when:
+       - enable_production is defined
+       - enable_production|bool
       tags:
         - always
 
