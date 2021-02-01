@@ -44,12 +44,20 @@
         elopfi_index_packages: "{{ elopfi_index_packages_out.stdout.split(',') }}"
 
     - name: "Check if index has critical amount of operators, less than {{ min_operators_in_index_allowed }}"
-      fail:
-        msg: "Looks like index is too empty, less operators than {{ min_operators_in_index_allowed }} operators in the index - manual check is needed. Index overwrite safety check #1."
+      block:
+
+        - name: "List operators present in index"
+          debug:
+            var: elopfi_index_packages
+
+        - name: "Print err message"
+          fail:
+            msg: "Looks like index is too empty, {{ elopfi_index_packages|length }} operator(s) is not allowed, because it is less operators than {{ min_operators_in_index_allowed }} operators in the index - manual check is needed. Index overwrite safety check #1."
+
       when:
         - min_operators_in_index_allowed is defined
         - min_operators_in_index_allowed != ""
-        - elopfi_index_operators|length<min_operators_in_index_allowed
+        - elopfi_index_packages|length<(min_operators_in_index_allowed|int)
 
   tags:
     - deploy_bundles
@@ -57,5 +65,5 @@
   when:
     - bundle_index_image is defined
     - bundle_index_image != ""
-    - bundle_index_image is not search("kind-registry:5000/.*")
+#    - bundle_index_image is not search("kind-registry:5000/.*")
 
