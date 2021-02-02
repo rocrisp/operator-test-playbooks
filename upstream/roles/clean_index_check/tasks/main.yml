@@ -1,0 +1,25 @@
+---
+#TODO: test if omitted on upstream
+- name: "Set stream"
+  set_fact:
+    cic_stream: "{{ operator_base_dir.split('/')[-1] }}"
+
+- name: "Set community"
+  set_fact:
+    cic_community: true
+  when: cic_stream is match("community-operators")
+
+- name: "Clean index only for community"
+  block:
+  - name: "Set parameter to modify cluster detector"
+    set_fact:
+      clean_index_check: true
+      dov_cluster_ver: "{{ bundle_index_image.split(':')[1] }}"
+      chi_git_not_index_operators_not_needed: []
+
+  - name: "Loop over chi_git_not_index_operators"
+    include_tasks: clean_list.yml
+    loop: "{{ chi_git_not_index_operators }}"
+    loop_control:
+      loop_var: cic_chi_git_not_index_operator
+  when: cic_community|bool
