@@ -10,6 +10,7 @@ OP_SCRIPT_URL=${OP_SCRIPT_URL-"https://cutt.ly/WhkV76k"}
 
 OP_TEST_BASE_DEP="ansible curl openssl git"
 
+INDEX_SAFETY="-e enable_production=true"
 OP_TEST_IMAGE=${OP_TEST_IMAGE-"quay.io/operator_testing/operator-test-playbooks:latest"}
 OP_TEST_CERT_DIR=${OP_TEST_CERT_DIR-"/tmp/certs"}
 OP_TEST_CONTAINER_TOOL=${OP_TEST_CONTAINER_TOOL-"docker"}
@@ -354,6 +355,9 @@ function ExecParameters() {
     [[ $1 == op_delete* ]] && [[ $OP_TEST_PROD -ge 2 ]] && OP_TEST_EXEC_USER_SECRETS="$OP_TEST_EXEC_USER_SECRETS -e quay_api_token=$QUAY_API_TOKEN_OPERATOR_TESTING"
     [[ $1 == op_delete_* ]] && [ "$OP_TEST_STREAM" = "community-operators" ] && OP_TEST_EXEC_USER="$OP_TEST_EXEC_USER -e bundle_index_image_version=${1/op_delete_/}"
 
+    # index safety - avoid accidental index destroy
+    [[ $1 == orange* ]] && [[ $OP_TEST_PROD -eq 1 ]] && OP_TEST_EXEC_USER="$OP_TEST_EXEC_USER $INDEX_SAFETY"
+
     # Force strict mode (force to fail on 'bundle add' and 'index add')
     [[ $OP_TEST_PROD -eq 0 ]] && OP_TEST_EXEC_USER="$OP_TEST_EXEC_USER -e strict_mode=true"
 
@@ -444,8 +448,8 @@ for t in $TESTS;do
     [[ $OP_TEST_RESET -eq 1 ]] && run $DRY_RUN_CMD $OP_TEST_CONTAINER_TOOL cp $HOME/.kube $OP_TEST_NAME:/root/
     set -e
     if [[ $1 == orange* ]] && [[ $OP_TEST_PROD -ge 1 ]] && [[ $OP_TEST_CI_YAML_ONLY -eq 0 ]] && [ "$OP_TEST_VERSION" = "sync" ];then
-        echo "$OP_TEST_EXEC_BASE $OP_TEST_EXEC_EXTRA --tags index_check $OP_TEST_EXEC_USER_INDEX_CHECK"
-        run $DRY_RUN_CMD $OP_TEST_CONTAINER_TOOL exec $OP_TEST_CONTAINER_OPT $OP_TEST_NAME /bin/bash -c "update-ca-trust && $OP_TEST_EXEC_BASE $OP_TEST_EXEC_EXTRA --tags index_check $OP_TEST_EXEC_USER_INDEX_CHECK"
+        echo "$OP_TEST_EXEC_BASE $OP_TEST_EXEC_EXTRA --tags index_check $INDEX_SAFETY $OP_TEST_EXEC_USER_INDEX_CHECK"
+        run $DRY_RUN_CMD $OP_TEST_CONTAINER_TOOL exec $OP_TEST_CONTAINER_OPT $OP_TEST_NAME /bin/bash -c "update-ca-trust && $OP_TEST_EXEC_BASE $OP_TEST_EXEC_EXTRA --tags index_check $INDEX_SAFETY $OP_TEST_EXEC_USER_INDEX_CHECK"
         $DRY_RUN_CMD $OP_TEST_CONTAINER_TOOL exec $OP_TEST_CONTAINER_OPT $OP_TEST_NAME /bin/bash -c "ls $OP_TEST_UNCOMPLETE" > /dev/null 2>&1 || continue
         OP_TEST_EXEC_USER="$OP_TEST_EXEC_USER -e operators_config=$OP_TEST_UNCOMPLETE"
     fi
