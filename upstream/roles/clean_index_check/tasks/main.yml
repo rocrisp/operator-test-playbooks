@@ -1,5 +1,4 @@
 ---
-#TODO: test if omitted on upstream
 - name: "Detect stream"
   set_fact:
     cic_stream: "{{ operator_base_dir.split('/')[-1] }}"
