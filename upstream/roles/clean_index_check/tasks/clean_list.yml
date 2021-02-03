@@ -2,7 +2,7 @@
 - name: "Set operator name and version"
   set_fact:
     dov_op_name: "{{ cic_chi_git_not_index_operator.split(':')[0] }}"
-    doic_versions_processing: "{{ cic_chi_git_not_index_operator.split(':')[1] }}"
+    doic_versions_processing: "{{ cic_chi_git_not_index_operator.split(':v')[1] }}"
     ocp_version_annotation_stdout: "NotFound"
 
 - name: "Set path to the file containing labels for version {{ doic_versions_processing }}"
@@ -22,15 +22,5 @@
   include_role:
     name: detect_operators_in_cluster
     tasks_from: op_ver.yml
-
-
-
-- name: "Updating chi_git_not_index_operators"
-  set_fact:
-    chi_git_not_index_operators: "{{ chi_git_not_index_operators | difference(chi_git_not_index_operators_not_needed) }}"
-  no_log: true
-
-
-
-
+  when: ocp_version_annotation_stdout != ""
 
