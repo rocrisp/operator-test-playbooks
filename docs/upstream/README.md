@@ -320,7 +320,7 @@ Usage:
 | min_operators_in_index_allowed | minimal amount of operators in index before index push|N/A|30|
 | max_missing_operators_allowed | maximal amount of operators to be added to an index at once, safety index overwrite feature|N/A|20|
 | stream_kind | Setup variables for specific stream kind (e.g. opemshift_upstream) More info in local.yaml|undefined|undefined|
-
+| delete_appreg | Activate appregistry delete during release `push to quay` operation [bool]|N/A|`true` in case of operator delete|
 
 ## Tags to use
 
