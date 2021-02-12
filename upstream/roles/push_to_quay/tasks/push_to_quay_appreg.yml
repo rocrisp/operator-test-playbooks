@@ -9,17 +9,18 @@
   set_fact:
     clean_index_check: true
     cic_community: true
-    dov_cluster_ver: "4.5"
+    dov_cluster_ver: "v4.5"
     chi_git_not_index_operators_not_needed: [ ]
-#TODO: get `op_test_operator_version` from traffic light
 
 - name: "Run clean_list - detect if 4.5 is supported"
-  include_tasks: clean_list.yml
+  include_role:
+    name: clean_index_check
+    tasks_from: clean_list.yml
   vars:
     cic_chi_git_not_index_operator: "{{ operator_dir.split('/')[-1] }}:v{{ op_test_operator_version }}"
 
-  - name: "Push the operator to the old appregistry"
-    block:
+- name: "Push the operator to the old appregistry"
+  block:
     - name: "Ensure that the '{{ ptq_download_folder }}/{{ ptq_operator_package_name }}' directory exists and is empty"
       file:
         state: "{{ item }}"
@@ -99,7 +100,7 @@
       shell: "operator-courier push {{ ptq_download_folder }}/{{ ptq_operator_package_name }} {{ ptq_namespace }} {{ ptq_operator_package_name }} {{ quay_release }} \"basic {{ quay_appregistry_courier_token }}\""
       # no_log: true
 
- when:
+  when:
    - ptq_cluster_version_support is defined
    - ptq_cluster_version_support|bool
 

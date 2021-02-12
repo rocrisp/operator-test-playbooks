@@ -47,12 +47,6 @@
   when:
     - clean_index_check is not defined or not clean_index_check|bool
 
-  - name: "Supported (ptq)"
-    include_tasks: simple_found_or_not.yml
-    when:
-      - (skopeo_inspect_json.Labels['com.redhat.openshift.versions'] is not defined) or (skopeo_inspect_json.Labels['com.redhat.openshift.versions']== "")
-      - quay_appregistry_courier_token is defined
-
 - name: "Cluster version defined on label"
   block:
   # curl -v -H "Accept: application/json" 'https://catalog.redhat.com/api/containers/v1/operators/indices?sort_by=data.ocp_version&ocp_versions_range=v4.5&organization=community-operators'

@@ -38,8 +38,9 @@
   - name: "Supported (ptq)"
     include_tasks: simple_found_or_not.yml
     when:
-      - (skopeo_inspect_json.Labels['com.redhat.openshift.versions'] is not defined) or (skopeo_inspect_json.Labels['com.redhat.openshift.versions']== "")
+      - (ocp_version_annotation_stdout is defined) and (ocp_version_annotation_stdout!= "")
       - quay_appregistry_courier_token is defined
+      - (doic_supported_index_from_api_parsed_version is defined) and (doic_supported_index_from_api_parsed_version == dov_cluster_ver)
 
   when:
       - doic_supported_index_from_api_parsed_version is defined
