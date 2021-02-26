@@ -93,26 +93,26 @@
         - check_validation_result|bool
         - sdk_validation_upstream_result.rc != 0
 
-    - name: "Read csv.yaml file"
-      shell: "cat {{ csv_file_path }}"
-      register: vob_csv_file_output
-
-    - name: "Load CSV to variable"
-      set_fact:
-        vob_csv_file_output_stdout: "{{ vob_csv_file_output.stdout | from_yaml }}"
-
-    - name: "Load CSV categories to variable"
-      set_fact:
-        vob_categories: "{{ vob_csv_file_output_stdout.metadata.annotations.categories }}"
-      ignore_errors: true
-
-#    - name: "Parse operator categories"
+#    - name: "Read csv.yaml file"
+#      shell: "cat {{ csv_file_path }}"
+#      register: vob_csv_file_output
+#
+#    - name: "Load CSV to variable"
 #      set_fact:
-#        vob_categories: "{{ operator_vars.metadata.annotations.categories }}"
+#        vob_csv_file_output_stdout: "{{ vob_csv_file_output.stdout|to_yaml }}"
+#
+#    - name: "Load CSV categories to the variable"
+#      set_fact:
+#        vob_categories: "{{ vob_csv_file_output_stdout.metadata.annotations.categories }}"
 #      ignore_errors: true
-#      when:
-#        - operator_vars is defined
-#        - operator_vars != ""
+#
+    - name: "Parse operator categories"
+      set_fact:
+        vob_categories: "{{ operator_vars.metadata.annotations.categories }}"
+      ignore_errors: true
+      when:
+        - operator_vars is defined
+        - operator_vars != ""
 
     - name: "Failing when 'categories' are missing'"
       fail:
