@@ -168,7 +168,16 @@
     set_fact:
       operator_suggested_namespace: "{{ operator_suggested_namespace_raw.stdout | from_yaml }}"
     ignore_errors: yes
-    when: operator_suggested_namespace_raw is defined
+    when:
+      - operator_suggested_namespace_raw is defined
+      - operator_suggested_namespace_raw.stdout!=""
+
+  - name: "Sets operator suggested-namespace from default'"
+    set_fact:
+      operator_suggested_namespace: "{{ operator_suggested_namespace_default }}"
+    when:
+      - operator_suggested_namespace is defined
+      - operator_suggested_namespace==""
 
   - name: "Sanity check the operator bundle's information"
     include_tasks: "bundle_sanity_checks.yml"

@@ -8,7 +8,16 @@
 - name: "Set custom namespace command"
   set_fact:
     upstream_namespace_param: "-n {{ operator_suggested_namespace }}"
-  when: run_upstream|bool
+  when:
+    - run_upstream|bool
+    - operator_suggested_namespace!=""
+
+- name: "Set custom namespace command"
+  set_fact:
+    upstream_namespace_param: "-n {{ operator_suggested_namespace_default }}"
+  when:
+    - run_upstream|bool
+    - operator_suggested_namespace==""
 
 - name: "Create the olm operator files directory"
   file:
