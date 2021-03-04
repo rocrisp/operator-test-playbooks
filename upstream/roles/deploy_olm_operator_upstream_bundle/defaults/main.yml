@@ -1,5 +1,6 @@
 oc_bin_path: "{{ 'kubectl' if run_upstream else 'oc' }}"
 openshift_namespace: test-operator
+operator_suggested_namespace: test-operators
 current_channel: alpha
 operator_work_dir: /home/jenkins/agent/test-operator
 quay_release: 0.0.1
