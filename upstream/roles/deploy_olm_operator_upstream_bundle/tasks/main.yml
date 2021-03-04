@@ -252,8 +252,22 @@
     - installplan_result.stdout is defined
     - operator_result.rc != 0 or operator_uptime_raw_rc|int != 0 or operator_uptime_raw_rc is not defined
 
+- name: "Get namespace state"
+  shell: "{{ oc_bin_path }} get pods {{ upstream_namespace_param }}"
+  register: dooub_namespace_state
+  ignore_errors: true
+  environment:
+    KUBECONFIG: "{{ kubeconfig_path }}"
+
+- name: "Print namespace state"
+  debug:
+    var: dooub_namespace_state.stdout
+  when:
+    - operator_result.rc != 0 or operator_uptime_raw_rc|int != 0 or operator_uptime_raw_rc is not defined
+
 - name: "Fail when operator is failing to deploy on kind cluster"
   block:
+
     - name: "Operator error status among packagemanifests"
       fail:
         msg: 'Operator was not found among packagemanifests'
