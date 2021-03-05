@@ -7,6 +7,7 @@
   set_fact:
     dov_cluster_ver: "4.5"
     ovol_appreg_supported: false
+    ocp_range_start_old: "0"
 
 - name: "Run only if ocp version found in annotations/Dockerfile"
   block:
@@ -98,6 +99,6 @@
   when: (ocp_version_annotation_stdout is defined) and (ocp_version_annotation_stdout != "NotFound")
 
 - name: "Supported or not, final result"
-    set_fact:
-      ptq_ready: true
-    when: ovol_appreg_supported|bool
+  set_fact:
+    ptq_ready: true
+  when: ovol_appreg_supported|bool
