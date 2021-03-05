@@ -4,7 +4,8 @@
     dov_op_name: "{{ cic_chi_git_not_index_operator.split(':')[0] }}"
     doic_versions_processing: "{{ cic_chi_git_not_index_operator.split(':v')[1] }}"
     ocp_version_annotation_stdout: "NotFound"
-    ptq_ready: true
+    ptq_ready: false
+    ocp_version_annotation_stdout:
 
 - name: "Set path to the file containing labels for version {{ doic_versions_processing }}"
   set_fact:
@@ -20,25 +21,31 @@
   when:
     - annotations_file_path_presence.stat.exists
 
-- name: ""
-  block:
+#- name: ""
+#  block:
 
-    - name: "Check in another file for labels if not found in {{ labels_file_path }}"
-      include_tasks: get_info.yml
-      vars:
-        labels_file_path: "{{ stream_path }}/{{ dov_op_name }}/{{ doic_versions_processing }}/{{ labels_dockerfile }}"
+- name: "Check in another file for labels if not found"
+  set_fact:
+    labels_file_path: "{{ stream_path }}/{{ dov_op_name }}/{{ doic_versions_processing }}/{{ labels_dockerfile }}"
 
-    - name: "Check that {{ labels_file_path }} exists"
-      stat:
-        path: "{{ labels_file_path }}"
-      register: dockerfile_file_path_presence
+- name: "Check that {{ labels_file_path }} exists"
+  stat:
+    path: "{{ labels_file_path }}"
+  register: dockerfile_file_path_presence
 
-    - name: "Get info from {{ labels_file_path }}"
-      include_tasks: get_info.yml
-      when:
-        - dockerfile_file_path_presence.stat.exists
+- name: "Get info from {{ labels_file_path }}"
+  include_tasks: get_info.yml
+  when:
+    - dockerfile_file_path_presence.stat.exists
+    - ocp_version_annotation_stdout is not defined
 
-  when: (not annotations_file_path_presence.stat.exists) or (ocp_version_annotation_stdout == "")
+#  when: (not annotations_file_path_presence.stat.exists) or (ocp_version_annotation_stdout == "")
+
+- debug:
+    var: annotations_file_path_presence
+
+- debug:
+    var: dockerfile_file_path_presence
 
 - name: "Detect operators in cluster"
   include_role:
@@ -46,7 +53,7 @@
     tasks_from: op_ver.yml
   when:
     - ocp_version_annotation_stdout != ""
-    - dockerfile_file_path_presence.stat.exists or annotations_file_path_presence.stat.exists
+    - (dockerfile_file_path_presence.stat.exists) or (annotations_file_path_presence.stat.exists)
     - quay_appregistry_courier_token is not defined
 
 - name: "Detect operators in cluster for appregistry (ptq)"

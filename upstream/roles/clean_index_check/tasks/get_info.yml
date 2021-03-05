@@ -20,6 +20,7 @@
 - name: "Set parsed versions"
   when:
    - ocp_version_annotation is defined
+   - ocp_version_annotation.stdout is defined
    - ocp_version_annotation.stdout!='null'
    - labels_file_path_presence is defined
    - labels_file_path_presence.stat.exists
