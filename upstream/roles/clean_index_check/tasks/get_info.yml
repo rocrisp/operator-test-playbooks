@@ -4,6 +4,7 @@
   register: ocp_version_annotation
   ignore_errors: true
   when:
+    - labels_file_path_presence is defined
     - labels_file_path_presence.stat.exists
     - '"Dockerfile" in labels_file_path'
 
@@ -12,6 +13,7 @@
   register: ocp_version_annotation
   ignore_errors: true
   when:
+    - labels_file_path_presence is defined
     - labels_file_path_presence.stat.exists
     - '"Dockerfile" not in labels_file_path'
 
@@ -19,5 +21,7 @@
   when:
    - ocp_version_annotation is defined
    - ocp_version_annotation.stdout!='null'
+   - labels_file_path_presence is defined
+   - labels_file_path_presence.stat.exists
   set_fact:
     ocp_version_annotation_stdout: "{{ ocp_version_annotation.stdout }}"
