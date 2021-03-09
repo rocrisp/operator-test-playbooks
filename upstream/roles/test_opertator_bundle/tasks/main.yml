@@ -35,6 +35,13 @@
     remove_replaces: true
   when: run_upstream|bool
 
+- name: "Detect a cosmetic change"
+  include_role:
+    name: detect_change
+  vars:
+    op_version: "{{ operator_version }}"
+  when: run_upstream|bool
+
 - name: "Check package unification"
   include_role:
     name: check_package_bundle

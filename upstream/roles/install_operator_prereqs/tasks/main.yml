@@ -119,6 +119,17 @@
     - uninstall
     - reset_tools
 
+- name: "Download dyff"
+  shell: "curl --silent --location https://tinyurl.com/y4qvdl4d | bash"
+  register: dyff_install_result
+  failed_when: dyff_install_result is failure
+  environment:
+    PATH: "/tmp/operator-test/bin:{{ ansible_env.PATH }}"
+  become: yes
+  tags:
+    - install
+    - reset_tools
+
 - name: "Install prerequisites specific to legacy operator manifest testing"
   block:
 

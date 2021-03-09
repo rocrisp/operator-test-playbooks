@@ -39,6 +39,8 @@
       vars:
         op_csv_dir: "{{ operator_dir }}/{{ op_version }}"
 
+
+
     - name: "Export Package variables"
       include_role:
         name: export_manifest_package_info

@@ -1,0 +1,61 @@
+---
+#Detect cosmetic change
+
+#csv_file_path
+#dyff between -b -l https://raw.githubusercontent.com/operator-framework/community-operators/7ea400bdfca6b996f2e5def668a059c9b83c2226/community-operators/prometheus/0.40.0/manifests/prometheusoperator.v0.40.0.clusterserviceversion.yaml https://raw.githubusercontent.com/operator-framework/community-operators/master/community-operators/prometheus/0.37.0/prometheusoperator.0.37.0.clusterserviceversion.yaml|grep -E "^[a-zA-Z]"
+- name: "Set stream"
+  set_fact:
+    dc_csv_file_end: "{{ csv_file_path.split('community-operators-for-catalog/')[-1] }}"
+
+- name: "Target csv"
+  set_fact:
+    dc_master_csv_file_path: "https://raw.githubusercontent.com/operator-framework/community-operators/master/{{ dc_csv_file_end }}"
+
+- name: "Check if file present on master"
+  uri:
+    url: "{{ dc_master_csv_file_path }}"
+#    url:  https://raw.githubusercontent.com/operator-framework/community-operators/master/community-operators/flux/0.5.1/manifests/flux.v0.5.1.clusterser
+    timeout: 1
+    return_content: yes
+  register: dc_master_csv
+  changed_when: no
+  check_mode: no
+  failed_when: no
+
+- debug:
+    var: dc_master_csv
+
+#- name: "Target csv"
+#  set_fact:
+#    dc_csv_not_in_master: true
+#  when: dc_master_csv.content.startswith("404")
+
+- block:
+    - name: "Detect diff with dyff"
+      shell: 'dyff between -b -l {{ dc_master_csv_file_path }} {{ csv_file_path }}'
+      register: dc_diff_result
+      environment:
+        PATH: "/tmp/operator-test/bin:{{ ansible_env.PATH }}"
+
+    - name: "Detect keys from the diff"
+      shell: 'dyff between -b -l {{ dc_master_csv_file_path }} {{ csv_file_path }}|grep -E "^[a-zA-Z]"'
+      register: dc_diff_keys_result
+      environment:
+        PATH: "/tmp/operator-test/bin:{{ ansible_env.PATH }}"
+      when:
+        - dc_diff_result.stdout|length>1
+
+    - name: "Status in case of no difference"
+      debug:
+        msg: "No CSV difference against master [OK]"
+      when:
+        - dc_diff_result.stdout|length<2
+  when: not dc_master_csv.content.startswith("404")
+
+- name: "Status in case of no difference"
+  debug:
+    msg: "No CSV on master [OK]"
+  when: dc_master_csv.content.startswith("404")
+
+
+- pause:
