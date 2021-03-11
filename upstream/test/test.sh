@@ -182,7 +182,7 @@ if [ -n "$OP_TEST_LABELS" ];then
     echo "Handling label '$l' ..."
     [[ "$l" = "allow/operator-version-overwrite" ]] && export OP_TEST_VER_OVERWRITE=1
     [[ "$l" = "allow/operator-recreate" ]] && export OP_TEST_RECREATE=1
-    [[ "$l" = "allow/significant-changes-to-existing" ]] && export OP_ALLOW_BIG_CHANGES_TO_EXISTING=1
+    [[ "$l" = "allow/serious-changes-to-existing" ]] && export OP_ALLOW_BIG_CHANGES_TO_EXISTING=1
     [[ "$l" = "test/force-deploy-on-kubernetes" ]] && export OP_TEST_FORCE_DEPLOY_ON_K8S=1
     [[ "$l" = "verbosity/high" ]] && export OP_TEST_DEBUG=2
     [[ "$l" = "verbosity/debug" ]] && export OP_TEST_DEBUG=3
