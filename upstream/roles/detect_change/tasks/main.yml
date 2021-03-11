@@ -138,11 +138,3 @@
   when:
     - not dc_csv_current_format_found|bool
     - not dc_csv_pkg_format_found|bool
-
-
-- pause:
-
-#TODO: reset initialization
-#TODO: seek in package manifest path to provide check during a bundle conversion
-#TODO: move to detect_format
-#TODO: handle name of each task and remove some debug and pause
