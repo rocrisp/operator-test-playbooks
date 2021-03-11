@@ -111,7 +111,7 @@
 
       - name: "Status in case of bigger change"
         fail:
-          msg: "Only cosmetic change to {{ dc_csv_file_end }} is allowed. Detected following changes: {{ dc_changes_forbidden }}"
+          msg: "Only cosmetic change to {{ dc_csv_file_end }} is allowed. Detected following changes: {{ dc_changes_forbidden }}. It could be overridden by setting 'allow/significant-changes-to-existing' label"
         when:
           - dc_changes_forbidden|length>0
 
