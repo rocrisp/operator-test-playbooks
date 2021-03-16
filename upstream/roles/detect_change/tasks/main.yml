@@ -14,6 +14,14 @@
     - set_fact:
         csv_file_path: "{{ dc_csv.files[0].path }}"
 
+    - name: "Detect CRD and other changes"
+      include_tasks: other_files_stopper.yml
+
+#TODO: novy task, nie main - other_files_stopper.yml
+#TODO: list of dc_all_operator_files_paths
+#TODO: filter out csv
+#TODO: loop over with dyff and fail with a message
+
     - name: "Set stream"
       set_fact:
         dc_csv_file_end: "{{ csv_file_path.split('community-operators-for-catalog/')[-1] }}"
@@ -70,7 +78,9 @@
             dc_csv_pkg_format_found: true
           when: not dc_master_csv_pkg_format.content.startswith("404")
 
-      when: not dc_csv_current_format_found|bool
+      when:
+        - not dc_csv_current_format_found|bool
+        - 'manifest' in dc_master_csv_file_path
 
     - debug:
         var: dc_master_csv

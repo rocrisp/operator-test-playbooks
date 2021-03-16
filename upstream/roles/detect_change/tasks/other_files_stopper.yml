@@ -1,0 +1,28 @@
+---
+- block:
+    - name: "Searching for cvs file"
+      find:
+        paths: "{{ operator_dir }}/{{ operator_version }}"
+        recurse: yes
+        file_type: file
+      register: dc_all_operator_files
+#    - set_fact:
+#        dc_all_operator_files_paths: "{{ dc_all_operator_files[].path }}"
+
+    - name: "Prepare list of operator files"
+      set_fact:
+       dc_all_operator_files_paths: "{{ dc_all_operator_files_paths | default([]) + [item.path] }}"
+      with_items: "{{ dc_all_operator_files.files }}"
+
+    - name: "Filter csv out"
+      set_fact:
+#       dc_operator_files_paths_without_csv: "{{csv_file_path|list}} not in {{ dc_all_operator_files_paths }}"
+       dc_operator_files_paths_without_csv: "{{ dc_all_operator_files_paths | reject('in', csv_file_path) }}"
+
+    - name: "Detect CRD and other changes"
+      include_tasks: detect_edit.yml
+      loop: "{{ dc_operator_files_paths_without_csv }}"
+
+
+  tags:
+    - cosmetics
