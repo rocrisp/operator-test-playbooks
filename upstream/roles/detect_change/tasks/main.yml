@@ -3,7 +3,7 @@
 
 - block:
 
-    - name: ""
+    - name: "Detect file path"
       shell: "echo {{ csv_external_file_path }} |cut -f 7- -d'/'"
       register: dc_csv_file_end_raw
 
