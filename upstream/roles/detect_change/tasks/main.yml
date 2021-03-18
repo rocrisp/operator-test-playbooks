@@ -19,7 +19,6 @@
         dc_diff_result:
         dc_diff_keys_result:
 
-#-e operator_dir=/tmp/community-operators-for-catalog/community-operators/flux -e operator_version=0.5.5
     - name: "Prepare local path components"
       set_fact:
           dc_operator_name: "{{ dc_csv_file_end.split('/')[1] }}"
@@ -129,7 +128,7 @@
           - debug:
               var: dc_changes_forbidden|length
 
-          - name: "Status in case of bigger change"
+          - name: "Status in case of a bigger change"
             fail:
               msg: "Only cosmetic change to {{ dc_csv_file_end }} is allowed. Detected following changes: {{ dc_changes_forbidden }}. Consider bumping your operator version. In exceptional cases, it could be overridden by setting 'allow/serious-changes-to-existing' label"
             when:
