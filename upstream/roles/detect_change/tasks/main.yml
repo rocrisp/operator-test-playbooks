@@ -19,6 +19,17 @@
         dc_diff_result:
         dc_diff_keys_result:
 
+#-e operator_dir=/tmp/community-operators-for-catalog/community-operators/flux -e operator_version=0.5.5
+    - name: "Prepare local path components"
+      set_fact:
+          dc_operator_name: "{{ dc_csv_file_end.split('/')[1] }}"
+          dc_stream_name: "{{ dc_csv_file_end.split('/')[0] }}"
+          operator_version: "{{ dc_csv_file_end.split('/')[2] }}"
+
+    - name: "Set local path"
+      set_fact:
+          operator_dir: "{{ catalog_repo_dir }}/{{ dc_stream_name }}/{{ dc_operator_name }}"
+
     - name: "Target csv"
       set_fact:
         dc_master_csv_file_path: "https://raw.githubusercontent.com/operator-framework/community-operators/master/{{ dc_csv_file_end }}"
