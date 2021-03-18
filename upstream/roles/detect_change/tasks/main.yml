@@ -31,7 +31,7 @@
 
     - name: "Target csv"
       set_fact:
-        dc_master_csv_file_path: "https://raw.githubusercontent.com/operator-framework/community-operators/master/{{ dc_stream_name }}/{{ dc_operator_name }}/{{ dc_csv_file_end }}"
+        dc_master_csv_file_path: "https://raw.githubusercontent.com/operator-framework/community-operators/master/{{ dc_csv_file_end }}"
 #https://raw.githubusercontent.com/operator-framework/community-operators/master/0.8.2/manifests/flux.v0.8.2.clusterserviceversion.yaml
 #https://raw.githubusercontent.com/operator-framework/community-operators/master/community-operators/aqua/6.0.0/aqua-operator.v6.0.0.clusterserviceversion.yaml
 
