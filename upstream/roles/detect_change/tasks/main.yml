@@ -4,7 +4,7 @@
 - block:
 
     - name: "Detect file path"
-      shell: "echo {{ csv_external_file_path }} |cut -f 7- -d'/'"
+      shell: "echo {{ csv_external_file_path }} |cut -f 5- -d'/'"
       register: dc_csv_file_end_raw
 
     - debug:
