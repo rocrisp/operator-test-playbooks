@@ -3,12 +3,12 @@
 
 - block:
 
-#    - name: "Detect file path"
-#      shell: "echo {{ csv_external_file_path }} |cut -f 7- -d'/'"
-#      register: dc_csv_file_end_raw
-#
-#    - debug:
-#        var: dc_csv_file_end_raw.stdout
+    - name: "Detect file path"
+      shell: "echo {{ csv_external_file_path }} |cut -f 7- -d'/'"
+      register: dc_csv_file_end_raw
+
+    - debug:
+        var: dc_csv_file_end_raw.stdout
 
     - name: "Set stream"
       set_fact:
