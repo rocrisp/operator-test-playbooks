@@ -5,6 +5,8 @@ metadata:
   namespace: "openshift-marketplace"
 spec:
   sourceType: grpc
+  endpoint: "https://quay.io/cnr"
+  image: {{ quay_namespace }}
   displayName: "Test Operators"
   publisher: "CVP"
   authorizationToken:
