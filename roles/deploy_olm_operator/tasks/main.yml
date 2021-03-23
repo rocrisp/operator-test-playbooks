@@ -69,22 +69,22 @@
     src: "subscription.yml.j2"
     dest: "{{ olm_operator_files_path }}/subscription.yml"
 
-- name: "Process the operatorsource template"
+- name: "Process the catalogsource template"
   template:
-    src: "operatorsource.yml.j2"
-    dest: "{{ olm_operator_files_path }}/operatorsource.yml"
+    src: "catalogsource.yml.j2"
+    dest: "{{ olm_operator_files_path }}/catalogsource.yml"
 
 - name: "Create all processed resources in the deploy directory"
   shell: "for f in $(find {{ olm_operator_files_path }} -maxdepth 1 -name \"*processed.yml\"); do {{ oc_bin_path }} create -f $f; done"
   environment:
     KUBECONFIG: "{{ kubeconfig_path }}"
 
-- name: "Create the operatorsource"
-  shell: "{{ oc_bin_path }} apply -f {{ olm_operator_files_path }}/operatorsource.yml"
+- name: "Create the catalogsource"
+  shell: "{{ oc_bin_path }} apply -f {{ olm_operator_files_path }}/catalogsource.yml"
   environment:
     KUBECONFIG: "{{ kubeconfig_path }}"
 
-- name: "Wait for the operatorsource pod to start up"
+- name: "Wait for the catalogsource pod to start up"
   shell: "{{ oc_bin_path }} get pods -n openshift-marketplace | grep test-operators- | grep Running"
   register: operator_source_result
   retries: 60
