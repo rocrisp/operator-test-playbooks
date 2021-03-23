@@ -5,8 +5,7 @@ metadata:
   namespace: "openshift-marketplace"
 spec:
   sourceType: grpc
-  endpoint: "https://quay.io/cnr"
-  image: quay.io/user/{{ quay_namespace }}/{{ openshift_namespace }}:v4.7
+  image: registry.redhat.io/redhat/certified-operator-index:v4.7
   displayName: "Test Operators"
   publisher: "CVP"
   authorizationToken:
